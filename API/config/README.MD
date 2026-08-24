@@ -1,0 +1,15 @@
+# .ENV
+
+### DEV.ENV
+USER='YOUR USER'
+HOST='localhost'
+DB='YOUR DATABASE'
+PASSWD='YOUR PASS'
+PORT='5432' //default port
+
+### PROD.ENV
+USER='YOUR USER'
+HOST='localhost'
+DB='YOUR DATABASE'
+PASSWD='YOUR PASS'
+PORT='5432' //default port
