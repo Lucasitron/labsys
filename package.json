@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "pg": "^8.23.0"
+  },
+    "scripts": {
+      "start": "node src/index.js",
+      "dev": "NODE_ENV=development node API/config/conect.js",
+      "prod": "NODE_ENV=production node src/index.js"
+    }
+}
