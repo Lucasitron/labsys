@@ -1,0 +1,39 @@
+server:
+  port: ${PORT:8083}
+
+spring:
+  application:
+    name: estoque-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/fablab_estoque}
+    username: ${DB_USERNAME:fablab}
+    password: ${DB_PASSWORD:fablab}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:fablab}
+    password: ${RABBITMQ_PASSWORD:fablab}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    com.fablab.estoque: INFO
