@@ -28,6 +28,11 @@ eureka:
   instance:
     prefer-ip-address: true
 
+# Validação dos tokens JWT emitidos pelo Auth & Identity Service (chave secreta compartilhada).
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: ${JWT_ISSUER:fablab}
+
 management:
   endpoints:
     web:
