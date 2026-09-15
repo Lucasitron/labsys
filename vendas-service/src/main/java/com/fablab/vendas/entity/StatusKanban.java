@@ -8,5 +8,6 @@ public enum StatusKanban {
     PRODUCAO,
     ACABAMENTO,
     PRONTO,
-    ENTREGUE
+    ENTREGUE,
+    ENCERRADA
 }

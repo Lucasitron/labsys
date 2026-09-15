@@ -153,6 +153,56 @@ public class EncomendaService {
         return EncomendaResponse.of(encomenda);
     }
 
+    /**
+     * Altera de escopo após o fechamento (conforme regra do Financeiro): a
+     * encomenda atual é encerrada {@code ENCERRADA} no Kanban e uma nova ordem
+     * é criada em {@code FILA} com novas estimativas/valor.
+     */
+    @Transactional
+    public EncomendaResponse alterarEscopo(Long idEncomenda, EncomendaRequest request) {
+        Encomenda atual = obter(idEncomenda);
+        StatusKanban statusAtual = atual.getStatusKanban();
+        if (statusAtual == StatusKanban.ENTREGUE) {
+            throw new IllegalArgumentException("Encomenda entregue não pode ter escopo alterado");
+        }
+        if (statusAtual == StatusKanban.ENCERRADA) {
+            throw new IllegalArgumentException("Encomenda já encerrada");
+        }
+
+        atual.setStatusKanban(StatusKanban.ENCERRADA);
+        HistoricoStatusEncomenda encerramento = new HistoricoStatusEncomenda();
+        encerramento.setStatusAnterior(statusAtual);
+        encerramento.setStatusNovo(StatusKanban.ENCERRADA);
+        encerramento.setDataAlteracao(LocalDateTime.now());
+        encerramento.setObservacao("Encerrada por alteração de escopo");
+        atual.adicionarHistorico(encerramento);
+        encomendaRepository.save(atual);
+
+        Encomenda nova = new Encomenda();
+        nova.setOrcamento(atual.getOrcamento());
+        nova.setCliente(atual.getCliente());
+        nova.setDataCriacao(LocalDate.now());
+        nova.setDataPrevisaoEntrega(request.dataPrevisaoEntrega());
+        nova.setStatusKanban(StatusKanban.FILA);
+        nova.setValorFinal(request.valorFinal() != null ? request.valorFinal() : atual.getValorFinal());
+        nova.setObservacoes(request.observacoes() != null
+                ? request.observacoes() : "Nova ordem após alteração de escopo da encomenda " + atual.getId());
+
+        HistoricoStatusEncomenda historico = new HistoricoStatusEncomenda();
+        historico.setStatusAnterior(null);
+        historico.setStatusNovo(StatusKanban.FILA);
+        historico.setDataAlteracao(LocalDateTime.now());
+        historico.setObservacao("Nova ordem criada por alteração de escopo");
+        nova.adicionarHistorico(historico);
+
+        nova = encomendaRepository.save(nova);
+        eventPublisher.publishEncomendaCriada(new EncomendaCriadaEvent(
+                nova.getId(), nova.getCliente().getId(),
+                nova.getStatusKanban().name(),
+                nova.getValorFinal(), nova.getDataCriacao()));
+        return EncomendaResponse.of(nova);
+    }
+
     @Transactional(readOnly = true)
     public List<EncomendaResponse> listar(StatusKanban statusKanban, Long idCliente, LocalDate dataInicio,
                                           LocalDate dataFim) {
@@ -197,6 +247,7 @@ public class EncomendaService {
             case ACABAMENTO -> novo == StatusKanban.PRONTO || novo == StatusKanban.ENTREGUE;
             case PRONTO -> novo == StatusKanban.ENTREGUE;
             case ENTREGUE -> false;
+            case ENCERRADA -> false;
         };
     }
 }

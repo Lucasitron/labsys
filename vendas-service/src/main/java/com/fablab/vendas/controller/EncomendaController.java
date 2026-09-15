@@ -70,6 +70,13 @@ public class EncomendaController {
         return ResponseEntity.ok(encomendaService.moverKanban(id, request));
     }
 
+    @PostMapping("/{id}/alterar-escopo")
+    @PreAuthorize(ESCRITA)
+    public ResponseEntity<EncomendaResponse> alterarEscopo(@PathVariable Long id,
+                                                           @Valid @RequestBody EncomendaRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(encomendaService.alterarEscopo(id, request));
+    }
+
     @GetMapping("/{id}/historico")
     @PreAuthorize(VISUALIZACAO)
     public ResponseEntity<List<HistoricoResponse>> listarHistorico(@PathVariable Long id) {
