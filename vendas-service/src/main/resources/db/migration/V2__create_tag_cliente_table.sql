@@ -1,0 +1,5 @@
+CREATE TABLE tag_cliente (
+    id BIGSERIAL PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL UNIQUE,
+    cor VARCHAR(20)
+);
