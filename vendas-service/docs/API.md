@@ -8,6 +8,7 @@ RBAC: escrita exige `ADMIN`, `BOLSISTA` ou `VOLUNTARIO`; leitura permite também
 | Método | Path | Descrição |
 | :--- | :--- | :--- |
 | POST | `/clientes` | Cadastra cliente (PF/PJ) com validação de CPF/CNPJ |
+| PUT | `/clientes/{id}` | Atualiza cliente (impede documento duplicado, substitui `tags`) |
 | GET | `/clientes` | Lista com filtros `tipo` (PF/PJ), `idTag`, `nome` |
 | GET | `/clientes/{id}` | Detalhes do cliente com tags |
 | POST | `/clientes/{id}/tags/{idTag}` | Associa uma tag a um cliente |
@@ -63,9 +64,11 @@ Exemplo de payload `POST /orcamentos`:
 | GET | `/encomendas` | Lista com filtros `status`, `idCliente`, `dataInicio`/`dataFim` |
 | GET | `/encomendas/{id}` | Busca encomenda |
 | PUT | `/encomendas/{id}/kanban` | Move no Kanban (concorrência otimista + auditoria) |
+| POST | `/encomendas/{id}/alterar-escopo` | Encerra a encomenda atual (`ENCERRADA`) e cria nova ordem em `FILA` |
 | GET | `/encomendas/{id}/historico` | Histórico de movimentações do Kanban |
 
-Ordem do Kanban: `FILA → PRODUCAO → ACABAMENTO → PRONTO → ENTREGUE`.
+Ordem do Kanban: `FILA → PRODUCAO → ACABAMENTO → PRONTO → ENTREGUE`; encomendas
+encerradas por alteração de escopo ficam `ENCERRADA` (não recebem novas movimentações).
 Ao chegar em `ENTREGUE`, publica `encomenda.entregue.event`.
 
 Payload `PUT /encomendas/{id}/kanban`:
@@ -104,8 +107,12 @@ Publica `marketplace.venda.event` ao registrar.
 
 ## Mensageria
 
-- **Publica** (exchange `fablab.vendas` / tópica): `orcamento.aprovado.event`, `encomenda.criada.event`, `encomenda.entregue.event`, `marketplace.venda.event`, `kanban.status.event`.
-- **Consome**: `producao.status.event` (exchange `fablab.producao`, fila `vendas.kanban.producao`).
+- **Publica** (exchange `fablab.vendas` / tópica): `orcamento.aprovado.event`,
+  `encomenda.criada.event`, `encomenda.entregue.event`, `marketplace.venda.event`,
+  `encomenda.status.alterado.event`.
+- **Consome**: `producao.status.alterado.event` (exchange `fablab.producao`, fila
+  `vendas.kanban.producao`) e `estoque.consumo.realizado.event` (exchange
+  `fablab.estoque`, fila `vendas.estoque.consumo`).
 
 ## Erros
 

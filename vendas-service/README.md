@@ -35,7 +35,7 @@ Porta padrão: `8084` (override com `PORT`). Banco: `fablab_vendas`.
 ## Testes
 
 ```bash
-mvn clean verify   # 45 testes + JaCoCo ≥ 80%
+mvn clean verify   # 72 testes + JaCoCo ≥ 80%
 ```
 
 Testes de integração usam H2 em modo PostgreSQL com RabbitMQ mockado.
