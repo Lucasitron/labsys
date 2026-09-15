@@ -30,6 +30,9 @@ coverage
 *.key
 secrets/
 
+# ===== Documentação local (não versionada) =====
+docs/
+
 # ===== Java / Maven =====
 **/target/
 *.class
