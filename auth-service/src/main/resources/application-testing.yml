@@ -1,0 +1,4 @@
+logging:
+  level:
+    com.fablab.auth: INFO
+    org.springframework.security: WARN
