@@ -1,0 +1,4 @@
+logging:
+  level:
+    com.fablab: DEBUG
+    io.netty: INFO

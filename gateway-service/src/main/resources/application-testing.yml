@@ -1,0 +1,4 @@
+logging:
+  level:
+    com.fablab: INFO
+    org.springframework.cloud.gateway: WARN

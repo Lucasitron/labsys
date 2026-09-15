@@ -1,0 +1,4 @@
+logging:
+  level:
+    com.fablab: INFO
+    com.netflix.eureka: WARN
