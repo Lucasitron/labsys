@@ -1,0 +1,62 @@
+# ===== General =====
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+pids
+*.pid
+*.seed
+*.pid.lock
+coverage
+*.lcov
+.nyc_output
+.grunt
+.DS_Store
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.iml
+
+# ===== Environment / Secrets =====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# ===== Java / Maven =====
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+build/
+**/mvnw
+**/.mvn/
+
+# ===== Node / SvelteKit =====
+**/node_modules/
+**/dist/
+**/.svelte-kit/
+**/.output/
+**/.svelte/
+**/.svelte-kit-tmp/
+frontend/package-lock.json
+
+# ===== Testes =====
+**/test-results/
+**/surefire-reports/
+**/allure-results/
+
+# ===== Docker =====
+**/docker-compose.override.yml
+infra/.volumes/
+**/postgres-data/
