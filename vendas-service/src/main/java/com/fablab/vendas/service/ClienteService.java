@@ -90,6 +90,34 @@ public class ClienteService {
     }
 
     @Transactional
+    public ClienteResponse atualizar(Long id, ClienteRequest request) {
+        Cliente cliente = obter(id);
+        validarDocumento(request.tipoPessoa(), request.cpfCnpj());
+        boolean documentoMudou = !cliente.getCpfCnpj().equals(request.cpfCnpj());
+        if (documentoMudou && clienteRepository.existsByCpfCnpj(request.cpfCnpj())) {
+            throw new IllegalArgumentException("Já existe cliente cadastrado com o documento informado");
+        }
+
+        cliente.setTipoPessoa(request.tipoPessoa());
+        cliente.setNomeRazaoSocial(request.nomeRazaoSocial());
+        cliente.setCpfCnpj(request.cpfCnpj());
+        cliente.setEmail(request.email());
+        cliente.setTelefone(request.telefone());
+        cliente.setEndereco(request.endereco());
+
+        cliente.getTags().clear();
+        if (request.tags() != null) {
+            for (Long idTag : request.tags()) {
+                TagCliente tag = tagClienteRepository.findById(idTag)
+                        .orElseThrow(() -> new ResourceNotFoundException("Tag não encontrada: " + idTag));
+                cliente.adicionarTag(tag);
+            }
+        }
+
+        return ClienteResponse.of(clienteRepository.save(cliente));
+    }
+
+    @Transactional
     public ClienteResponse adicionarTag(Long idCliente, Long idTag) {
         Cliente cliente = obter(idCliente);
         TagCliente tag = tagClienteRepository.findById(idTag)
