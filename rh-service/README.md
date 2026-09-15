@@ -1,40 +1,70 @@
-# rh-service
+# Pessoas & RH Service
 
-**Pessoas & RH Service** do Sistema de Gestão FabLab. Gestão de pessoas e ciclo
-de vida no laboratório: processo seletivo, ponto (RFID), horas em encomendas e
-projetos, treinamento (LMS) e evolução de níveis de acesso.
+Microserviço responsável pela gestão de todas as pessoas do Fab Lab, incluindo professores, alunos (bolsistas, voluntários e estagiários) e candidatos ao processo seletivo. Controla o registro de horas, treinamentos (LMS) e a evolução dos níveis de acesso.
 
-## Pré-requisitos
+## Requisitos
 
-*   Java 21, Maven 3.9+, PostgreSQL (`fablab_rh`) e RabbitMQ em execução.
+- Java 21
+- Maven 3.9+
+- PostgreSQL 15+
+- RabbitMQ 3.12+
 
-## Como executar
+## Variáveis de Ambiente
 
-```sh
+| Variável | Descrição | Padrão |
+|---|---|---|
+| `PORT` | Porta HTTP | `8082` |
+| `DB_URL` | JDBC URL do PostgreSQL | `jdbc:postgresql://localhost:5432/fablab_rh` |
+| `DB_USERNAME` | Usuário do banco | `fablab` |
+| `DB_PASSWORD` | Senha do banco | `fablab` |
+| `JWT_SECRET` | Chave HMAC compartilhada com Auth Service (≥32 chars) | — |
+| `JWT_ISSUER` | Emissor dos tokens JWT | `fablab` |
+| `RABBITMQ_HOST` | Host do RabbitMQ | `localhost` |
+| `RABBITMQ_PORT` | Porta do RabbitMQ | `5672` |
+| `RABBITMQ_USERNAME` | Usuário do RabbitMQ | `fablab` |
+| `RABBITMQ_PASSWORD` | Senha do RabbitMQ | `fablab` |
+| `EUREKA_URI` | URL do Discovery Service (Eureka) | `http://localhost:8761/eureka` |
+
+## Rodar
+
+```bash
+export JWT_SECRET="sua-chave-secreta-min-32-caracteres-abc"
 mvn spring-boot:run
 ```
 
-Health: http://localhost:8082/actuator/health
+O serviço sobe em `http://localhost:8082`.
 
-## Como testar
+## Testes
 
-```sh
-mvn test
+```bash
+# Java 25 quebra Mockito — use Java 21:
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+
+mvn verify
 ```
 
-## Configuração
+Cobertura mínima: 80% (linha). Relatório em `target/site/jacoco/index.html`.
 
-| Variável | Descrição | Padrão |
-| :--- | :--- | :--- |
-| `PORT` | Porta HTTP | `8082` |
-| `DB_URL` | JDBC URL | `jdbc:postgresql://localhost:5432/fablab_rh` |
-| `DB_USERNAME` / `DB_PASSWORD` | Credenciais do banco | `fablab` / `fablab` |
-| `EUREKA_URI` | URL do Eureka | `http://localhost:8761/eureka` |
-| `RABBITMQ_HOST` | Host do RabbitMQ | `localhost` |
+## Endpoints
 
-## Documentação
+Ver [API.md](API.md) para a especificação completa.
 
-*   [API](docs/API.md)
-*   [Relatório de bugs](docs/BUGS.md)
-*   [Plano de ação](docs/ACTION_PLAN.md)
-*   [Changelog](docs/CHANGELOG.md)
+## Arquitetura
+
+```
+src/main/java/com/fablab/rh/
+├── config/         # SecurityConfig, JwtService, RabbitMQ config
+├── controller/     # REST controllers
+├── dto/            # Request/Response records, events, principal
+├── entity/         # JPA entities, enums, converters
+├── exception/      # GlobalExceptionHandler, custom exceptions
+├── mapper/         # Entity ↔ DTO mappers
+├── repository/     # Spring Data JPA repositories
+└── service/        # Business logic, RFID consumer, event publishers
+```
+
+## Integrações
+
+- **Auth & Identity Service**: consome eventos RFID via RabbitMQ (`access.rfid.event`); valida JWT compartilhado via `JWT_SECRET`.
+- **Financeiro Service**: publica `horas.validadas.event` quando apontamentos são validados.
+- **Notification Service**: publica `nivel.alterado.event` quando o nível de acesso é alterado.
