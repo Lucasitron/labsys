@@ -49,7 +49,6 @@ build/
 **/.output/
 **/.svelte/
 **/.svelte-kit-tmp/
-frontend/package-lock.json
 
 # ===== Testes =====
 **/test-results/
