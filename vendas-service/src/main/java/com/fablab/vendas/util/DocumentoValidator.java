@@ -18,8 +18,8 @@ public final class DocumentoValidator {
         if (todosIguais(digitos)) {
             return false;
         }
-        return digitos[9] == calcularDigito(digitos, 9, pesoSemDV())
-                && digitos[10] == calcularDigito(digitos, 10, pesoSemDV());
+        return digitos[9] == digitoVerificador(digitos, 9, 10)
+                && digitos[10] == digitoVerificador(digitos, 10, 11);
     }
 
     /** Valida um CNPJ (14 dígitos, verificadores corretos). */
@@ -31,8 +31,14 @@ public final class DocumentoValidator {
         if (todosIguais(digitos)) {
             return false;
         }
-        return digitos[12] == calcularDigito(digitos, 12, pesoCnpj(12))
-                && digitos[13] == calcularDigito(digitos, 13, pesoCnpj(13));
+        int d1 = simplificar(digitos[0] * 5 + digitos[1] * 4 + digitos[2] * 3 + digitos[3] * 2
+                + digitos[4] * 9 + digitos[5] * 8 + digitos[6] * 7 + digitos[7] * 6
+                + digitos[8] * 5 + digitos[9] * 4 + digitos[10] * 3 + digitos[11] * 2);
+        int d2 = simplificar(digitos[0] * 6 + digitos[1] * 5 + digitos[2] * 4 + digitos[3] * 3
+                + digitos[4] * 2 + digitos[5] * 9 + digitos[6] * 8 + digitos[7] * 7
+                + digitos[8] * 6 + digitos[9] * 5 + digitos[10] * 4 + digitos[11] * 3
+                + digitos[12] * 2);
+        return digitos[12] == d1 && digitos[13] == d2;
     }
 
     private static boolean ehDigitos(String valor, int tamanho) {
@@ -48,25 +54,20 @@ public final class DocumentoValidator {
         return true;
     }
 
-    private static int[] pesoSemDV() {
-        return new int[]{10, 9, 8, 7, 6, 5, 4, 3, 2};
-    }
-
-    /** Pesos da validação de CNPJ para o DV dado (12 ou 13). */
-    private static int[] pesoCnpj(int dv) {
-        int[] base = {5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2};
-        if (dv == 12) {
-            return base;
-        }
-        return new int[]{6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2};
-    }
-
-    /** Calcula um dígito verificador a partir dos dígitos e pesos. */
-    private static int calcularDigito(int[] digitos, int ate, int[] pesos) {
+    /** Calcula um dígito verificador sobre os {@code ate} primeiros dígitos. */
+    private static int digitoVerificador(int[] digitos, int ate, int pesoInicial) {
         int soma = 0;
-        for (int i = 0; i < pesos.length; i++) {
-            soma += digitos[i] * pesos[i];
+        int peso = pesoInicial;
+        for (int i = 0; i < ate; i++) {
+            soma += digitos[i] * peso;
+            peso--;
         }
+        int resto = soma % 11;
+        return resto < 2 ? 0 : 11 - resto;
+    }
+
+    /** Reduz o resto da soma ponderada do CNPJ a um dígito verificador. */
+    private static int simplificar(int soma) {
         int resto = soma % 11;
         return resto < 2 ? 0 : 11 - resto;
     }

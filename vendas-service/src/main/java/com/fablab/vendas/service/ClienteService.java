@@ -5,7 +5,6 @@ import com.fablab.vendas.dto.ClienteResponse;
 import com.fablab.vendas.dto.TagClienteRequest;
 import com.fablab.vendas.dto.TagClienteResponse;
 import com.fablab.vendas.entity.Cliente;
-import com.fablab.vendas.entity.ClienteTag;
 import com.fablab.vendas.entity.TagCliente;
 import com.fablab.vendas.entity.TipoPessoa;
 import com.fablab.vendas.exception.ResourceNotFoundException;
@@ -49,13 +48,14 @@ public class ClienteService {
         cliente.setEmail(request.email());
         cliente.setTelefone(request.telefone());
         cliente.setEndereco(request.endereco());
+        cliente.setDataCadastro(java.time.LocalDate.now());
         cliente = clienteRepository.save(cliente);
 
         if (request.tags() != null) {
             for (Long idTag : request.tags()) {
                 TagCliente tag = tagClienteRepository.findById(idTag)
                         .orElseThrow(() -> new ResourceNotFoundException("Tag não encontrada: " + idTag));
-                cliente.adicionarTag(new ClienteTag(cliente, tag));
+                cliente.adicionarTag(tag);
             }
         }
 
@@ -99,7 +99,7 @@ public class ClienteService {
             throw new IllegalArgumentException("Cliente já possui a tag informada");
         }
 
-        cliente.adicionarTag(new ClienteTag(cliente, tag));
+        cliente.adicionarTag(tag);
         return ClienteResponse.of(cliente);
     }
 

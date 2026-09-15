@@ -33,6 +33,11 @@ public class ClienteTag {
     @EqualsAndHashCode.Include
     private Long id;
 
+    public ClienteTag(Cliente cliente, TagCliente tag) {
+        this.cliente = cliente;
+        this.tag = tag;
+    }
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;

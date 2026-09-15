@@ -63,9 +63,6 @@ public class Cliente {
 
     /** Associa uma tag ao cliente (cria o vínculo em {@code ClienteTag}). */
     public void adicionarTag(TagCliente tag) {
-        ClienteTag clienteTag = new ClienteTag();
-        clienteTag.setCliente(this);
-        clienteTag.setTag(tag);
-        tags.add(clienteTag);
+        tags.add(new ClienteTag(this, tag));
     }
 }
