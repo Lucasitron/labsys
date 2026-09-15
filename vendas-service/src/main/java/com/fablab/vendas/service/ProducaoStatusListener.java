@@ -8,7 +8,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 /**
- * Consome {@code producao.status.event} do Produção &amp; Projetos Service para
+ * Consome {@code producao.status.alterado.event} do Produção &amp; Projetos Service para
  * atualizar automaticamente o Kanban da encomenda.
  */
 @Component
@@ -24,7 +24,7 @@ public class ProducaoStatusListener {
 
     @RabbitListener(queues = RabbitMqConfig.KANBAN_PRODUCAO_QUEUE)
     public void onProducaoStatus(ProducaoStatusEvent event) {
-        log.info("Evento producao.status.event recebido para encomenda {}: {}",
+        log.info("Evento producao.status.alterado.event recebido para encomenda {}: {}",
                 event.idEncomenda(), event.statusNovo());
         try {
             encomendaService.receberAtualizacaoProducao(event);

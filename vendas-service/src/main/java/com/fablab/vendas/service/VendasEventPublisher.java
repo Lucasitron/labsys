@@ -46,8 +46,8 @@ public class VendasEventPublisher {
     }
 
     public void publishKanbanStatus(KanbanStatusEvent event) {
-        send(RabbitMqConfig.VENDAS_EXCHANGE, RabbitMqConfig.KANBAN_STATUS_ROUTING_KEY,
-                "kanban.status", event.idEncomenda(), event);
+        send(RabbitMqConfig.VENDAS_EXCHANGE, RabbitMqConfig.ENCOMENDA_STATUS_ALTERADO_ROUTING_KEY,
+                "encomenda.status.alterado", event.idEncomenda(), event);
     }
 
     private void send(String exchange, String routingKey, String evento, Object id, Object event) {

@@ -3,7 +3,8 @@ package com.fablab.vendas.dto;
 import java.time.LocalDateTime;
 
 /**
- * Evento {@code kanban.status.event} publicado para o Notification Service.
+ * Evento {@code encomenda.status.alterado.event} publicado para o Notification
+ * Service.
  */
 public record KanbanStatusEvent(
         Long idEncomenda,
