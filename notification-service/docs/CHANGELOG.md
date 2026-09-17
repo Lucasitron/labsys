@@ -1,6 +1,6 @@
 <!-- Keep a Changelog: https://keepachangelog.com/pt-BR/1.1.0/ -->
 
-## [Não publicado]
+## [0.1.0] - 2026-09-17
 
 ### Adicionado
 - Scaffold inicial do microsserviço.
