@@ -26,8 +26,27 @@ spring:
     username: ${SMTP_USERNAME:}
     password: ${SMTP_PASSWORD:}
     properties:
-      mail.smtp.auth: false
-      mail.smtp.starttls.enable: false
+      mail.smtp.auth: ${SMTP_AUTH:false}
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS:false}
+
+jwt:
+  secret: ${JWT_SECRET:}
+  issuer: ${JWT_ISSUER:fablab}
+
+notification:
+  email:
+    remetente: ${NOTIFICATION_EMAIL_FROM:no-reply@fablab.local}
+    destino-padrao: ${NOTIFICATION_EMAIL_TO:admin@fablab.local}
+  historico:
+    retencao-dias: ${NOTIFICATION_HISTORICO_RETENCAO_DIAS:90}
+  expurgo:
+    scheduler:
+      enabled: ${NOTIFICATION_EXPURGO_SCHEDULER_ENABLED:true}
+      cron: ${NOTIFICATION_EXPURGO_SCHEDULER_CRON:0 0 3 * * *}
+  reenvio:
+    scheduler:
+      enabled: ${NOTIFICATION_REENVIO_SCHEDULER_ENABLED:false}
+      cron: ${NOTIFICATION_REENVIO_SCHEDULER_CRON:0 */30 * * * *}
 
 eureka:
   client:
