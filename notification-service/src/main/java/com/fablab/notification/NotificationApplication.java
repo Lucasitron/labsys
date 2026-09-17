@@ -1,6 +1,7 @@
 package com.fablab.notification;
 
 import com.fablab.notification.config.JwtProperties;
+import com.fablab.notification.config.NotificationProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,7 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableScheduling
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableConfigurationProperties({JwtProperties.class, NotificationProperties.class})
 public class NotificationApplication {
 
     /** Ponto de entrada da aplicação. */
