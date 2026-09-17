@@ -22,6 +22,9 @@ public interface HorasEncomendaRepository extends JpaRepository<HorasEncomenda, 
             """)
     Optional<BigDecimal> somaHorasPorEncomenda(@Param("idEncomenda") Long idEncomenda);
 
+    Optional<HorasEncomenda> findFirstByIdEncomendaAndIdFuncionarioAndDataRegistro(
+            Long idEncomenda, Long idFuncionario, java.time.LocalDate dataRegistro);
+
     boolean existsByIdEncomendaAndIdFuncionarioAndDataRegistro(Long idEncomenda, Long idFuncionario,
                                                               java.time.LocalDate dataRegistro);
 }
