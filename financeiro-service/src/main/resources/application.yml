@@ -21,6 +21,10 @@ spring:
     username: ${RABBITMQ_USERNAME:fablab}
     password: ${RABBITMQ_PASSWORD:fablab}
 
+jwt:
+  secret: ${JWT_SECRET:}
+  issuer: ${JWT_ISSUER:fablab}
+
 eureka:
   client:
     service-url:
