@@ -179,7 +179,7 @@ public class SetorService {
         return responsaveis.stream().map(ResponsavelSetorResponse::from).toList();
     }
 
-    Setor obter(Long id) {
+    public Setor obter(Long id) {
         return setorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Setor", id));
     }

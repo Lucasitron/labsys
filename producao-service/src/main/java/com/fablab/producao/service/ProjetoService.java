@@ -83,7 +83,7 @@ public class ProjetoService {
         projetoRepository.delete(projeto);
     }
 
-    Projeto obter(Long id) {
+    public Projeto obter(Long id) {
         return projetoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Projeto", id));
     }
