@@ -28,7 +28,9 @@ public class RabbitMqConfig {
     /** Routing keys dos eventos publicados pelo Produção. */
     public static final String PRODUCAO_STATUS_ALTERADO_ROUTING_KEY = "producao.status.alterado.event";
     public static final String PRODUCAO_CONCLUIDA_ROUTING_KEY = "producao.concluida.event";
+    public static final String KANBAN_STATUS_ALTERADO_ROUTING_KEY = "kanban.status.alterado.event";
     public static final String ADVERTENCIA_REGISTRADA_ROUTING_KEY = "advertencia.registrada.event";
+    public static final String ADVERTENCIA_LIMITE_ROUTING_KEY = "advertencia.limite.atingido.event";
     public static final String PROJETO_MESA_ABANDONADO_ROUTING_KEY = "projeto.mesa.abandonado.event";
 
     /** Routing keys dos eventos consumidos. */
