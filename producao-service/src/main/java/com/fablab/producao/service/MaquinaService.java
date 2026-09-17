@@ -131,6 +131,8 @@ public class MaquinaService {
         maquina.setNome(request.nome());
         maquina.setDescricao(request.descricao());
         maquina.setLocalizacao(request.localizacao());
-        maquina.setStatus(request.status());
+        if (request.status() != null) {
+            maquina.setStatus(request.status());
+        }
     }
 }

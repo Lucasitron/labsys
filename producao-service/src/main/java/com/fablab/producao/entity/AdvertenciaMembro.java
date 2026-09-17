@@ -51,6 +51,6 @@ public class AdvertenciaMembro {
     @Column(name = "contador", nullable = false)
     private Integer contador;
 
-    @Column(name = "id_admin_registrou", nullable = false)
+    @Column(name = "id_admin_registrou")
     private Long idAdminRegistrou;
 }
