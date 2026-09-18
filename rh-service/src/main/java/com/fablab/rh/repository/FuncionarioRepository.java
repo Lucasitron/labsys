@@ -15,6 +15,8 @@ public interface FuncionarioRepository extends JpaRepository<Funcionario, Long> 
 
     List<Funcionario> findByNivelAcesso(NivelAcesso nivelAcesso);
 
+    List<Funcionario> findByNivelAcessoNot(NivelAcesso nivelAcesso);
+
     List<Funcionario> findByDepartamentoIgnoreCase(String departamento);
 
     boolean existsByPessoaId(Long pessoaId);

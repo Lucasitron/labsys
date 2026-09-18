@@ -1,6 +1,10 @@
 package com.fablab.rh.service;
 
 import com.fablab.rh.config.RabbitMqConfig;
+import com.fablab.rh.dto.CertificadoAprovadoEvent;
+import com.fablab.rh.dto.CertificadoRejeitadoEvent;
+import com.fablab.rh.dto.CertificadoSolicitadoEvent;
+import com.fablab.rh.dto.ExtratoMensalHorasEvent;
 import com.fablab.rh.dto.HorasValidadasEvent;
 import com.fablab.rh.dto.NivelAlteradoEvent;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -31,6 +35,38 @@ public class RhEventPublisher {
         rabbitTemplate.convertAndSend(
                 RabbitMqConfig.RH_EXCHANGE,
                 RabbitMqConfig.HORAS_VALIDADAS_ROUTING_KEY,
+                event);
+    }
+
+    /** Publica a solicitação de certificado para o Notification Service. */
+    public void publishCertificadoSolicitado(CertificadoSolicitadoEvent event) {
+        rabbitTemplate.convertAndSend(
+                RabbitMqConfig.RH_EXCHANGE,
+                RabbitMqConfig.CERTIFICADO_SOLICITADO_ROUTING_KEY,
+                event);
+    }
+
+    /** Publica a aprovação de certificado para o Notification Service. */
+    public void publishCertificadoAprovado(CertificadoAprovadoEvent event) {
+        rabbitTemplate.convertAndSend(
+                RabbitMqConfig.RH_EXCHANGE,
+                RabbitMqConfig.CERTIFICADO_APROVADO_ROUTING_KEY,
+                event);
+    }
+
+    /** Publica a rejeição de certificado para o Notification Service. */
+    public void publishCertificadoRejeitado(CertificadoRejeitadoEvent event) {
+        rabbitTemplate.convertAndSend(
+                RabbitMqConfig.RH_EXCHANGE,
+                RabbitMqConfig.CERTIFICADO_REJEITADO_ROUTING_KEY,
+                event);
+    }
+
+    /** Publica o extrato mensal de horas para o Notification Service. */
+    public void publishExtratoMensal(ExtratoMensalHorasEvent event) {
+        rabbitTemplate.convertAndSend(
+                RabbitMqConfig.RH_EXCHANGE,
+                RabbitMqConfig.EXTRATO_MENSAL_HORAS_ROUTING_KEY,
                 event);
     }
 }
