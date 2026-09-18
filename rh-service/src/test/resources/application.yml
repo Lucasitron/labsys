@@ -21,6 +21,12 @@ jwt:
   secret: fablab-rh-test-secret-key-min-32-bytes-1234567890
   issuer: fablab-test
 
+rh:
+  certificado:
+    extrato:
+      scheduler:
+        enabled: false
+
 logging:
   level:
     com.fablab.rh: WARN
