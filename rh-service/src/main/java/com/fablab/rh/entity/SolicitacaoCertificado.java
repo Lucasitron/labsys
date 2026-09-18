@@ -12,62 +12,57 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Apontamento de horas dedicadas a uma encomenda ou projeto.
+ * Solicitação de certificado de horas feita por um funcionário e decidida por
+ * um Admin.
  *
- * <p>Corresponde à tabela {@code apontamento_horas}.</p>
+ * <p>Corresponde à tabela {@code solicitacao_certificado}.</p>
  */
 @Entity
-@Table(name = "apontamento_horas")
+@Table(name = "solicitacao_certificado")
 @Getter
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class ApontamentoHoras {
+public class SolicitacaoCertificado {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     @EqualsAndHashCode.Include
-    private Long id;
+    private Long idSolicitacao;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "id_funcionario", nullable = false)
     private Funcionario funcionario;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false, length = 32)
-    private TipoApontamento tipo;
+    @Column(name = "tipo_certificado", nullable = false, length = 32)
+    private TipoCertificado tipoCertificado;
 
-    @Column(name = "id_referencia", nullable = false)
-    private Long idReferencia;
+    @Column(name = "data_solicitacao", nullable = false)
+    private LocalDateTime dataSolicitacao;
 
-    @Column(name = "data", nullable = false)
-    private LocalDate data;
-
-    @Column(name = "horas_trabalhadas", nullable = false, precision = 5, scale = 2)
-    private BigDecimal horasTrabalhadas;
-
-    @Column(name = "descricao_atividade")
-    private String descricaoAtividade;
+    @Column(name = "horas_solicitadas", nullable = false, precision = 7, scale = 2)
+    private BigDecimal horasSolicitadas;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 32)
-    private StatusApontamento status;
+    private StatusSolicitacao status;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_admin_validador")
-    private Funcionario idAdminValidador;
+    @JoinColumn(name = "id_admin_aprovador")
+    private Funcionario idAdminAprovador;
 
-    @Column(name = "data_validacao")
-    private Instant dataValidacao;
+    @Column(name = "data_decisao")
+    private LocalDateTime dataDecisao;
 
-    @Column(name = "consolidado", nullable = false)
-    private Boolean consolidado = false;
+    @Column(name = "observacao")
+    private String observacao;
 }
