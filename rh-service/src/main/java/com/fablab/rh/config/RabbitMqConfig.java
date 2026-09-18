@@ -32,6 +32,18 @@ public class RabbitMqConfig {
     /** Routing key do evento de validação de horas apontadas. */
     public static final String HORAS_VALIDADAS_ROUTING_KEY = "horas.validadas.event";
 
+    /** Routing key do evento de solicitação de certificado de horas. */
+    public static final String CERTIFICADO_SOLICITADO_ROUTING_KEY = "certificado.solicitado.event";
+
+    /** Routing key do evento de aprovação de certificado de horas. */
+    public static final String CERTIFICADO_APROVADO_ROUTING_KEY = "certificado.aprovado.event";
+
+    /** Routing key do evento de rejeição de certificado de horas. */
+    public static final String CERTIFICADO_REJEITADO_ROUTING_KEY = "certificado.rejeitado.event";
+
+    /** Routing key do evento de extrato mensal de horas. */
+    public static final String EXTRATO_MENSAL_HORAS_ROUTING_KEY = "extrato.mensal.horas.event";
+
     @Bean
     public TopicExchange accessExchange() {
         return new TopicExchange(ACCESS_EXCHANGE, true, false);

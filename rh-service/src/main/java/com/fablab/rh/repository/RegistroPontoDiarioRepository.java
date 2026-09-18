@@ -24,4 +24,14 @@ public interface RegistroPontoDiarioRepository extends JpaRepository<RegistroPon
             where r.funcionario.id = :funcionarioId and r.data = :data
             """)
     BigDecimal sumTotalHorasPorDia(@Param("funcionarioId") Long funcionarioId, @Param("data") LocalDate data);
+
+    @Query("""
+            select coalesce(sum(r.totalHoras), 0)
+            from RegistroPontoDiario r
+            where r.funcionario.id = :funcionarioId
+              and r.data between :inicio and :fim
+            """)
+    BigDecimal sumTotalHorasPeriodo(@Param("funcionarioId") Long funcionarioId,
+                                    @Param("inicio") LocalDate inicio,
+                                    @Param("fim") LocalDate fim);
 }
