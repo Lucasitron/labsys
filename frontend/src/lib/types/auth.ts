@@ -1,6 +1,16 @@
 export type Role = 0 | 1 | 2 | 3 | 4;
 
-export type Module = 'dashboard' | 'rh' | 'estoque' | 'vendas' | 'financeiro' | 'producao';
+export type Module =
+	| 'dashboard'
+	| 'rh'
+	| 'estoque'
+	| 'vendas'
+	| 'financeiro'
+	| 'producao'
+	| 'notificacoes'
+	| 'configuracoes';
+
+export type ModuleAccess = 'view' | 'edit' | null;
 
 export interface User {
 	id: string;
@@ -8,6 +18,8 @@ export interface User {
 	name: string;
 	role: Role;
 	email: string;
+	roles?: Partial<Record<Module, ModuleAccess>>;
+	responsibilities?: Partial<Record<Module, string[]>>;
 }
 
 export interface LoginRequest {

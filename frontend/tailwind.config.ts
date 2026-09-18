@@ -14,7 +14,8 @@ export default {
 				brand: '#1c80de',
 				brandhi: '#3a95e8',
 				success: '#0ea641',
-				danger: '#f2060a'
+				danger: '#f2060a',
+				warn: '#f59e0b'
 			},
 			fontFamily: {
 				sans: ['Inter', 'system-ui', 'sans-serif']

@@ -16,6 +16,17 @@
 		--color-brandhi: #3a95e8;
 		--color-success: #0ea641;
 		--color-danger: #f2060a;
+		--color-warn: #f59e0b;
+	}
+
+	html,
+	body {
+		height: 100%;
+	}
+
+	body {
+		background: var(--color-base);
+		color: var(--color-ink);
 	}
 }
 

@@ -28,7 +28,11 @@ interface ErrorPayload {
 	message?: string;
 }
 
-export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function apiFetch<T>(
+	path: string,
+	init: RequestInit = {},
+	fetchFn: typeof fetch = fetch
+): Promise<T> {
 	const controller = new AbortController();
 	const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -39,7 +43,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
 
 	let response: Response;
 	try {
-		response = await fetch(`${API_BASE}${path}`, {
+		response = await fetchFn(`${API_BASE}${path}`, {
 			...init,
 			headers,
 			signal: controller.signal
