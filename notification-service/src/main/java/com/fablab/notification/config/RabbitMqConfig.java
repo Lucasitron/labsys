@@ -34,6 +34,10 @@ public class RabbitMqConfig {
     public static final String NIVEL_ALTERADO_ROUTING_KEY = "nivel.alterado.event";
     public static final String HORAS_VALIDADAS_ROUTING_KEY = "horas.validadas.event";
     public static final String COMPRA_SOLICITADA_ROUTING_KEY = "compra.solicitada.event";
+    public static final String CERTIFICADO_SOLICITADO_ROUTING_KEY = "certificado.solicitado.event";
+    public static final String CERTIFICADO_APROVADO_ROUTING_KEY = "certificado.aprovado.event";
+    public static final String CERTIFICADO_REJEITADO_ROUTING_KEY = "certificado.rejeitado.event";
+    public static final String EXTRATO_MENSAL_HORAS_ROUTING_KEY = "extrato.mensal.horas.event";
 
     /** Filas do Notification Service. */
     public static final String ESTOQUE_BAIXO_QUEUE = "notificacao.estoque.baixo";
@@ -48,6 +52,10 @@ public class RabbitMqConfig {
     public static final String NIVEL_ALTERADO_QUEUE = "notificacao.nivel.alterado";
     public static final String HORAS_VALIDADAS_QUEUE = "notificacao.horas.validadas";
     public static final String COMPRA_SOLICITADA_QUEUE = "notificacao.compra.solicitada";
+    public static final String CERTIFICADO_SOLICITADO_QUEUE = "notificacao.certificado.solicitado";
+    public static final String CERTIFICADO_APROVADO_QUEUE = "notificacao.certificado.aprovado";
+    public static final String CERTIFICADO_REJEITADO_QUEUE = "notificacao.certificado.rejeitado";
+    public static final String EXTRATO_MENSAL_HORAS_QUEUE = "notificacao.extrato.mensal.horas";
 
     @Bean
     public TopicExchange notificacaoExchange() {
@@ -192,6 +200,46 @@ public class RabbitMqConfig {
     @Bean
     public Queue horasValidadasQueue() {
         return new Queue(HORAS_VALIDADAS_QUEUE, true);
+    }
+
+    @Bean
+    public Binding certificadoSolicitadoBinding(Queue certificadoSolicitadoQueue, TopicExchange rhExchange) {
+        return bind(certificadoSolicitadoQueue, rhExchange, CERTIFICADO_SOLICITADO_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue certificadoSolicitadoQueue() {
+        return new Queue(CERTIFICADO_SOLICITADO_QUEUE, true);
+    }
+
+    @Bean
+    public Binding certificadoAprovadoBinding(Queue certificadoAprovadoQueue, TopicExchange rhExchange) {
+        return bind(certificadoAprovadoQueue, rhExchange, CERTIFICADO_APROVADO_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue certificadoAprovadoQueue() {
+        return new Queue(CERTIFICADO_APROVADO_QUEUE, true);
+    }
+
+    @Bean
+    public Binding certificadoRejeitadoBinding(Queue certificadoRejeitadoQueue, TopicExchange rhExchange) {
+        return bind(certificadoRejeitadoQueue, rhExchange, CERTIFICADO_REJEITADO_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue certificadoRejeitadoQueue() {
+        return new Queue(CERTIFICADO_REJEITADO_QUEUE, true);
+    }
+
+    @Bean
+    public Binding extratoMensalHorasBinding(Queue extratoMensalHorasQueue, TopicExchange rhExchange) {
+        return bind(extratoMensalHorasQueue, rhExchange, EXTRATO_MENSAL_HORAS_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue extratoMensalHorasQueue() {
+        return new Queue(EXTRATO_MENSAL_HORAS_QUEUE, true);
     }
 
     private Binding bind(Queue queue, TopicExchange exchange, String routingKey) {

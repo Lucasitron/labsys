@@ -1,5 +1,24 @@
 <!-- Keep a Changelog: https://keepachangelog.com/pt-BR/1.1.0/ -->
 
+## [0.2.0] - 2026-09-17
+
+### Adicionado
+- Novos `TipoEvento`: `CERTIFICADO_SOLICITADO`, `CERTIFICADO_APROVADO`,
+  `CERTIFICADO_REJEITADO` e `EXTRATO_MENSAL_HORAS`.
+- Consumidores RabbitMQ para os eventos de certificado e extrato do RH Service:
+  - `certificado.solicitado.event` → notificação para o Admin.
+  - `certificado.aprovado.event` → notificação para o funcionário.
+  - `certificado.rejeitado.event` → notificação para o funcionário.
+  - `extrato.mensal.horas.event` → e-mail com resumo do extrato mensal.
+- Formatação do corpo do e-mail do extrato mensal (Presença, Encomendas,
+  Projetos e total disponível para certificado).
+- Filas `notificacao.certificado.*` e `notificacao.extrato.mensal.horas`
+  ligadas à exchange `fablab.rh`.
+- Testes unitários dos novos consumidores e da formatação do extrato.
+
+### Corrigido
+- Nenhum.
+
 ## [0.1.0] - 2026-09-17
 
 ### Adicionado

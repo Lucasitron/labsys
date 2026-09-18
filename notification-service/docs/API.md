@@ -32,7 +32,9 @@ contrário recebem `403`).
 `TipoEvento`: `ESTOQUE_BAIXO`, `EMPRESTIMO_ATRASADO`, `ENCOMENDA_CRIADA`,
 `ENCOMENDA_STATUS_ALTERADO`, `ORCAMENTO_APROVADO`, `LANCAMENTO_VENCIDO`,
 `ADVERTENCIA_REGISTRADA`, `PROJETO_MESA_ABANDONADO`, `NIVEL_ALTERADO`,
-`HORAS_VALIDADAS`, `COMPRA_SOLICITADA`, `TESTE`.
+`HORAS_VALIDADAS`, `COMPRA_SOLICITADA`, `CERTIFICADO_SOLICITADO`,
+`CERTIFICADO_APROVADO`, `CERTIFICADO_REJEITADO`, `EXTRATO_MENSAL_HORAS`,
+`TESTE`.
 
 Resposta de uma notificação ativa:
 
@@ -104,8 +106,24 @@ desabilitado) permanece `PENDENTE`.
 | `fablab.notificacao` | `kanban.status.alterado.event` | `notificacao.kanban.status` | `ENCOMENDA_STATUS_ALTERADO` | Admin (nulo) |
 | `fablab.rh` | `nivel.alterado.event` | `notificacao.nivel.alterado` | `NIVEL_ALTERADO` | `idFuncionario` |
 | `fablab.rh` | `horas.validadas.event` | `notificacao.horas.validadas` | `HORAS_VALIDADAS` | `idFuncionario` |
+| `fablab.rh` | `certificado.solicitado.event` | `notificacao.certificado.solicitado` | `CERTIFICADO_SOLICITADO` | Admin (nulo) |
+| `fablab.rh` | `certificado.aprovado.event` | `notificacao.certificado.aprovado` | `CERTIFICADO_APROVADO` | `idFuncionario` |
+| `fablab.rh` | `certificado.rejeitado.event` | `notificacao.certificado.rejeitado` | `CERTIFICADO_REJEITADO` | `idFuncionario` |
+| `fablab.rh` | `extrato.mensal.horas.event` | `notificacao.extrato.mensal.horas` | `EXTRATO_MENSAL_HORAS` | `idFuncionario` |
 
 > O evento `access.rfid.event` (Auth Service) não é consumido no MVP.
+
+O corpo do e-mail do `EXTRATO_MENSAL_HORAS` é gerado pelo
+`NotificacaoEventListener.formatarExtratoMensal`:
+
+```
+Olá {nome},
+Segue o extrato de horas do mês {mesReferencia}:
+- Presença: {horasPresenca}h
+- Encomendas: {horasEncomenda}h
+- Projetos: {horasProjeto}h
+- Total disponível para certificado: {horasDisponiveis}h
+```
 
 ## Retenção e agendadores
 

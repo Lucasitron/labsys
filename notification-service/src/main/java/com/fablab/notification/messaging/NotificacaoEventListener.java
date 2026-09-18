@@ -2,11 +2,15 @@ package com.fablab.notification.messaging;
 
 import com.fablab.notification.config.RabbitMqConfig;
 import com.fablab.notification.dto.AdvertenciaRegistradaEvent;
+import com.fablab.notification.dto.CertificadoAprovadoEvent;
+import com.fablab.notification.dto.CertificadoRejeitadoEvent;
+import com.fablab.notification.dto.CertificadoSolicitadoEvent;
 import com.fablab.notification.dto.CompraSolicitadaEvent;
 import com.fablab.notification.dto.EmprestimoAtrasadoEvent;
 import com.fablab.notification.dto.EncomendaCriadaEvent;
 import com.fablab.notification.dto.EncomendaStatusAlteradoEvent;
 import com.fablab.notification.dto.EstoqueBaixoEvent;
+import com.fablab.notification.dto.ExtratoMensalHorasEvent;
 import com.fablab.notification.dto.HorasValidadasEvent;
 import com.fablab.notification.dto.KanbanStatusAlteradoEvent;
 import com.fablab.notification.dto.LancamentoVencidoEvent;
@@ -156,5 +160,62 @@ public class NotificacaoEventListener {
                 "Suas horas do tipo " + event.tipo() + " (" + event.horas()
                         + "h) em " + event.data() + " foram validadas.",
                 event.idReferencia());
+    }
+
+    @RabbitListener(queues = RabbitMqConfig.CERTIFICADO_SOLICITADO_QUEUE)
+    public void onCertificadoSolicitado(CertificadoSolicitadoEvent event) {
+        log.info("Evento recebido: certificado.solicitado para a solicitação {}", event.idSolicitacao());
+        notificacaoService.registrar(null, CanalNotificacao.EMAIL, TipoEvento.CERTIFICADO_SOLICITADO,
+                "Nova solicitação de certificado",
+                "O funcionário " + event.idFuncionario() + " solicitou um certificado do tipo "
+                        + event.tipoCertificado() + " (" + event.horasSolicitadas() + "h) em "
+                        + event.dataSolicitacao() + ".",
+                event.idSolicitacao());
+    }
+
+    @RabbitListener(queues = RabbitMqConfig.CERTIFICADO_APROVADO_QUEUE)
+    public void onCertificadoAprovado(CertificadoAprovadoEvent event) {
+        log.info("Evento recebido: certificado.aprovado para o certificado {}", event.idCertificado());
+        notificacaoService.registrar(event.idFuncionario(), CanalNotificacao.EMAIL,
+                TipoEvento.CERTIFICADO_APROVADO,
+                "Certificado de horas aprovado",
+                "Olá " + event.nomeFuncionario() + ",\n"
+                        + "Seu certificado do tipo " + event.tipoCertificado()
+                        + " (" + event.horasCertificadas() + "h) foi aprovado e emitido em "
+                        + event.dataEmissao() + ".",
+                event.idCertificado());
+    }
+
+    @RabbitListener(queues = RabbitMqConfig.CERTIFICADO_REJEITADO_QUEUE)
+    public void onCertificadoRejeitado(CertificadoRejeitadoEvent event) {
+        log.info("Evento recebido: certificado.rejeitado para a solicitação {}", event.idSolicitacao());
+        String motivo = event.observacao() == null ? "sem motivo informado" : event.observacao();
+        notificacaoService.registrar(event.idFuncionario(), CanalNotificacao.EMAIL,
+                TipoEvento.CERTIFICADO_REJEITADO,
+                "Solicitação de certificado rejeitada",
+                "Olá " + event.nomeFuncionario() + ",\n"
+                        + "Sua solicitação de certificado do tipo " + event.tipoCertificado()
+                        + " foi rejeitada (" + motivo + ").",
+                event.idSolicitacao());
+    }
+
+    @RabbitListener(queues = RabbitMqConfig.EXTRATO_MENSAL_HORAS_QUEUE)
+    public void onExtratoMensalHoras(ExtratoMensalHorasEvent event) {
+        log.info("Evento recebido: extrato.mensal.horas para o funcionário {}", event.idFuncionario());
+        notificacaoService.registrar(event.idFuncionario(), CanalNotificacao.EMAIL,
+                TipoEvento.EXTRATO_MENSAL_HORAS,
+                "Extrato mensal de horas",
+                formatarExtratoMensal(event),
+                event.idFuncionario());
+    }
+
+    /** Formata o corpo do e-mail com o resumo do extrato mensal. */
+    public static String formatarExtratoMensal(ExtratoMensalHorasEvent event) {
+        return "Olá " + event.nome() + ",\n"
+                + "Segue o extrato de horas do mês " + event.mesReferencia() + ":\n"
+                + "- Presença: " + event.horasPresenca() + "h\n"
+                + "- Encomendas: " + event.horasEncomenda() + "h\n"
+                + "- Projetos: " + event.horasProjeto() + "h\n"
+                + "- Total disponível para certificado: " + event.horasDisponiveis() + "h";
     }
 }
