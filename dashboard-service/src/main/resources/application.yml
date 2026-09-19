@@ -1,0 +1,30 @@
+server:
+  port: ${PORT:8088}
+
+spring:
+  application:
+    name: dashboard-service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+# Validação dos tokens JWT emitidos pelo Auth & Identity Service (chave compartilhada).
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: ${JWT_ISSUER:fablab}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    com.fablab.dashboard: INFO

@@ -1,0 +1,15 @@
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+eureka:
+  client:
+    enabled: false
+
+jwt:
+  secret: fablab-dashboard-test-secret-key-min-32-bytes-1234567890
+  issuer: fablab-test
+
+logging:
+  level:
+    com.fablab.dashboard: WARN
