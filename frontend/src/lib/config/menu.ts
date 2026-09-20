@@ -15,12 +15,27 @@ export interface MenuItem {
 	path: string;
 	module: Module;
 	icon: MenuIcon;
+	children?: { label: string; path: string }[];
 }
 
 export const menuItems: MenuItem[] = [
 	{ label: 'Dashboard', path: '/dashboard', module: 'dashboard', icon: 'dashboard' },
 	{ label: 'Pessoas & RH', path: '/pessoas', module: 'rh', icon: 'rh' },
-	{ label: 'Estoque', path: '/estoque', module: 'estoque', icon: 'estoque' },
+	{
+		label: 'Estoque',
+		path: '/estoque',
+		module: 'estoque',
+		icon: 'estoque',
+		children: [
+			{ label: 'Itens', path: '/estoque/itens' },
+			{ label: 'Entradas', path: '/estoque/entradas' },
+			{ label: 'Saídas', path: '/estoque/saidas' },
+			{ label: 'Empréstimos', path: '/estoque/emprestimos' },
+			{ label: 'Fornecedores', path: '/estoque/fornecedores' },
+			{ label: 'Localizações', path: '/estoque/localizacoes' },
+			{ label: 'BOM', path: '/estoque/bom' }
+		]
+	},
 	{ label: 'Vendas & CRM', path: '/vendas', module: 'vendas', icon: 'vendas' },
 	{ label: 'Produção', path: '/producao', module: 'producao', icon: 'producao' },
 	{ label: 'Financeiro', path: '/financeiro', module: 'financeiro', icon: 'financeiro' },

@@ -5,6 +5,7 @@
 	import { auth } from '$lib/stores/auth';
 	import { canView } from '$lib/utils/permissions';
 	import SidebarItem from './SidebarItem.svelte';
+	import SidebarGroup from './SidebarGroup.svelte';
 
 	interface Props {
 		collapsed: boolean;
@@ -74,11 +75,15 @@
 
 	<nav aria-label="Menu principal" class="flex-1 space-y-0.5 overflow-y-auto py-3">
 		{#each visibleItems as item (item.path)}
-			<SidebarItem
-				item={item}
-				active={isActive(item.path)}
-				collapsed={kind === 'desktop' && collapsed}
-			/>
+			{#if item.children && item.children.length > 0}
+				<SidebarGroup item={item} collapsed={kind === 'desktop' && collapsed} />
+			{:else}
+				<SidebarItem
+					item={item}
+					active={isActive(item.path)}
+					collapsed={kind === 'desktop' && collapsed}
+				/>
+			{/if}
 		{/each}
 	</nav>
 
