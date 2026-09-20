@@ -1,8 +1,15 @@
+import { get } from 'svelte/store';
+import { auth } from '$lib/stores/auth';
 import type { Paginacao, Paginado } from '$lib/types/producao';
 
 export type { Paginacao, Paginado };
 
 export const PADRAO_TAMANHO_PAGINA = 10;
+
+export function bearer(): Record<string, string> {
+	const { token } = get(auth);
+	return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 type QueryValue = string | number | undefined | string[];
 
@@ -81,3 +88,16 @@ export function mostrarDeAte<T>(paginas: Paginado<T>): string {
 	const fim = Math.min(page * pageSize, totalItems);
 	return `${inicio}–${fim} de ${totalItems}`;
 }
+
+export * from './resumo';
+export * from './projetos';
+export * from './tarefas';
+export * from './kanban';
+export * from './maquinas';
+export * from './setores-5s';
+export * from './inspecoes-5s';
+export * from './pendencias-5s';
+export * from './ranking-5s';
+export * from './penalidades-5s';
+export * from './mesas';
+export * from './parametros-5s';
