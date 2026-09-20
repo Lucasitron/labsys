@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
-	import type { PageProps } from './$types';
+	import { onMount } from 'svelte';
 	import { fetchSummary } from '$lib/api/dashboard';
 	import { auth } from '$lib/stores/auth';
 	import { canSeeMachines } from '$lib/utils/permissions';
@@ -14,19 +14,9 @@
 	import MachinesChart from './components/MachinesChart.svelte';
 	import ActivityFeed from './components/ActivityFeed.svelte';
 
-	let { data }: PageProps = $props();
-
 	let summary = $state<DashboardSummary | null>(null);
 	let error = $state<string | null>(null);
-	let loading = $state(false);
-
-	let settled = false;
-	$effect(() => {
-		if (settled) return;
-		settled = true;
-		summary = data.summary;
-		error = data.error;
-	});
+	let loading = $state(true);
 
 	const user = $derived(get(auth).user);
 	const showMachines = $derived(canSeeMachines(user));
@@ -36,7 +26,9 @@
 		summary !== null &&
 			summary.tasks.length === 0 &&
 			summary.activity.length === 0 &&
-			summary.ordersByStatus.length === 0
+			summary.ordersByStatus.length === 0 &&
+			summary.machinesByStatus.length === 0 &&
+			Object.values(summary.kpis ?? {}).every((kpi) => kpi.value === 0)
 	);
 
 	const greetingSub = $derived(
@@ -60,6 +52,15 @@
 			loading = false;
 		}
 	}
+
+	onMount(() => {
+		refetch();
+		const onVisibilityChange = (): void => {
+			if (!document.hidden) refetch();
+		};
+		document.addEventListener('visibilitychange', onVisibilityChange);
+		return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+	});
 </script>
 
 <svelte:head>
@@ -74,7 +75,7 @@
 	/>
 {/if}
 
-<Greeting name={user?.name ?? ''} sub={greetingSub} />
+<Greeting name={user?.name ?? ''} sub={greetingSub} empty={isEmpty} />
 
 {#if loading && summary === null}
 	<!-- ===== LOADING (skeletons sem layout shift) ===== -->
