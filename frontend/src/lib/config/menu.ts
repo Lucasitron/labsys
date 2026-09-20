@@ -37,7 +37,24 @@ export const menuItems: MenuItem[] = [
 		]
 	},
 	{ label: 'Vendas & CRM', path: '/vendas', module: 'vendas', icon: 'vendas' },
-	{ label: 'Produção', path: '/producao', module: 'producao', icon: 'producao' },
+	{
+		label: 'Produção',
+		path: '/producao',
+		module: 'producao',
+		icon: 'producao',
+		children: [
+			{ label: 'Resumo', path: '/producao' },
+			{ label: 'Projetos', path: '/producao/projetos' },
+			{ label: 'Tarefas', path: '/producao/tarefas' },
+			{ label: 'Máquinas', path: '/producao/maquinas' },
+			{ label: '5S: Setores', path: '/producao/5s/setores' },
+			{ label: '5S: Auditoria', path: '/producao/5s/auditoria' },
+			{ label: '5S: Pendências', path: '/producao/5s/pendencias' },
+			{ label: '5S: Ranking', path: '/producao/5s/ranking' },
+			{ label: '5S: Advertências', path: '/producao/5s/advertencias' },
+			{ label: '5S: Mesas', path: '/producao/5s/mesas' }
+		]
+	},
 	{ label: 'Financeiro', path: '/financeiro', module: 'financeiro', icon: 'financeiro' },
 	{ label: 'Notificações', path: '/notificacoes', module: 'notificacoes', icon: 'notificacoes' },
 	{ label: 'Configurações', path: '/configuracoes', module: 'configuracoes', icon: 'configuracoes' }
@@ -85,6 +102,17 @@ export function crumbsFor(pathname: string): Crumb[] {
 
 	if (pathname === match.path) {
 		return [{ label: match.label, path: match.path, current: true }];
+	}
+
+	const child = match.children
+		?.filter((c) => pathname === c.path || pathname.startsWith(c.path + '/'))
+		.sort((a, b) => b.path.length - a.path.length)[0];
+
+	if (child) {
+		return [
+			{ label: match.label, path: match.path, current: false },
+			{ label: child.label, path: pathname, current: true }
+		];
 	}
 
 	const remaining = pathname.slice(match.path.length).split('/').filter(Boolean);

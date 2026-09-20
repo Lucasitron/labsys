@@ -52,3 +52,43 @@ export function canSeeMachines(user: User | null): boolean {
 	if (!user) return false;
 	return user.role === 0 || (user.responsibilities?.producao?.length ?? 0) > 0;
 }
+
+export function canSee5S(user: User | null): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	if (user.roles?.producao === null) return false;
+	const access = user.roles?.producao;
+	return (access === 'view' || access === 'edit') && user.role >= 1 && user.role <= 3;
+}
+
+export function isResponsavelAtribuido(
+	user: User | null,
+	recurso: { responsavelId?: string }
+): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	if (!recurso.responsavelId) return false;
+	return user.responsibilities?.producao?.includes(recurso.responsavelId) ?? false;
+}
+
+export function canAuditar5S(user: User | null, auditorId?: string): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	if (auditorId) return isResponsavelAtribuido(user, { responsavelId: auditorId });
+	return user.role === 1 || user.role === 2;
+}
+
+export function canSeeAdvertencias(user: User | null): boolean {
+	if (!user) return false;
+	return user.role === 0 || user.roles?.producao === 'edit';
+}
+
+export function canEditProducao(
+	user: User | null,
+	recurso?: { responsavelId?: string }
+): boolean {
+	if (!user) return false;
+	if (canEdit(user, 'producao')) return true;
+	if (recurso) return isResponsavelAtribuido(user, recurso);
+	return false;
+}
