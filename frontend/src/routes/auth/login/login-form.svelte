@@ -75,6 +75,12 @@
 			disabled={loading}
 			bind:value={username}
 			bind:this={usernameInput}
+			onkeydown={(e) => {
+				if (e.key === 'Enter' && !loading) {
+					e.preventDefault();
+					e.currentTarget.form?.requestSubmit();
+				}
+			}}
 			class="{inputBase} {hasError ? inputBad : inputOk} {loading ? inputDisabled : ''}"
 		/>
 		{#if fieldErrors.username}
@@ -95,6 +101,12 @@
 				placeholder="Digite sua senha"
 				disabled={loading}
 				bind:value={password}
+				onkeydown={(e) => {
+					if (e.key === 'Enter' && !loading) {
+						e.preventDefault();
+						e.currentTarget.form?.requestSubmit();
+					}
+				}}
 				class="{inputBase} pr-10 {hasError ? inputBad : inputOk} {loading ? inputDisabled : ''}"
 			/>
 			<button

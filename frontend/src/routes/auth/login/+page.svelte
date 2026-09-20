@@ -1,12 +1,16 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { sanitizeRedirect } from '$lib/api/client';
 	import LoginForm from './login-form.svelte';
 
 	let authed = $state(false);
 
+	const redirectTo = $derived(sanitizeRedirect(page.url.searchParams.get('redirect')));
+
 	function handleSuccess(): void {
 		authed = true;
-		setTimeout(() => goto('/dashboard'), 600);
+		setTimeout(() => goto(redirectTo), 600);
 	}
 </script>
 
