@@ -16,10 +16,18 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import { isResponsavelAtribuido } from '$lib/utils/permissions';
 
 	let { data }: PageProps = $props();
 
 	const canEditProducao = $derived(data.canEditProducao ?? false);
+
+	function podeEditar(setor: Setor5S): boolean {
+		if (canEditProducao) return true;
+		const ids = setor.responsaveis.map((r) => r.membro.id);
+		if (setor.auditor) ids.push(setor.auditor.id);
+		return ids.some((id) => isResponsavelAtribuido(data.user, { responsavelId: id }));
+	}
 
 	const result = $derived(data.result);
 	const error = $derived(data.error);
@@ -319,7 +327,7 @@
 							Próxima auditoria: <span class="tabular-nums">{formatarData(setor.proximaAuditoria)}</span>
 						</p>
 
-						{#if canEditProducao}
+						{#if podeEditar(setor)}
 							<div class="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border pt-3">
 								<button
 									type="button"
@@ -374,8 +382,8 @@
 			open={modalEditar !== null}
 			setor={modalEditar}
 			pessoas={pessoas}
-			isAdmin={canEditProducao}
-			canEdit={canEditProducao}
+			isAdmin={podeEditar(modalEditar)}
+			canEdit={podeEditar(modalEditar)}
 			onClose={() => (modalEditar = null)}
 			onSalvo={aoSalvo}
 		/>
@@ -387,8 +395,8 @@
 			setor={modalChecklist}
 			itens={[]}
 			nota={modalChecklist.nota ?? null}
-			isAdmin={canEditProducao}
-			canEdit={canEditProducao}
+			isAdmin={podeEditar(modalChecklist)}
+			canEdit={podeEditar(modalChecklist)}
 			onClose={() => (modalChecklist = null)}
 			onSalvo={aoSalvo}
 		/>

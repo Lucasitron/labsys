@@ -1,4 +1,5 @@
-import type { Module } from '$lib/types/auth';
+import type { Module, User } from '$lib/types/auth';
+import { canSee5S, canSeeAdvertencias } from '$lib/utils/permissions';
 
 export type MenuIcon =
 	| 'dashboard'
@@ -15,7 +16,7 @@ export interface MenuItem {
 	path: string;
 	module: Module;
 	icon: MenuIcon;
-	children?: { label: string; path: string }[];
+	children?: { label: string; path: string; canSee?: (user: User | null) => boolean }[];
 }
 
 export const menuItems: MenuItem[] = [
@@ -47,12 +48,16 @@ export const menuItems: MenuItem[] = [
 			{ label: 'Projetos', path: '/producao/projetos' },
 			{ label: 'Tarefas', path: '/producao/tarefas' },
 			{ label: 'Máquinas', path: '/producao/maquinas' },
-			{ label: '5S: Setores', path: '/producao/5s/setores' },
-			{ label: '5S: Auditoria', path: '/producao/5s/auditoria' },
-			{ label: '5S: Pendências', path: '/producao/5s/pendencias' },
-			{ label: '5S: Ranking', path: '/producao/5s/ranking' },
-			{ label: '5S: Advertências', path: '/producao/5s/advertencias' },
-			{ label: '5S: Mesas', path: '/producao/5s/mesas' }
+			{ label: '5S: Setores', path: '/producao/5s/setores', canSee: canSee5S },
+			{ label: '5S: Auditoria', path: '/producao/5s/auditoria', canSee: canSee5S },
+			{ label: '5S: Pendências', path: '/producao/5s/pendencias', canSee: canSee5S },
+			{ label: '5S: Ranking', path: '/producao/5s/ranking', canSee: canSee5S },
+			{
+				label: '5S: Advertências',
+				path: '/producao/5s/advertencias',
+				canSee: canSeeAdvertencias
+			},
+			{ label: '5S: Mesas', path: '/producao/5s/mesas', canSee: canSee5S }
 		]
 	},
 	{ label: 'Financeiro', path: '/financeiro', module: 'financeiro', icon: 'financeiro' },

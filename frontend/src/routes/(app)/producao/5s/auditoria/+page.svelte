@@ -10,6 +10,7 @@
 	import CartaoBadge from '$lib/components/producao/CartaoBadge.svelte';
 	import ModalAuditoria from '$lib/components/producao/ModalAuditoria.svelte';
 	import { INSPECAO_STATUS_META } from '$lib/utils/producao-status';
+	import { canAuditar5S } from '$lib/utils/permissions';
 	import { nomearAuditor5S } from '$lib/api/producao/client';
 	import type { Inspecao5S } from '$lib/types/producao';
 
@@ -294,7 +295,7 @@
 								</td>
 								<td class={`${cellCls} text-right`}>
 									<div class="flex items-center justify-end gap-3">
-										{#if inspecao.status !== 'Concluída'}
+										{#if canAuditar5S(data.user, inspecao.auditor.id) && inspecao.status !== 'Concluída'}
 											<button
 												type="button"
 												data-testid="aud-concluir"
@@ -303,7 +304,7 @@
 											>
 												Auditar
 											</button>
-										{:else}
+										{:else if inspecao.status === 'Concluída'}
 											<span class="text-[11px] text-success">Concluída</span>
 										{/if}
 										{#if data.canAuditar5S && inspecao.status !== 'Concluída'}

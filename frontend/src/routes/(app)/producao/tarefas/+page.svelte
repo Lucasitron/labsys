@@ -9,6 +9,7 @@ import {
 	resolverPendencia5S
 } from '$lib/api/producao/client';
 import { toastError, toasts } from '$lib/stores/toast';
+	import { isResponsavelAtribuido } from '$lib/utils/permissions';
 	import ModalNovaTarefa from '$lib/components/producao/ModalNovaTarefa.svelte';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
@@ -26,6 +27,13 @@ import { toastError, toasts } from '$lib/stores/toast';
 	let { data }: PageProps = $props();
 
 	const canEditProducao = $derived(data.canEditProducao ?? false);
+
+	function podeEditar(tarefa: Tarefa): boolean {
+		return (
+			canEditProducao ||
+			isResponsavelAtribuido(data.user, { responsavelId: tarefa.responsavel.id })
+		);
+	}
 
 	const result = $derived(data.tarefas);
 	const error = $derived(data.error);
@@ -72,7 +80,7 @@ import { toastError, toasts } from '$lib/stores/toast';
 	}
 
 	async function mover(tarefa: Tarefa, direcao: -1 | 1): Promise<void> {
-		if (!canEditProducao) return;
+		if (!podeEditar(tarefa)) return;
 		const atual = colunaDe(tarefa);
 		const idx = ORDEM_COLUNAS.indexOf(atual);
 		const alvoIdx = idx + direcao;
@@ -515,7 +523,7 @@ import { toastError, toasts } from '$lib/stores/toast';
 											</div>
 										</button>
 
-										{#if canEditProducao}
+										{#if podeEditar(tarefa)}
 											<div class="mt-2 flex items-center justify-between border-t border-border pt-2">
 												<button
 													type="button"
@@ -602,7 +610,7 @@ import { toastError, toasts } from '$lib/stores/toast';
 						<span class="text-sm text-ink">{tarefa.responsavel.nome}</span>
 					</div>
 
-					{#if canEditProducao}
+					{#if podeEditar(tarefa)}
 						<label class="mt-3 block">
 							<span class="mb-1.5 block text-xs font-medium text-muted">Atribuir responsável</span>
 							<div class="flex gap-2">
@@ -663,7 +671,7 @@ import { toastError, toasts } from '$lib/stores/toast';
 									<StatusBadge {...GRAVIDADE_META[tarefa.pendencia5s.gravidade]} />
 								</p>
 							</div>
-							{#if canEditProducao}
+							{#if podeEditar(tarefa)}
 								<button
 									type="button"
 									data-testid="tar-resolver-pendencia"

@@ -32,6 +32,19 @@ export interface RegistrarSaidaMaterialPayload {
 	quantidade: number;
 }
 
+function validarUrlDocumento(url: string): string {
+	let resultado: URL;
+	try {
+		resultado = new URL(url);
+	} catch {
+		throw new Error('URL de documento inválida. Informe um endereço http:// ou https://.');
+	}
+	if (resultado.protocol !== 'http:' && resultado.protocol !== 'https:') {
+		throw new Error('URL de documento inválida. Apenas http:// e https:// são aceitos.');
+	}
+	return resultado.toString();
+}
+
 export async function obterProjetos(
 	params: ProjetoFiltros = {},
 	fetchFn: typeof fetch = fetch
@@ -68,10 +81,11 @@ export async function obterDocumentosDoProjeto(
 }
 
 export function criarDocumentoDoProjeto(id: string, payload: CriarDocumentoPayload): Promise<ProjetoDocumento> {
+	const url = validarUrlDocumento(payload.url);
 	return apiFetch<ProjetoDocumento>(`${BASE}/${id}/documentos`, {
 		method: 'POST',
 		headers: bearer(),
-		body: JSON.stringify(payload)
+		body: JSON.stringify({ ...payload, url })
 	});
 }
 

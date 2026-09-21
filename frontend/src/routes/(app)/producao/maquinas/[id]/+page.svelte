@@ -15,6 +15,7 @@
 	} from '$lib/api/producao/client';
 	import { ApiError, NetworkError } from '$lib/api/client';
 	import { toasts, toastError } from '$lib/stores/toast';
+	import { isResponsavelAtribuido } from '$lib/utils/permissions';
 	import { ABAS_MAQUINA } from './+page';
 	import CartaoBadge from '$lib/components/producao/CartaoBadge.svelte';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
@@ -31,6 +32,13 @@
 	let { data }: PageProps = $props();
 
 	const canEditProducao = $derived(data.canEditProducao ?? false);
+
+	function podeEditar(m: Maquina): boolean {
+		return (
+			canEditProducao ||
+			isResponsavelAtribuido(data.user, { responsavelId: m.responsavelManutencao.id })
+		);
+	}
 
 	const maquina = $derived(data.maquina as Maquina | null);
 	const preventivas = $derived(data.preventivas);
@@ -215,7 +223,7 @@
 			{#snippet children()}
 				<StatusBadge {...MAQUINA_STATUS_META[maquina.status]} />
 				<CartaoBadge cartao={maquina.cartao} />
-				{#if canEditProducao}
+				{#if podeEditar(maquina)}
 					<button
 						type="button"
 						data-testid="maq-chamado"
@@ -329,7 +337,7 @@
 							Manutenções programadas e histórico de manutenções da máquina.
 						</p>
 					</div>
-					{#if canEditProducao}
+					{#if podeEditar(maquina)}
 						<button
 							type="button"
 							data-testid="maq-preventiva"
@@ -380,7 +388,7 @@
 					</div>
 				{/if}
 
-				{#if !canEditProducao}
+				{#if !podeEditar(maquina)}
 					<p class="text-[11px] text-muted">
 						Agendar preventivas fica disponível apenas para quem pode editar produção.
 					</p>
@@ -397,7 +405,7 @@
 							Ocorrências abertas para esta máquina e seu acompanhamento.
 						</p>
 					</div>
-					{#if canEditProducao}
+					{#if podeEditar(maquina)}
 						<button
 							type="button"
 							data-testid="maq-chamado"
@@ -449,7 +457,7 @@
 					</div>
 				{/if}
 
-				{#if !canEditProducao}
+				{#if !podeEditar(maquina)}
 					<p class="text-[11px] text-muted">
 						Abrir chamados fica disponível apenas para quem pode editar produção.
 					</p>

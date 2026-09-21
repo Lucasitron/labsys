@@ -13,10 +13,17 @@ export interface AdvertenciasParams {
 	pageSize: number;
 }
 
+export const TIPOS_PENALIDADE = ['Aviso', 'Advertência', 'Suspensão', 'Expulsão'] as const;
+export const STATUS_PENALIDADE = ['Ativa', 'Cumprida'] as const;
+
 export function lerParametros(url: URL): AdvertenciasParams {
 	return {
-		tipo: url.searchParams.getAll('tipo') as PenalidadeTipo[],
-		situacao: url.searchParams.getAll('situacao') as PenalidadeStatus[],
+		tipo: url.searchParams.getAll('tipo').filter((v): v is PenalidadeTipo => {
+			return (TIPOS_PENALIDADE as readonly string[]).includes(v);
+		}),
+		situacao: url.searchParams.getAll('situacao').filter((v): v is PenalidadeStatus => {
+			return (STATUS_PENALIDADE as readonly string[]).includes(v);
+		}),
 		page: paginaDaUrl(url, 1),
 		pageSize: tamanhoDaPaginaDaUrl(url, PADRAO_TAMANHO_PAGINA)
 	};

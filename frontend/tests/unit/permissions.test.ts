@@ -114,8 +114,13 @@ describe('permissions', () => {
 			expect(canSee5S(u)).toBe(false);
 		});
 
-		it('roles 1..3 com grant "view" ou "edit" veem o 5S', () => {
-			for (const role of [1, 2, 3] as const) {
+		it('Estagiário (role 3) não vê o 5S mesmo com grant', () => {
+			expect(canSee5S(user({ role: 3, roles: { producao: 'view' } }))).toBe(false);
+			expect(canSee5S(user({ role: 3, roles: { producao: 'edit' } }))).toBe(false);
+		});
+
+		it('roles 1..2 com grant "view" ou "edit" veem o 5S', () => {
+			for (const role of [1, 2] as const) {
 				expect(canSee5S(user({ role, roles: { producao: 'view' } }))).toBe(true);
 				expect(canSee5S(user({ role, roles: { producao: 'edit' } }))).toBe(true);
 			}
@@ -186,6 +191,16 @@ describe('permissions', () => {
 			expect(canAuditar5S(user({ role: 3 }))).toBe(false);
 			expect(canAuditar5S(user({ role: 4 }))).toBe(false);
 		});
+
+		it('Estagiário (role 3) nunca audita, mesmo nomeado auditor', () => {
+			const u = user({ role: 3, responsibilities: { producao: ['auditor_1'] } });
+			expect(canAuditar5S(u, 'auditor_1')).toBe(false);
+		});
+
+		it('Recrutando (role 4) nunca audita, mesmo nomeado auditor', () => {
+			const u = user({ role: 4, responsibilities: { producao: ['auditor_1'] } });
+			expect(canAuditar5S(u, 'auditor_1')).toBe(false);
+		});
 	});
 
 	describe('canSeeAdvertencias', () => {
@@ -193,9 +208,14 @@ describe('permissions', () => {
 			expect(canSeeAdvertencias(user({ role: 0 }))).toBe(true);
 		});
 
-		it('não-admin com roles.producao === "edit" vê advertências', () => {
+		it('não-admin com roles.producao === "edit" NÃO vê advertências (Admin-only)', () => {
 			const u = user({ role: 2, roles: { producao: 'edit' } });
-			expect(canSeeAdvertencias(u)).toBe(true);
+			expect(canSeeAdvertencias(u)).toBe(false);
+		});
+
+		it('Bolsista (role 1) com grant "edit" não vê advertências (Admin-only)', () => {
+			const u = user({ role: 1, roles: { producao: 'edit' } });
+			expect(canSeeAdvertencias(u)).toBe(false);
 		});
 
 		it('Recrutando (role 4) não vê advertências', () => {

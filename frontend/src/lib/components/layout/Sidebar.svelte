@@ -16,7 +16,16 @@
 
 	let { collapsed, onCollapse, mobileOpen, onCloseMobile }: Props = $props();
 
-	const visibleItems = $derived(menuItems.filter((item) => canView(get(auth).user, item.module)));
+	const visibleItems = $derived(
+		menuItems
+			.filter((item) => canView(get(auth).user, item.module))
+			.map((item) => ({
+				...item,
+				children: item.children?.filter(
+					(child) => !child.canSee || child.canSee(get(auth).user)
+				)
+			}))
+	);
 	const activePath = $derived($page.url.pathname);
 	const isActive = (path: string) => activePath === path || activePath.startsWith(path + '/');
 </script>

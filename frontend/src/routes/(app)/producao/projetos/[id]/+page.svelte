@@ -14,10 +14,18 @@
 	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import { isResponsavelAtribuido } from '$lib/utils/permissions';
 
 	let { data }: PageProps = $props();
 
 	const canEditProducao = $derived(data.canEditProducao ?? false);
+
+	function podeEditar(p: Projeto): boolean {
+		return (
+			canEditProducao ||
+			isResponsavelAtribuido(data.user, { responsavelId: p.responsavel.id })
+		);
+	}
 
 	const projeto = $derived(data.projeto as Projeto | null);
 	const materiais = $derived(data.materiais);
@@ -200,7 +208,7 @@
 							Quantidades necessárias vs. disponíveis e registro de saída de estoque.
 						</p>
 					</div>
-					{#if canEditProducao && materiais.length > 0}
+					{#if podeEditar(projeto) && materiais.length > 0}
 						<button
 							type="button"
 							data-testid="proj-materiais"
@@ -262,7 +270,7 @@
 						</table>
 					</div>
 
-					{#if !canEditProducao}
+					{#if !podeEditar(projeto)}
 						<p class="text-[11px] text-muted">
 							Ações de saída de material ficam disponíveis apenas para quem pode editar produção.
 						</p>
