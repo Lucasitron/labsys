@@ -1,8 +1,11 @@
 package com.fablab.estoque;
 
+import com.fablab.estoque.config.JwtProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Estoque &amp; Suprimentos Service do Sistema de Gestão FabLab.
@@ -13,10 +16,12 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  */
 @SpringBootApplication
 @EnableDiscoveryClient
-public class EstoqueApplication {
+@EnableScheduling
+@EnableConfigurationProperties(JwtProperties.class)
+public class FablabEstoqueApplication {
 
     /** Ponto de entrada da aplicação. */
     public static void main(String[] args) {
-        SpringApplication.run(EstoqueApplication.class, args);
+        SpringApplication.run(FablabEstoqueApplication.class, args);
     }
 }
