@@ -1,8 +1,9 @@
 import type { PageLoad } from './$types';
 import { listarItens } from '$lib/api/stock/items';
-import { categoriaMeta, localizacaoLabel } from '$lib/utils/stock-status';
+import { localizacaoLabel } from '$lib/utils/stock-status';
 import { arrParam, intParam, sanitizeSort, strParam } from '$lib/utils/stock-url';
 import type {
+	CategoriaEnum,
 	FilterOption,
 	ItemStatus,
 	ItemsResult,
@@ -34,6 +35,13 @@ const STATUS_OPTIONS: { id: ItemStatus; label: string }[] = [
 	{ id: 'maintenance', label: 'Manutenção' }
 ];
 
+// Categoria é enum do backend (INSUMO|FERRAMENTA|PECA) — dropdown sempre com as 3 opções.
+const CATEGORIA_OPTIONS: { id: CategoriaEnum; label: string }[] = [
+	{ id: 'INSUMO', label: 'Insumo' },
+	{ id: 'FERRAMENTA', label: 'Ferramenta' },
+	{ id: 'PECA', label: 'Peça' }
+];
+
 function normalize(value: string): string {
 	return value.toLowerCase().trim();
 }
@@ -50,7 +58,6 @@ function applyFilters(
 	items: StockItem[],
 	params: ItensFilterState
 ): { items: StockItem[]; filters: ItemsResult['filters'] } {
-	const cats = [...new Set(items.map((i) => i.categoria))];
 	const locIds = [
 		...new Set(items.map((i) => i.localizacao?.id).filter((id): id is string => !!id))
 	];
@@ -59,14 +66,11 @@ function applyFilters(
 		.filter((l): l is LocalizacaoResp => l !== undefined);
 	const statuses: ItemStatus[] = ['available', 'low', 'out', 'loaned', 'maintenance'];
 
-	const categoryOptions: FilterOption[] = cats.map((c) => {
-		const meta = categoriaMeta(c);
-		return {
-			id: c,
-			label: meta.label,
-			count: items.filter((i) => i.categoria === c).length
-		};
-	});
+	const categoryOptions: FilterOption[] = CATEGORIA_OPTIONS.map((c) => ({
+		id: c.id,
+		label: c.label,
+		count: items.filter((i) => i.categoria === c.id).length
+	}));
 
 	const locationOptions: FilterOption[] = locs.map((l) => ({
 		id: l.id,

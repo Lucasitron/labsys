@@ -8,7 +8,6 @@
 	import { fmtQty } from '$lib/utils/stock-format';
 	import { exitReasonMeta, EXIT_REASONS } from '$lib/utils/stock-status';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
 	import RadioCards from '$lib/components/ui/RadioCards.svelte';
 	import ItemPicker from '$lib/components/estoque/ItemPicker.svelte';
 	import Icon, { type IconName } from '$lib/components/ui/Icon.svelte';
@@ -36,10 +35,11 @@
 	let item = $state<StockItem | null>(null);
 	let quantity = $state('');
 	let reason = $state<ExitReason>('CONSUMO');
-	let projectId = $state('');
+	let idReferencia = $state('');
 	let observation = $state('');
 
 	let errors = $state<Record<string, string>>({});
+	let serverError = $state('');
 	let submitting = $state(false);
 
 	const unit = $derived(item?.unidadeMedida ?? '');
@@ -47,6 +47,14 @@
 	function numeric(value: string): number {
 		const n = Number(value.replace(',', '.'));
 		return Number.isFinite(n) ? n : 0;
+	}
+
+	function clearField(field: string): void {
+		if (errors[field]) {
+			const next = { ...errors };
+			delete next[field];
+			errors = next;
+		}
 	}
 
 	function validate(): boolean {
@@ -59,6 +67,7 @@
 
 	async function handleSubmit(e: Event): Promise<void> {
 		e.preventDefault();
+		serverError = '';
 		if (!validate()) return;
 		submitting = true;
 		try {
@@ -66,14 +75,15 @@
 				idItem: item!.id,
 				quantidade: numeric(quantity),
 				tipoSaida: reason,
-				idReferencia: reason === 'CONSUMO' && projectId ? projectId : null,
+				idReferencia: idReferencia.trim() || null,
 				observacao: observation.trim() || undefined
 			});
 			toasts.success(`Saída de ${fmtQty(numeric(quantity), unit)} registrada`);
 			await goto('/estoque/saidas', { invalidateAll: true });
 		} catch (err) {
-			if (err instanceof ApiError && err.status === 422) {
-				errors = { ...errors, quantity: err.message };
+			if (err instanceof ApiError && (err.status === 409 || err.status === 422)) {
+				serverError = err.message;
+				if (err.status === 422) errors = { ...errors, quantity: err.message };
 			} else {
 				toastError(err, 'Não foi possível registrar a saída');
 			}
@@ -97,6 +107,7 @@
 			Cancelar
 		</button>
 		<button
+			data-testid="submit-saida"
 			type="button"
 			onclick={(e) => handleSubmit(e)}
 			disabled={submitting}
@@ -107,7 +118,17 @@
 	{/snippet}
 </PageHeader>
 
-<form onsubmit={(e) => handleSubmit(e)} class="space-y-5" novalidate>
+{#if serverError}
+	<div
+		data-testid="sai-nova-server-error"
+		role="alert"
+		class="rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger"
+	>
+		{serverError}
+	</div>
+{/if}
+
+<form onsubmit={(e) => handleSubmit(e)} class="space-y-5" novalidate data-testid="sai-nova-form">
 	<!-- Item -->
 	<section class="rounded-xl border border-border bg-surface p-6">
 		<h2 class="mb-4 text-xs font-medium uppercase tracking-wide text-muted">Item</h2>
@@ -169,7 +190,8 @@
 			value={reason}
 			onChange={(id) => {
 				reason = id as ExitReason;
-				errors = { ...errors, projectId: '' };
+				serverError = '';
+				clearField('quantity');
 			}}
 		/>
 	</section>
@@ -178,25 +200,21 @@
 	<section class="rounded-xl border border-border bg-surface p-6">
 		<h2 class="mb-4 text-xs font-medium uppercase tracking-wide text-muted">Detalhes</h2>
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-			{#if reason === 'CONSUMO'}
-				<div>
-					<Select
-						id="exit-project"
-						label="Projeto vinculado"
-						options={data.projects}
-						value={projectId}
-						onChange={(v) => (projectId = v)}
-						placeholder="Selecione…"
-					/>
-				</div>
-			{:else}
-				<div>
-					<label class="mb-1 block text-xs font-medium text-muted">Referência</label>
-					<p class="rounded-lg border border-border bg-elevated px-3 py-2.5 text-sm text-muted">
-						{exitReasonMeta(reason).label}
-					</p>
-				</div>
-			{/if}
+			<div>
+				<label for="exit-referencia" class="mb-1 block text-xs font-medium text-muted">
+					Referência
+				</label>
+				<input
+					id="exit-referencia"
+					type="text"
+					bind:value={idReferencia}
+					placeholder="Projeto, ordem de serviço ou justificativa"
+					class="w-full rounded-lg border border-border bg-elevated px-3 py-2.5 text-sm text-ink placeholder:text-muted/60 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
+				/>
+				<p class="mt-1 text-xs text-muted">
+					{exitReasonMeta(reason).label} — informe a origem/justificativa da saída.
+				</p>
+			</div>
 
 			<div class="sm:col-span-2">
 				<label for="exit-obs" class="mb-1 block text-xs font-medium text-muted">

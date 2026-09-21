@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
+	import { ApiError } from '$lib/api/client';
 	import { criarItem } from '$lib/api/stock/items';
 	import { toasts, toastError } from '$lib/stores/toast';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
@@ -20,6 +21,7 @@
 	let minimum = $state('');
 
 	let errors = $state<Record<string, string>>({});
+	let serverError = $state('');
 	let submitting = $state(false);
 	let saveMode = $state<'single' | 'another'>('single');
 
@@ -33,8 +35,8 @@
 		if (!name.trim()) next.name = 'Informe o nome';
 		if (!category) next.category = 'Selecione a categoria';
 		if (!unit) next.unit = 'Selecione a unidade';
-		if (!location) next.location = 'Selecione a localização';
 		if (minimum && numeric(minimum) < 0) next.minimum = 'Valor inválido';
+		if (initialQuantity && numeric(initialQuantity) < 0) next.initial = 'Valor inválido';
 		errors = next;
 		return Object.keys(next).length === 0;
 	}
@@ -50,6 +52,7 @@
 	async function handleSubmit(e: Event, mode: 'single' | 'another'): Promise<void> {
 		e.preventDefault();
 		saveMode = mode;
+		serverError = '';
 		if (!validate()) return;
 
 		submitting = true;
@@ -71,7 +74,11 @@
 				await goto('/estoque/itens', { invalidateAll: true });
 			}
 		} catch (err) {
-			toastError(err, 'Não foi possível salvar o item');
+			if (err instanceof ApiError && (err.status === 409 || err.status === 422)) {
+				serverError = err.message;
+			} else {
+				toastError(err, 'Não foi possível salvar o item');
+			}
 		} finally {
 			submitting = false;
 		}
@@ -86,6 +93,7 @@
 		initialQuantity = '';
 		minimum = '';
 		errors = {};
+		serverError = '';
 	}
 
 	function cancel(): void {
@@ -117,6 +125,7 @@
 			Salvar e adicionar outro
 		</button>
 		<button
+			data-testid="submit-item"
 			onclick={(e) => handleSubmit(e, 'single')}
 			disabled={submitting}
 			class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-colors hover:bg-brandhi disabled:cursor-not-allowed disabled:opacity-50"
@@ -126,7 +135,17 @@
 	{/snippet}
 </PageHeader>
 
-<form onsubmit={(e) => handleSubmit(e, 'single')} class="space-y-5" novalidate>
+{#if serverError}
+	<div
+		data-testid="it-novo-server-error"
+		role="alert"
+		class="rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger"
+	>
+		{serverError}
+	</div>
+{/if}
+
+<form onsubmit={(e) => handleSubmit(e, 'single')} class="space-y-5" novalidate data-testid="it-novo-form">
 	<!-- Identificação -->
 	<section class="rounded-xl border border-border bg-surface p-6">
 		<h2 class="mb-4 text-xs font-medium uppercase tracking-wide text-muted">
@@ -195,7 +214,7 @@
 			/>
 			<Select
 				id="item-location"
-				label="Localização *"
+				label="Localização"
 				options={data.locations}
 				value={location}
 				onChange={(v) => {
@@ -205,9 +224,9 @@
 				placeholder="Selecione…"
 			/>
 		</div>
-		{#if errors.category || errors.unit || errors.location}
+		{#if errors.category || errors.unit}
 			<p class="mt-2 text-xs font-medium text-danger">
-				{errors.category ?? errors.unit ?? errors.location}
+				{errors.category ?? errors.unit}
 			</p>
 		{/if}
 	</section>

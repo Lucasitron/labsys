@@ -2,7 +2,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { StockItem, Tone, FilterOption } from '$lib/types/stock';
-	import { exportItemsCsv } from '$lib/api/stock/items';
+	import { exportarCsv, importarCsv } from '$lib/api/stock/items';
 	import { statusMeta, quantityTone, categoriaMeta, localizacaoLabel } from '$lib/utils/stock-status';
 	import { fmtQty } from '$lib/utils/stock-format';
 	import { toasts, toastError } from '$lib/stores/toast';
@@ -15,6 +15,7 @@
 	import TableSkeleton from '$lib/components/ui/TableSkeleton.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
+	import Modal from '$lib/components/ui/Modal.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	let { data }: PageProps = $props();
@@ -129,10 +130,45 @@
 
 	async function handleExport(): Promise<void> {
 		try {
-			await exportItemsCsv();
+			await exportarCsv();
 			toasts.info('Exportação CSV iniciada');
 		} catch (err) {
 			toastError(err, 'Não foi possível exportar');
+		}
+	}
+
+	// ---- Importar CSV (multipart) ----
+
+	let importOpen = $state(false);
+	let importFile = $state<File | null>(null);
+	let importError = $state('');
+	let importing = $state(false);
+
+	function openImport(): void {
+		importFile = null;
+		importError = '';
+		importOpen = true;
+	}
+
+	async function handleImport(e: Event): Promise<void> {
+		e.preventDefault();
+		if (!importFile) {
+			importError = 'Selecione um arquivo CSV para importar';
+			return;
+		}
+		importing = true;
+		importError = '';
+		try {
+			const criados = await importarCsv(importFile);
+			toasts.success(
+				criados.length === 1 ? '1 item importado' : `${criados.length} itens importados`
+			);
+			importOpen = false;
+			await invalidateAll();
+		} catch (err) {
+			importError = err instanceof Error ? err.message : 'Não foi possível importar o arquivo';
+		} finally {
+			importing = false;
 		}
 	}
 
@@ -177,13 +213,24 @@
 	>
 		{#snippet children()}
 			<button
+				data-testid="it-exportar"
 				onclick={handleExport}
 				class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-brand/50 hover:text-brandhi"
 			>
 				<Icon name="arrow-down-tray" class="h-4 w-4" /> Exportar
 			</button>
 			{#if canEdit}
+				<button
+					data-testid="it-importar"
+					onclick={openImport}
+					class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-brand/50 hover:text-brandhi"
+				>
+					<Icon name="arrow-up-tray" class="h-4 w-4" /> Importar
+				</button>
+			{/if}
+			{#if canEdit}
 				<a
+					data-testid="it-novo"
 					href="/estoque/itens/novo"
 					class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-colors hover:bg-brandhi"
 				>
@@ -194,7 +241,7 @@
 	</PageHeader>
 
 	<!-- Toolkit: busca + filtros -->
-	<div class="flex flex-wrap items-center gap-2">
+	<div class="flex flex-wrap items-center gap-2" data-testid="it-filtros">
 		<SearchInput
 			value={data.params.search}
 			onSearch={handleSearch}
@@ -250,7 +297,13 @@
 	{/if}
 
 	{#if insError && !result}
-		<ErrorBanner message="Não foi possível carregar os itens" hint={insError} onRetry={invalidateAll} />
+		<div data-testid="it-error">
+			<ErrorBanner
+				message="Não foi possível carregar os itens"
+				hint={insError}
+				onRetry={invalidateAll}
+			/>
+		</div>
 	{:else if !result}
 		<!-- Loading -->
 		<div class="overflow-hidden rounded-xl border border-border bg-surface">
@@ -262,7 +315,7 @@
 			</div>
 		</div>
 	{:else if items.length === 0}
-		<div class="rounded-xl border border-border bg-surface">
+		<div class="rounded-xl border border-border bg-surface" data-testid="it-empty">
 			{#if hasFilters}
 				<EmptyState
 					icon="filter"
@@ -271,6 +324,7 @@
 				>
 					{#snippet children()}
 						<button
+							data-testid="it-empty-limpar"
 							onclick={clearAllFilters}
 							class="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-brand/50 hover:text-brandhi"
 						>
@@ -287,6 +341,7 @@
 					{#snippet children()}
 						{#if canEdit}
 							<a
+								data-testid="it-empty-novo"
 								href="/estoque/itens/novo"
 								class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-brandhi"
 							>
@@ -299,7 +354,7 @@
 		</div>
 	{:else}
 		<!-- Tabela desktop -->
-		<div class="hidden overflow-hidden rounded-xl border border-border bg-surface md:block">
+		<div class="hidden overflow-hidden rounded-xl border border-border bg-surface md:block" data-testid="it-tabela">
 			<div
 				class="grid items-center gap-3 border-b border-border bg-elevated/50 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-muted {gridCols}"
 			>
@@ -329,6 +384,7 @@
 			<div class="divide-y divide-border">
 				{#each items as item (item.id)}
 					<div
+						data-testid="it-linha-{item.id}"
 						onclick={() => openDetail(item)}
 						role="button"
 						tabindex="0"
@@ -355,7 +411,7 @@
 				{/each}
 			</div>
 
-			<div class="border-t border-border px-4 py-3">
+			<div class="border-t border-border px-4 py-3" data-testid="it-paginacao">
 				<Pagination
 					page={pagination?.page ?? 1}
 					totalPages={pagination?.totalPages ?? 0}
@@ -372,8 +428,13 @@
 		<div class="space-y-2 md:hidden" role="list">
 			{#each items as item (item.id)}
 				<div
-					role="listitem"
+					data-testid="it-card-{item.id}"
+					role="button"
+					tabindex="0"
 					onclick={() => openDetail(item)}
+					onkeydown={(e) => {
+						if (e.key === 'Enter') openDetail(item);
+					}}
 					class="rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-elevated/40"
 				>
 					<div class="flex items-start justify-between gap-3">
@@ -400,7 +461,7 @@
 					</div>
 				</div>
 			{/each}
-			<div class="pt-1">
+			<div class="pt-1" data-testid="it-paginacao-mobile">
 				<Pagination
 					page={pagination?.page ?? 1}
 					totalPages={pagination?.totalPages ?? 0}
@@ -413,4 +474,64 @@
 			</div>
 		</div>
 	{/if}
+
+	<!-- Importar CSV -->
+	<Modal
+		open={importOpen}
+		title="Importar itens (CSV)"
+		subtitle="O arquivo deve seguir o formato de exportação dos itens."
+		onClose={() => (importOpen = false)}
+		width="md"
+	>
+		{#snippet children()}
+			<form onsubmit={handleImport} data-testid="it-import-modal" novalidate>
+				<div class="space-y-4">
+					<div>
+						<label
+							for="it-import-file"
+							class="mb-1 block text-xs font-medium text-muted"
+						>
+							Arquivo CSV <span class="text-danger">*</span>
+						</label>
+						<input
+							id="it-import-file"
+							data-testid="it-import-file"
+							type="file"
+							accept=".csv,text/csv"
+							onchange={(e) => {
+								importFile = (e.currentTarget as HTMLInputElement).files?.[0] ?? null;
+								importError = '';
+							}}
+							aria-label="Selecionar arquivo CSV de itens"
+							class="w-full rounded-lg border border-border bg-elevated px-3 py-2.5 text-sm text-ink file:mr-3 file:rounded-md file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"
+						/>
+						{#if importError}
+							<p class="mt-2 rounded-lg border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger" data-testid="it-import-error">
+								{importError}
+							</p>
+						{/if}
+					</div>
+					<div class="flex flex-wrap items-center justify-end gap-2">
+						<button
+							type="button"
+							data-testid="it-import-cancelar"
+							onclick={() => (importOpen = false)}
+							class="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition-colors hover:bg-border/40"
+						>
+							Cancelar
+						</button>
+						<button
+							type="submit"
+							data-testid="it-import-enviar"
+							disabled={importing}
+							class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-colors hover:bg-brandhi disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							<Icon name="arrow-up-tray" class="h-4 w-4" />
+							{importing ? 'Importando…' : 'Importar'}
+						</button>
+					</div>
+				</div>
+			</form>
+		{/snippet}
+	</Modal>
 </div>

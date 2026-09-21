@@ -21,7 +21,7 @@
 		onSelect,
 		onUnit,
 		selected = null,
-		placeholder = 'Buscar item por código ou nome…',
+		placeholder = 'Buscar item por nome…',
 		showStock = false,
 		disabled = false,
 		hint = ''

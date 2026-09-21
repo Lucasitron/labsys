@@ -5,7 +5,6 @@
 	import { fmtMoney, fmtDate, fmtQty } from '$lib/utils/stock-format';
 	import type { MovementsResult } from '$lib/types/stock';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Chip from '$lib/components/ui/Chip.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Dropdown from '$lib/components/ui/Dropdown.svelte';
@@ -32,9 +31,21 @@
 		result: MovementsResult | null;
 		error: string | null;
 		canEdit: boolean;
+		extraQuery?: Record<string, string | undefined>;
+		toolkit?: boolean;
 	}
 
-	let { kind, path, paramKey, params, result, error, canEdit }: Props = $props();
+	let {
+		kind,
+		path,
+		paramKey,
+		params,
+		result,
+		error,
+		canEdit,
+		extraQuery = {},
+		toolkit = true
+	}: Props = $props();
 
 	const isIn = $derived(kind === 'entrada');
 	const columns = $derived(isIn ? 'md:grid-cols-[110px_1fr_90px_120px_160px_110px]' : 'md:grid-cols-[110px_1fr_90px_150px_140px_180px]');
@@ -70,7 +81,8 @@
 			[paramKey]: params.keys,
 			period: params.period,
 			page: params.page,
-			pageSize: params.pageSize
+			pageSize: params.pageSize,
+			...extraQuery
 		};
 		const merged = { ...base, ...overrides };
 		const search = new URLSearchParams();
@@ -118,62 +130,73 @@
 	}
 
 	function metaOf(m: Movement): { label: string; color: Tone } {
-		return isIn
-			? entryKindMeta(m.kind ?? 'ajuste')
-			: exitReasonMeta(m.reason ?? 'CONSUMO');
+		if (isIn) {
+			return m.kind ? entryKindMeta(m.kind) : { label: 'Entrada', color: 'success' };
+		}
+		return exitReasonMeta(m.reason ?? 'CONSUMO');
+	}
+
+	function rotaDe(m: Movement): string {
+		return isIn ? `/estoque/entradas/${m.id}` : `/estoque/saidas/${m.id}`;
 	}
 </script>
 
-<div class="space-y-4">
-	<!-- Toolkit -->
-	<div class="flex flex-wrap items-center gap-2">
-		<SearchInput
-			value={params.search}
-			onSearch={handleSearch}
-			placeholder={isIn ? 'Buscar por item, fornecedor ou NF…' : 'Buscar por item, destino ou responsável…'}
-			class="min-w-56 flex-1"
-		/>
-		<Dropdown
-			label={isIn ? 'Tipo' : 'Motivo'}
-			options={filterOptions}
-			selected={params.keys}
-			onToggle={toggleKey}
-			onClear={clearKeys}
-		/>
-		<div class="w-44">
-			<Select
-				id="movement-period"
-				options={periodOptions}
-				value={params.period}
-				onChange={onPeriod}
-				placeholder="Período"
+<div class="space-y-4" data-testid="mv-lista">
+	{#if toolkit}
+		<!-- Toolkit -->
+		<div class="flex flex-wrap items-center gap-2">
+			<SearchInput
+				value={params.search}
+				onSearch={handleSearch}
+				placeholder={isIn ? 'Buscar por item, fornecedor ou NF…' : 'Buscar por item, destino ou responsável…'}
+				class="min-w-56 flex-1"
 			/>
-		</div>
-	</div>
-
-	{#if hasFilters}
-		<div class="flex flex-wrap items-center gap-1.5">
-			{#each chipKeys as k (k.id)}
-				<Chip label={k.label} count={k.count} onRemove={() => toggleKey(k.id)} />
-			{/each}
-			{#if chipPeriod}
-				<Chip label={chipPeriod.label} onRemove={() => onPeriod('')} />
+			{#if filterOptions.length > 0}
+				<Dropdown
+					label={isIn ? 'Tipo' : 'Motivo'}
+					options={filterOptions}
+					selected={params.keys}
+					onToggle={toggleKey}
+					onClear={clearKeys}
+				/>
 			{/if}
-			<button
-				onclick={clearAll}
-				class="text-xs font-medium text-brandhi transition-colors hover:text-brand"
-			>
-				Limpar filtros
-			</button>
+			<div class="w-44">
+				<Select
+					id="movement-period"
+					options={periodOptions}
+					value={params.period}
+					onChange={onPeriod}
+					placeholder="Período"
+				/>
+			</div>
 		</div>
+
+		{#if hasFilters}
+			<div class="flex flex-wrap items-center gap-1.5">
+				{#each chipKeys as k (k.id)}
+					<Chip label={k.label} count={k.count} onRemove={() => toggleKey(k.id)} />
+				{/each}
+				{#if chipPeriod}
+					<Chip label={chipPeriod.label} onRemove={() => onPeriod('')} />
+				{/if}
+				<button
+					onclick={clearAll}
+					class="text-xs font-medium text-brandhi transition-colors hover:text-brand"
+				>
+					Limpar filtros
+				</button>
+			</div>
+		{/if}
 	{/if}
 
 	{#if error && !result}
-		<ErrorBanner
-			message={`Não foi possível carregar ${isIn ? 'as entradas' : 'as saídas'}`}
-			hint={error}
-			onRetry={clearAll}
-		/>
+		<div data-testid="mv-error">
+			<ErrorBanner
+				message={`Não foi possível carregar ${isIn ? 'as entradas' : 'as saídas'}`}
+				hint={error}
+				onRetry={clearAll}
+			/>
+		</div>
 	{:else if !result}
 		<div class="overflow-hidden rounded-xl border border-border bg-surface">
 			<div class="border-b border-border bg-elevated/50 px-4 py-2.5">
@@ -182,7 +205,7 @@
 			<div class="p-4"><TableSkeleton rows={7} /></div>
 		</div>
 	{:else if movements.length === 0}
-		<div class="rounded-xl border border-border bg-surface">
+		<div class="rounded-xl border border-border bg-surface" data-testid="mv-empty">
 			{#if hasFilters}
 				<EmptyState
 					icon="filter"
@@ -228,17 +251,21 @@
 				<span class="text-right">Qtd</span>
 				<span>{isIn ? 'Tipo' : 'Motivo'}</span>
 				<span>{isIn ? 'Origem' : 'Destino'}</span>
-				<span>{isIn ? 'Valor' : 'Responsável'}</span>
+				<span>{isIn ? 'Valor' : 'Referência'}</span>
 			</div>
 
 			<div class="divide-y divide-border">
 				{#each movements as m (m.id)}
 					{@const meta = metaOf(m)}
-					<div class="grid items-center gap-3 px-4 py-3 transition-colors hover:bg-elevated/40 {columns}">
+					<a
+						data-testid="mv-linha"
+						href={rotaDe(m)}
+						class="grid items-center gap-3 px-4 py-3 transition-colors hover:bg-elevated/40 {columns}"
+					>
 						<span class="text-xs text-muted">{fmtDate(m.date)}</span>
 						<div class="min-w-0">
-							<p class="truncate font-mono text-xs text-muted">{m.item.code}</p>
 							<p class="truncate text-sm text-ink">{m.item.name}</p>
+							{#if m.item.unit}<p class="truncate text-xs text-muted">{m.item.unit}</p>{/if}
 						</div>
 						<span class="text-right font-mono text-sm {isIn ? 'text-success' : 'text-danger'}">
 							{isIn ? '+' : '−'}{fmtQty(m.quantity, m.item.unit)}
@@ -250,25 +277,14 @@
 							<span class="truncate text-xs text-muted">{m.origin ?? '—'}</span>
 							<span class="text-right font-mono text-xs text-muted">{fmtMoney(m.unitValue)}</span>
 						{:else}
-							<span class="truncate text-xs text-muted">{m.destination ?? '—'}</span>
-							<span class="flex items-center gap-2">
-								{#if m.responsible}
-									<Avatar
-										name={m.responsible.name}
-										initialsOverride={m.responsible.initials}
-										size="xs"
-									/>
-									<span class="text-sm text-ink">{m.responsible.name}</span>
-								{:else}
-									<span class="text-xs text-muted">—</span>
-								{/if}
-							</span>
+							<span class="truncate text-xs text-muted">{m.destination ?? m.reference ?? '—'}</span>
+							<span class="text-right font-mono text-xs text-muted">{m.reference ?? '—'}</span>
 						{/if}
-					</div>
+					</a>
 				{/each}
 			</div>
 
-			<div class="border-t border-border px-4 py-3">
+			<div class="border-t border-border px-4 py-3" data-testid="mv-paginacao">
 				<Pagination
 					page={pagination?.page ?? 1}
 					totalPages={pagination?.totalPages ?? 0}
@@ -285,11 +301,17 @@
 		<div class="space-y-2 md:hidden" role="list">
 			{#each movements as m (m.id)}
 				{@const meta = metaOf(m)}
-				<div role="listitem" class="rounded-xl border border-border bg-surface p-4">
+				<a
+					data-testid="mv-linha-mobile"
+					href={rotaDe(m)}
+					class="block rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-elevated/40"
+				>
 					<div class="flex items-start justify-between gap-3">
 						<div class="min-w-0">
-							<p class="truncate font-mono text-xs text-muted">{m.item.code}</p>
-							<p class="mt-0.5 truncate text-sm font-medium text-ink">{m.item.name}</p>
+							<p class="truncate text-sm font-medium text-ink">{m.item.name}</p>
+							{#if m.item.unit}
+								<p class="truncate text-xs text-muted">{m.item.unit}</p>
+							{/if}
 						</div>
 						<span class="shrink-0 font-mono text-sm {isIn ? 'text-success' : 'text-danger'}">
 							{isIn ? '+' : '−'}{fmtQty(m.quantity, m.item.unit)}
@@ -300,9 +322,11 @@
 						<span class="text-xs text-muted">{fmtDate(m.date)}</span>
 					</div>
 					<p class="mt-2 truncate text-xs text-muted">
-						{isIn ? `Origem: ${m.origin ?? '—'}` : `Destino: ${m.destination ?? '—'}`}
+						{isIn
+							? `Origem: ${m.origin ?? '—'}`
+							: `Destino: ${m.destination ?? m.reference ?? '—'}`}
 					</p>
-				</div>
+				</a>
 			{/each}
 			<div class="pt-2">
 				<Pagination
