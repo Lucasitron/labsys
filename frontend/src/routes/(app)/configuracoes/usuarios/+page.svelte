@@ -253,6 +253,7 @@
 					value={params.search}
 					onSearch={onSearch}
 					placeholder="Buscar por nome ou e-mail…"
+					delay={300}
 				/>
 			</div>
 			<div data-testid="cfg-user-filter-nivel">
@@ -424,7 +425,7 @@
 
 <ModalUsuario
 	open={modalAberto}
-	admin={true}
+	admin={data.isAdmin}
 	usuario={usuarioAlvo}
 	onClose={() => {
 		modalAberto = false;

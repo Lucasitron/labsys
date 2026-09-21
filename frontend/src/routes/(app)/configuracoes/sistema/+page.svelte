@@ -190,12 +190,14 @@
 				</div>
 				<div class="flex items-center gap-3">
 					{#if ehUrl(logo)}
-						<img
-							src={logo}
-							alt="Logo do laboratório"
-							class="h-14 w-14 rounded-full border border-border object-cover"
-							data-testid="cfg-system-logo"
-						/>
+<img
+						src={logo}
+						alt="Logo do laboratório"
+						class="h-14 w-14 rounded-full border border-border object-cover"
+						data-testid="cfg-system-logo"
+						referrerpolicy="no-referrer"
+						loading="lazy"
+					/>
 					{:else if logo}
 						<span
 							class="flex h-14 w-14 items-center justify-center rounded-full border border-warn/30 bg-warn/10 text-warn"

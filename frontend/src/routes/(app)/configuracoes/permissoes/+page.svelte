@@ -39,15 +39,16 @@
 		4: 'Recrutando'
 	};
 
+	// alinhado a .opencode/specs/system/rbac-matrix.md (defaults conservadores)
 	const DEFAULT_MATRIZ: PermissaoMatriz = {
-		dashboard: { 0: 'Editar', 1: 'Ver', 2: 'Ver', 3: 'Ver', 4: 'Ver' },
-		rh: { 0: 'Editar', 1: 'Editar', 2: 'Editar', 3: 'Ver', 4: 'Ver' },
+		dashboard: { 0: 'Editar', 1: 'Ver', 2: 'Ver', 3: 'Ver', 4: 'Nenhum' },
+		rh: { 0: 'Editar', 1: 'Ver', 2: 'Ver', 3: 'Ver', 4: 'Ver' },
 		estoque: { 0: 'Editar', 1: 'Ver', 2: 'Ver', 3: 'Ver', 4: 'Nenhum' },
 		financeiro: { 0: 'Editar', 1: 'Nenhum', 2: 'Nenhum', 3: 'Nenhum', 4: 'Nenhum' },
 		vendas: { 0: 'Editar', 1: 'Ver', 2: 'Ver', 3: 'Ver', 4: 'Nenhum' },
 		producao: { 0: 'Editar', 1: 'Ver', 2: 'Ver', 3: 'Ver', 4: 'Nenhum' },
 		notificacoes: { 0: 'Editar', 1: 'Ver', 2: 'Ver', 3: 'Ver', 4: 'Ver' },
-		configuracoes: { 0: 'Editar', 1: 'Ver', 2: 'Ver', 3: 'Ver', 4: 'Ver' }
+		configuracoes: { 0: 'Editar', 1: 'Nenhum', 2: 'Nenhum', 3: 'Nenhum', 4: 'Nenhum' }
 	};
 
 	function clonar(matrizOriginal: PermissaoMatriz): PermissaoMatriz {
@@ -226,7 +227,7 @@
 											modulo={modulo.id}
 											{nivel}
 											valor={trabalho[modulo.id][nivel]}
-											admin={true}
+											admin={data.isAdmin}
 											onChange={(valor) => mudarCelula(modulo.id, nivel, valor)}
 										/>
 									</td>
