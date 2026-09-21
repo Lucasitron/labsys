@@ -2,7 +2,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { StockItem, EntryKind } from '$lib/types/stock';
-	import { createMovement } from '$lib/api/stock/movements';
+	import { criarEntrada } from '$lib/api/stock/movements';
 	import { toasts, toastError } from '$lib/stores/toast';
 	import { toDateInputValue, fmtQty } from '$lib/utils/stock-format';
 	import { entryKindMeta } from '$lib/utils/stock-status';
@@ -10,17 +10,25 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import RadioCards from '$lib/components/ui/RadioCards.svelte';
 	import ItemPicker from '$lib/components/estoque/ItemPicker.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
+	import Icon, { type IconName } from '$lib/components/ui/Icon.svelte';
 
 	let { data }: PageProps = $props();
 
 	const KINDS: EntryKind[] = ['compra', 'doacao', 'devolucao', 'ajuste'];
 	const KIND_OPTIONS = KINDS.map((k) => {
 		const meta = entryKindMeta(k);
+		const icon: IconName =
+			k === 'compra'
+				? 'shopping-bag'
+				: k === 'doacao'
+					? 'gift'
+					: k === 'devolucao'
+						? 'arrow-uturn-left'
+						: 'adjustments';
 		return {
 			id: k,
 			label: meta.label,
-			icon: k === 'compra' ? 'shopping-bag' : k === 'doacao' ? 'gift' : k === 'devolucao' ? 'arrow-uturn-left' : 'adjustments',
+			icon,
 			color: meta.color
 		};
 	});
@@ -37,7 +45,7 @@
 	let errors = $state<Record<string, string>>({});
 	let submitting = $state(false);
 
-	const unit = $derived(item?.quantity.unit ?? '');
+	const unit = $derived(item?.unidadeMedida ?? '');
 	const supplierRequired = $derived(kind === 'compra' || kind === 'ajuste');
 
 	function numeric(value: string): number {
@@ -61,17 +69,14 @@
 		if (!validate()) return;
 		submitting = true;
 		try {
-			await createMovement({
-				type: 'in',
-				kind,
-				itemId: item!.id,
-				quantity: numeric(quantity),
-				unit,
-				date,
-				supplierId: supplierRequired ? supplierId : '',
+			await criarEntrada({
+				idItem: item!.id,
+				idFornecedor: supplierRequired ? supplierId || null : null,
+				quantidade: numeric(quantity),
+				valorUnitario: kind === 'compra' && unitValue ? numeric(unitValue) : null,
+				dataEntrada: date,
 				notaFiscal: kind === 'compra' ? notafiscal.trim() || undefined : undefined,
-				unitValue: kind === 'compra' && unitValue ? numeric(unitValue) : null,
-				observation: observation.trim() || undefined
+				observacao: observation.trim() || undefined
 			});
 			toasts.success(`Entrada de ${fmtQty(numeric(quantity), unit)} registrada`);
 			if (mode === 'another') {
@@ -264,7 +269,6 @@
 							<p class="mt-1 text-xs font-medium text-danger">{errors.unitValue}</p>
 						{/if}
 					</div>
-				</div>
 			{/if}
 
 			<div class="sm:col-span-2">

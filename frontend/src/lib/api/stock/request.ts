@@ -62,7 +62,7 @@ try {
 			for (const [key, value] of Object.entries(bearer())) {
 				if (!headers.has(key)) headers.set(key, value);
 			}
-			if (!headers.has('Content-Type')) {
+			if (!headers.has('Content-Type') && !(init.body instanceof FormData)) {
 				headers.set('Content-Type', 'application/json');
 			}
 

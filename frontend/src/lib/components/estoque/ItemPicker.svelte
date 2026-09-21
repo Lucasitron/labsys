@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { StockItem } from '$lib/types/stock';
-	import { fetchItems } from '$lib/api/stock/items';
-	import { statusMeta, quantityTone } from '$lib/utils/stock-status';
+	import { listarItens } from '$lib/api/stock/items';
+	import { statusMeta, categoriaMeta } from '$lib/utils/stock-status';
 	import { fmtQty } from '$lib/utils/stock-format';
-	import StatusBadge from './StatusBadge.svelte';
-	import Icon from './Icon.svelte';
+	import StatusBadge from '../ui/StatusBadge.svelte';
+	import Icon from '../ui/Icon.svelte';
 
 	interface Props {
 		onSelect: (item: StockItem | null) => void;
@@ -27,15 +27,27 @@
 		hint = ''
 	}: Props = $props();
 
-	let query = $state(selected?.code ?? '');
+	let query = $state(selected?.nome ?? '');
 	let results = $state<StockItem[]>([]);
 	let searching = $state(false);
 	let open = $state(false);
 	let touched = $state(false);
-	let reqId = 0;
 	let root: HTMLDivElement | undefined = $state();
 
-	let debounce: ReturnType<typeof setTimeout> | undefined;
+	// R-9: busca de itens é client-side (sem parâmetro search no backend).
+	let cache: StockItem[] = [];
+
+	function normalize(value: string): string {
+		return value.toLowerCase().trim();
+	}
+
+	function matches(item: StockItem, term: string): boolean {
+		return (
+			normalize(item.nome).includes(term) ||
+			normalize(item.descricao ?? '').includes(term) ||
+			normalize(item.unidadeMedida).includes(term)
+		);
+	}
 
 	onMount(() => {
 		if (touched) return;
@@ -53,31 +65,22 @@
 		};
 	});
 
-	function qtyTone(item: StockItem): ReturnType<typeof quantityTone> {
-		return quantityTone(item.quantity.current, item.quantity.minimum);
-	}
-
 	async function search(q: string): Promise<void> {
-		const myId = ++reqId;
 		searching = true;
 		try {
-			const res = await fetchItems(fetch, {
-				search: q,
-				page: 1,
-				pageSize: 8,
-				categories: [],
-				locations: [],
-				statuses: []
-			});
-			if (myId === reqId) {
-				results = res.items;
-				open = true;
+			if (cache.length === 0) {
+				cache = await listarItens({}, fetch);
 			}
+			const term = normalize(q);
+			results = term
+				? cache.filter((i) => matches(i, term)).slice(0, 8)
+				: [];
+			open = true;
 		} catch {
-			if (myId === reqId) results = [];
+			results = [];
 			open = true;
 		} finally {
-			if (myId === reqId) searching = false;
+			searching = false;
 		}
 	}
 
@@ -99,8 +102,8 @@
 	function pick(item: StockItem): void {
 		selected = item;
 		onSelect(item);
-		onUnit?.(item.quantity.unit);
-		query = item.code;
+		onUnit?.(item.unidadeMedida);
+		query = item.nome;
 		open = false;
 	}
 
@@ -124,6 +127,12 @@
 	function metaByStatus(item: StockItem): ReturnType<typeof statusMeta> {
 		return statusMeta(item.status);
 	}
+
+	function qtyClass(item: StockItem): string {
+		return qtyColors[statusMeta(item.status).color];
+	}
+
+	let debounce: ReturnType<typeof setTimeout> | undefined;
 </script>
 
 <div bind:this={root} class="relative">
@@ -132,18 +141,27 @@
 			class="flex items-center justify-between gap-2 rounded-lg border border-border bg-elevated px-3 py-2.5"
 		>
 			<div class="min-w-0">
-				<p class="truncate font-mono text-xs text-muted">{selected.code}</p>
-				<p class="truncate text-sm font-medium text-ink">{selected.name}</p>
+				<p class="truncate text-sm font-medium text-ink">{selected.nome}</p>
+				<p class="truncate text-xs text-muted">
+					{selected.categoria === 'INSUMO'
+						? 'Insumo'
+						: selected.categoria === 'FERRAMENTA'
+							? 'Ferramenta'
+							: 'Peça'}
+					{#if selected.unidadeMedida} · {selected.unidadeMedida}{/if}
+				</p>
 			</div>
 			<div class="flex shrink-0 items-center gap-2">
 				{#if showStock}
 					<span class="text-xs text-muted">
 						Disponível:
-						<span class="font-mono font-semibold {qtyColors[qtyTone(selected)]}">
-							{fmtQty(selected.quantity.current, selected.quantity.unit)}
+						<span class="font-mono font-semibold {qtyClass(selected)}">
+							{fmtQty(selected.quantidadeAtual, selected.unidadeMedida)}
 						</span>
-						{#if selected.quantity.current < selected.quantity.minimum && selected.quantity.current > 0}
-							<span class="text-muted"> · mín. {fmtQty(selected.quantity.minimum, selected.quantity.unit)}</span>
+						{#if selected.quantidadeAtual < selected.estoqueMinimo && selected.quantidadeAtual > 0}
+							<span class="text-muted">
+								· mín. {fmtQty(selected.estoqueMinimo, selected.unidadeMedida)}
+							</span>
 						{/if}
 					</span>
 				{/if}
@@ -202,11 +220,11 @@
 					class="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-brand/10"
 				>
 					<span class="min-w-0">
-						<span class="block truncate font-mono text-xs text-muted">{item.code}</span>
-						<span class="block truncate text-sm text-ink">{item.name}</span>
+						<span class="block truncate text-sm text-ink">{item.nome}</span>
+						<span class="block truncate text-xs text-muted">{categoriaMeta(item.categoria).label}</span>
 					</span>
 					<span class="shrink-0 text-xs font-mono text-muted">
-						{fmtQty(item.quantity.current, item.quantity.unit)}
+						{fmtQty(item.quantidadeAtual, item.unidadeMedida)}
 					</span>
 				</button>
 			{/each}

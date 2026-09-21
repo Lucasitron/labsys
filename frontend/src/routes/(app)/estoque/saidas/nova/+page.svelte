@@ -1,49 +1,48 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
-	import { get } from 'svelte/store';
 	import type { PageProps } from './$types';
 	import type { StockItem, ExitReason } from '$lib/types/stock';
-	import type { PersonOption } from '$lib/api/rh';
 	import { ApiError } from '$lib/api/client';
-	import { createMovement } from '$lib/api/stock/movements';
-	import { auth } from '$lib/stores/auth';
+	import { criarSaida } from '$lib/api/stock/movements';
 	import { toasts, toastError } from '$lib/stores/toast';
-	import { toDateInputValue, fmtQty } from '$lib/utils/stock-format';
+	import { fmtQty } from '$lib/utils/stock-format';
 	import { exitReasonMeta, EXIT_REASONS } from '$lib/utils/stock-status';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import RadioCards from '$lib/components/ui/RadioCards.svelte';
 	import ItemPicker from '$lib/components/estoque/ItemPicker.svelte';
-	import PeoplePicker from '$lib/components/estoque/PeoplePicker.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
+	import Icon, { type IconName } from '$lib/components/ui/Icon.svelte';
 
 	let { data }: PageProps = $props();
 
 	const REASON_OPTIONS = EXIT_REASONS.map((r) => {
 		const meta = exitReasonMeta(r);
+		const icon: IconName =
+			r === 'CONSUMO'
+				? 'office-building'
+				: r === 'PERDA'
+					? 'alert-triangle'
+					: r === 'AJUSTE'
+						? 'adjustments'
+						: 'folder';
 		return {
 			id: r,
 			label: meta.label,
-			icon: r === 'projeto' ? 'folder' : r === 'consumo_interno' ? 'office-building' : r === 'perda' ? 'alert-triangle' : 'trash',
+			icon,
 			color: meta.color
 		};
 	});
 
 	let item = $state<StockItem | null>(null);
 	let quantity = $state('');
-	let reason = $state<ExitReason>('projeto');
-	let date = $state(toDateInputValue());
-	let person = $state<PersonOption | null>(null);
+	let reason = $state<ExitReason>('CONSUMO');
 	let projectId = $state('');
 	let observation = $state('');
 
 	let errors = $state<Record<string, string>>({});
 	let submitting = $state(false);
 
-	const unit = $derived(item?.quantity.unit ?? '');
-	const currentName = $derived(
-		() => get(auth).user?.name ?? ''
-	);
+	const unit = $derived(item?.unidadeMedida ?? '');
 
 	function numeric(value: string): number {
 		const n = Number(value.replace(',', '.'));
@@ -54,9 +53,6 @@
 		const next: Record<string, string> = {};
 		if (!item) next.item = 'Selecione o item';
 		if (!quantity || numeric(quantity) <= 0) next.quantity = 'Informe uma quantidade maior que zero';
-		if (!date) next.date = 'Informe a data';
-		if (!person) next.person = 'Informe o responsável';
-		if (reason === 'projeto' && !projectId) next.projectId = 'Selecione o projeto vinculado';
 		errors = next;
 		return Object.keys(next).length === 0;
 	}
@@ -66,16 +62,12 @@
 		if (!validate()) return;
 		submitting = true;
 		try {
-			await createMovement({
-				type: 'out',
-				reason,
-				itemId: item!.id,
-				quantity: numeric(quantity),
-				unit,
-				date,
-				responsibleId: person!.id,
-				projectId: reason === 'projeto' ? projectId : '',
-				observation: observation.trim() || undefined
+			await criarSaida({
+				idItem: item!.id,
+				quantidade: numeric(quantity),
+				tipoSaida: reason,
+				idReferencia: reason === 'CONSUMO' && projectId ? projectId : null,
+				observacao: observation.trim() || undefined
 			});
 			toasts.success(`Saída de ${fmtQty(numeric(quantity), unit)} registrada`);
 			await goto('/estoque/saidas', { invalidateAll: true });
@@ -165,22 +157,6 @@
 					<p class="mt-1 text-xs font-medium text-danger">{errors.quantity}</p>
 				{/if}
 			</div>
-
-			<div>
-				<label for="exit-date" class="mb-1 block text-xs font-medium text-muted">
-					Data <span class="text-danger">*</span>
-				</label>
-				<input
-					id="exit-date"
-					type="date"
-					max={toDateInputValue()}
-					bind:value={date}
-					class="w-full rounded-lg border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
-				/>
-				{#if errors.date}
-					<p class="mt-1 text-xs font-medium text-danger">{errors.date}</p>
-				{/if}
-			</div>
 		</div>
 	</section>
 
@@ -202,41 +178,23 @@
 	<section class="rounded-xl border border-border bg-surface p-6">
 		<h2 class="mb-4 text-xs font-medium uppercase tracking-wide text-muted">Detalhes</h2>
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-			<div>
-				<label class="mb-1 block text-xs font-medium text-muted">
-					Responsável <span class="text-danger">*</span>
-				</label>
-				<PeoplePicker
-					defaultOption={currentName() ? { id: get(auth).user!.id, name: currentName() } : null}
-					selected={person}
-					onSelect={(p) => {
-						person = p;
-						if (errors.person) {
-							const next = { ...errors };
-							delete next.person;
-							errors = next;
-						}
-					}}
-					hint="Busque ou deixe como você."
-				/>
-				{#if errors.person}
-					<p class="mt-1 text-xs font-medium text-danger">{errors.person}</p>
-				{/if}
-			</div>
-
-			{#if reason === 'projeto'}
+			{#if reason === 'CONSUMO'}
 				<div>
 					<Select
 						id="exit-project"
-						label="Projeto vinculado *"
+						label="Projeto vinculado"
 						options={data.projects}
 						value={projectId}
 						onChange={(v) => (projectId = v)}
 						placeholder="Selecione…"
 					/>
-					{#if errors.projectId}
-						<p class="mt-1 text-xs font-medium text-danger">{errors.projectId}</p>
-					{/if}
+				</div>
+			{:else}
+				<div>
+					<label class="mb-1 block text-xs font-medium text-muted">Referência</label>
+					<p class="rounded-lg border border-border bg-elevated px-3 py-2.5 text-sm text-muted">
+						{exitReasonMeta(reason).label}
+					</p>
 				</div>
 			{/if}
 

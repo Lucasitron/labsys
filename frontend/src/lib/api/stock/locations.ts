@@ -1,11 +1,15 @@
-import type { Location, LocationsResult } from '$lib/types/stock';
+import type { CreateLocationPayload, LocalizacaoResp } from '$lib/types/stock';
 import { stockFetch } from './request';
 
-export async function fetchLocations(fetchFn: typeof fetch): Promise<LocationsResult> {
-	return stockFetch<LocationsResult>('/stock/locations', {}, fetchFn);
+export async function listarLocalizacoes(
+	fetchFn: typeof fetch = fetch
+): Promise<LocalizacaoResp[]> {
+	return stockFetch<LocalizacaoResp[]>('/estoque/localizacoes', {}, fetchFn);
 }
 
-export async function fetchLocationOptions(fetchFn: typeof fetch): Promise<Location[]> {
-	const result = await stockFetch<LocationsResult>('/stock/locations', {}, fetchFn);
-	return (result.locations ?? []).map((l) => ({ id: l.id, label: l.name }));
+export async function criarLocalizacao(payload: CreateLocationPayload): Promise<LocalizacaoResp> {
+	return stockFetch<LocalizacaoResp>('/estoque/localizacoes', {
+		method: 'POST',
+		body: JSON.stringify(payload)
+	});
 }

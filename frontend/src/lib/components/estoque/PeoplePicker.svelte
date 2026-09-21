@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { searchPeople, type PersonOption } from '$lib/api/rh';
-	import Avatar from './Avatar.svelte';
-	import Icon from './Icon.svelte';
+	import Avatar from '../ui/Avatar.svelte';
+	import Icon from '../ui/Icon.svelte';
 
 	interface Props {
 		onSelect: (person: PersonOption | null) => void;

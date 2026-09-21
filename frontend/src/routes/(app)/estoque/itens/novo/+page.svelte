@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
-	import { createItem } from '$lib/api/stock/items';
-	import { ApiError } from '$lib/api/client';
+	import { criarItem } from '$lib/api/stock/items';
 	import { toasts, toastError } from '$lib/stores/toast';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
@@ -12,7 +11,6 @@
 
 	const UNITS = ['un', 'kg', 'g', 'm', 'm²', 'cm', 'l', 'ml', 'caixa', 'par', 'rolo', 'folha'];
 
-	let code = $state('');
 	let name = $state('');
 	let description = $state('');
 	let category = $state('');
@@ -20,10 +18,6 @@
 	let location = $state('');
 	let initialQuantity = $state('');
 	let minimum = $state('');
-	let maximum = $state('');
-	let reorderPoint = $state('');
-	let leadTime = $state('');
-	let unitValue = $state('');
 
 	let errors = $state<Record<string, string>>({});
 	let submitting = $state(false);
@@ -36,14 +30,11 @@
 
 	function validate(): boolean {
 		const next: Record<string, string> = {};
-		if (!code.trim()) next.code = 'Informe o código interno';
 		if (!name.trim()) next.name = 'Informe o nome';
 		if (!category) next.category = 'Selecione a categoria';
 		if (!unit) next.unit = 'Selecione a unidade';
 		if (!location) next.location = 'Selecione a localização';
-		if (minimum && maximum && numeric(minimum) > numeric(maximum)) {
-			next.minimum = 'Mínimo não pode ser maior que o máximo';
-		}
+		if (minimum && numeric(minimum) < 0) next.minimum = 'Valor inválido';
 		errors = next;
 		return Object.keys(next).length === 0;
 	}
@@ -56,10 +47,6 @@
 		}
 	}
 
-	function setFieldError(field: string, message: string): void {
-		errors = { ...errors, [field]: message };
-	}
-
 	async function handleSubmit(e: Event, mode: 'single' | 'another'): Promise<void> {
 		e.preventDefault();
 		saveMode = mode;
@@ -67,19 +54,14 @@
 
 		submitting = true;
 		try {
-			await createItem({
-				code: code.trim(),
-				name: name.trim(),
-				description: description.trim() || undefined,
-				categoryId: category,
-				unit,
-				locationId: location,
-				initialQuantity: initialQuantity ? numeric(initialQuantity) : undefined,
-				minimumQuantity: minimum ? numeric(minimum) : undefined,
-				maximumQuantity: maximum ? numeric(maximum) : undefined,
-				reorderPoint: reorderPoint ? numeric(reorderPoint) : undefined,
-				leadTimeDays: leadTime ? numeric(leadTime) : undefined,
-				unitValue: unitValue ? numeric(unitValue) : undefined
+			await criarItem({
+				nome: name.trim(),
+				descricao: description.trim() || undefined,
+				categoria: category as 'INSUMO' | 'FERRAMENTA' | 'PECA',
+				unidadeMedida: unit,
+				quantidadeAtual: initialQuantity ? numeric(initialQuantity) : 0,
+				estoqueMinimo: minimum ? numeric(minimum) : 0,
+				idLocalizacao: location || null
 			});
 
 			toasts.success(`Item "${name.trim()}" criado`);
@@ -89,18 +71,13 @@
 				await goto('/estoque/itens', { invalidateAll: true });
 			}
 		} catch (err) {
-			if (err instanceof ApiError && (err.status === 409 || err.code === 'DUPLICATE')) {
-				setFieldError('code', 'Código já cadastrado. Escolha outro.');
-			} else {
-				toastError(err, 'Não foi possível salvar o item');
-			}
+			toastError(err, 'Não foi possível salvar o item');
 		} finally {
 			submitting = false;
 		}
 	}
 
 	function reset(): void {
-		code = '';
 		name = '';
 		description = '';
 		category = '';
@@ -108,10 +85,6 @@
 		location = '';
 		initialQuantity = '';
 		minimum = '';
-		maximum = '';
-		reorderPoint = '';
-		leadTime = '';
-		unitValue = '';
 		errors = {};
 	}
 
@@ -160,28 +133,7 @@
 			Identificação
 		</h2>
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-			<div>
-				<label for="item-code" class="mb-1 block text-xs font-medium text-muted">
-					Código interno <span class="text-danger">*</span>
-				</label>
-				<input
-					id="item-code"
-					type="text"
-					bind:value={code}
-					oninput={() => clearField('code')}
-					placeholder="FIL-PLA-BLK-1.75"
-					class="w-full rounded-lg border border-border bg-elevated px-3 py-2.5 font-mono text-sm text-ink placeholder:text-muted/60 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 {errors.code
-						? 'border-danger'
-						: ''} {code ? '' : 'text-muted'}"
-				/>
-				{#if errors.code}
-					<p class="mt-1 text-xs font-medium text-danger">{errors.code}</p>
-				{:else}
-					<p class="mt-1 text-xs text-muted">Dica: CAT-MAT-COR-DIM</p>
-				{/if}
-			</div>
-
-			<div>
+			<div class="sm:col-span-2">
 				<label for="item-name" class="mb-1 block text-xs font-medium text-muted">
 					Nome <span class="text-danger">*</span>
 				</label>
@@ -260,12 +212,12 @@
 		{/if}
 	</section>
 
-	<!-- Quantidades e reposição -->
+	<!-- Quantidades -->
 	<section class="rounded-xl border border-border bg-surface p-6">
 		<h2 class="mb-4 text-xs font-medium uppercase tracking-wide text-muted">
-			Quantidades e reposição
+			Quantidades
 		</h2>
-		<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+		<div class="grid grid-cols-2 gap-4 lg:grid-cols-2">
 			<div>
 				<label for="item-initial" class="mb-1 block text-xs font-medium text-muted">
 					Estoque inicial
@@ -302,62 +254,6 @@
 				{#if errors.minimum}
 					<p class="mt-1 text-xs font-medium text-danger">{errors.minimum}</p>
 				{/if}
-			</div>
-			<div>
-				<label for="item-max" class="mb-1 block text-xs font-medium text-muted">
-					Estoque máximo
-				</label>
-				<input
-					id="item-max"
-					type="number"
-					min="0"
-					step="any"
-					bind:value={maximum}
-					inputmode="decimal"
-					class="w-full rounded-lg border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
-				/>
-			</div>
-			<div>
-				<label for="item-reorder" class="mb-1 block text-xs font-medium text-muted">
-					Ponto de pedido
-				</label>
-				<input
-					id="item-reorder"
-					type="number"
-					min="0"
-					step="any"
-					bind:value={reorderPoint}
-					inputmode="decimal"
-					class="w-full rounded-lg border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
-				/>
-			</div>
-			<div>
-				<label for="item-lead" class="mb-1 block text-xs font-medium text-muted">
-					Lead time (dias)
-				</label>
-				<input
-					id="item-lead"
-					type="number"
-					min="0"
-					step="1"
-					bind:value={leadTime}
-					inputmode="numeric"
-					class="w-full rounded-lg border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
-				/>
-			</div>
-			<div>
-				<label for="item-value" class="mb-1 block text-xs font-medium text-muted">
-					Valor unitário (R$)
-				</label>
-				<input
-					id="item-value"
-					type="number"
-					min="0"
-					step="0.01"
-					bind:value={unitValue}
-					inputmode="decimal"
-					class="w-full rounded-lg border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
-				/>
 			</div>
 		</div>
 	</section>

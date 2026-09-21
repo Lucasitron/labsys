@@ -1,13 +1,16 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type {
-		HistoryEntry,
+		EntradaResponse,
+		ItemDetail,
 		Loan,
 		Movement,
 		MovementSummary,
 		PageInfo,
+		SaidaResponse,
 		Supplier,
+		HistoryEntry,
 		Tone
 	} from '$lib/types/stock';
 	import {
@@ -15,17 +18,15 @@
 		exitReasonMeta,
 		loanComputedMeta,
 		quantityTone,
+		categoriaMeta,
+		localizacaoLabel,
 		statusMeta
 	} from '$lib/utils/stock-status';
 	import { fmtMoney, fmtDate, fmtQty } from '$lib/utils/stock-format';
-	import { toasts, toastError } from '$lib/stores/toast';
 	import {
-		deleteItem,
-		fetchItemHistory,
-		fetchItemLoans,
-		fetchItemMovements,
-		fetchItemSuppliers
-	} from '$lib/api/stock/items';
+		listarEntradasPorItem,
+		listarSaidasPorItem
+	} from '$lib/api/stock/movements';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
@@ -33,12 +34,11 @@
 	import Skeleton from '$lib/components/ui/Skeleton.svelte';
 	import TableSkeleton from '$lib/components/ui/TableSkeleton.svelte';
 	import Pagination from '$lib/components/ui/Pagination.svelte';
-	import RowActions from '$lib/components/ui/RowActions.svelte';
-	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
+	import type { TipoSaida } from '$lib/types/stock';
+
 	let { data }: PageProps = $props();
-	const canEdit = $derived(data.canEdit ?? false);
 	const detail = $derived(data.detail);
 	const loadError = $derived(data.error);
 
@@ -67,50 +67,36 @@
 	} | null>(null);
 	let movPage = $state(1);
 
-	let loans = $state<Loan[] | null>(null);
-	let suppliers = $state<Supplier[] | null>(null);
-	let history = $state<HistoryEntry[] | null>(null);
+	// Bloco 2 implementa os endpoints de empréstimos/fornecedores/histórico por item;
+	// enquanto isso as abas mostram estado vazio (sem chamada de API).
+	let loans = $state<Loan[]>([]);
+	let suppliers = $state<Supplier[]>([]);
+	let history = $state<HistoryEntry[]>([]);
 
-	async function activate(tab: string): Promise<void> {
-		if (!detail) return;
-		activeTab = tab;
+	function toMovementIn(entrada: EntradaResponse, unidade: string): Movement {
+		return {
+			id: `e-${entrada.id}`,
+			type: 'in',
+			item: { id: entrada.idItem, name: entrada.nomeItem ?? 'Item', unit: unidade },
+			quantity: entrada.quantidade,
+			date: entrada.dataEntrada,
+			origin: entrada.fornecedor?.nome ?? '—',
+			reference: entrada.notaFiscal ?? undefined,
+			unitValue: entrada.valorUnitario
+		};
+	}
 
-		if (tab === KEY_MOV && !tabLoaded[KEY_MOV] && !tabLoading[KEY_MOV]) {
-			await loadMovements(1);
-		} else if (tab === KEY_LOANS && loans === null && !tabLoading[KEY_LOANS]) {
-			tabLoading[KEY_LOANS] = true;
-			tabError[KEY_LOANS] = null;
-			try {
-				loans = await fetchItemLoans(fetch, detail.id);
-				tabLoaded[KEY_LOANS] = true;
-			} catch (err) {
-				tabError[KEY_LOANS] = err instanceof Error ? err.message : 'Erro ao carregar empréstimos';
-			} finally {
-				tabLoading[KEY_LOANS] = false;
-			}
-		} else if (tab === KEY_SUP && suppliers === null && !tabLoading[KEY_SUP]) {
-			tabLoading[KEY_SUP] = true;
-			tabError[KEY_SUP] = null;
-			try {
-				suppliers = await fetchItemSuppliers(fetch, detail.id);
-				tabLoaded[KEY_SUP] = true;
-			} catch (err) {
-				tabError[KEY_SUP] = err instanceof Error ? err.message : 'Erro ao carregar fornecedores';
-			} finally {
-				tabLoading[KEY_SUP] = false;
-			}
-		} else if (tab === KEY_HIST && history === null && !tabLoading[KEY_HIST]) {
-			tabLoading[KEY_HIST] = true;
-			tabError[KEY_HIST] = null;
-			try {
-				history = await fetchItemHistory(fetch, detail.id);
-				tabLoaded[KEY_HIST] = true;
-			} catch (err) {
-				tabError[KEY_HIST] = err instanceof Error ? err.message : 'Erro ao carregar histórico';
-			} finally {
-				tabLoading[KEY_HIST] = false;
-			}
-		}
+	function toMovementOut(saida: SaidaResponse, unidade: string): Movement {
+		return {
+			id: `s-${saida.id}`,
+			type: 'out',
+			reason: saida.tipoSaida,
+			item: { id: saida.idItem, name: saida.nomeItem ?? 'Item', unit: unidade },
+			quantity: saida.quantidade,
+			date: saida.dataSaida,
+			destination: saida.idReferencia ?? '—',
+			reference: saida.idReferencia ?? undefined
+		};
 	}
 
 	async function loadMovements(page: number): Promise<void> {
@@ -119,13 +105,54 @@
 		tabError[KEY_MOV] = null;
 		movPage = page;
 		try {
-			const res = await fetchItemMovements(fetch, detail.id, page);
-			mov = { summary: res.summary, movements: res.movements, pagination: res.pagination };
+			const [entradas, saidas] = await Promise.all([
+				listarEntradasPorItem(detail.id, fetch),
+				listarSaidasPorItem(detail.id, fetch)
+			]);
+			const all: Movement[] = [
+				...entradas.map((e) => toMovementIn(e, detail.unidadeMedida)),
+				...saidas.map((s) => toMovementOut(s, detail.unidadeMedida))
+			].sort((a, b) => b.date.localeCompare(a.date));
+
+			const entriesCount = entradas.length;
+			const exitsCount = saidas.length;
+			const entriesSum = entradas.reduce((acc, e) => acc + e.quantidade, 0);
+			const exitsSum = saidas.reduce((acc, s) => acc + s.quantidade, 0);
+
+			const pageSize = 10;
+			const totalItems = all.length;
+			const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+			const safePage = Math.min(Math.max(1, page), totalPages);
+			const start = (safePage - 1) * pageSize;
+
+			mov = {
+				summary: {
+					entries: { count: entriesCount, sum: entriesSum },
+					exits: { count: exitsCount, sum: exitsSum }
+				},
+				movements: all.slice(start, start + pageSize),
+				pagination: { page: safePage, pageSize, totalItems, totalPages }
+			};
 			tabLoaded[KEY_MOV] = true;
 		} catch (err) {
 			tabError[KEY_MOV] = err instanceof Error ? err.message : 'Erro ao carregar movimentações';
 		} finally {
 			tabLoading[KEY_MOV] = false;
+		}
+	}
+
+	async function activate(tab: string): Promise<void> {
+		if (!detail) return;
+		activeTab = tab;
+
+		if (tab === KEY_MOV) {
+			if (!tabLoaded[KEY_MOV] && !tabLoading[KEY_MOV]) await loadMovements(1);
+		} else if (tab === KEY_LOANS && !tabLoaded[KEY_LOANS]) {
+			tabLoaded[KEY_LOANS] = true;
+		} else if (tab === KEY_SUP && !tabLoaded[KEY_SUP]) {
+			tabLoaded[KEY_SUP] = true;
+		} else if (tab === KEY_HIST && !tabLoaded[KEY_HIST]) {
+			tabLoaded[KEY_HIST] = true;
 		}
 	}
 
@@ -135,12 +162,6 @@
 		if (tab === KEY_MOV) {
 			tabLoaded[KEY_MOV] = false;
 			void loadMovements(movPage);
-		} else {
-			loans = null;
-			suppliers = null;
-			history = null;
-			tabLoaded[tab] = false;
-			void activate(tab);
 		}
 	}
 
@@ -168,37 +189,13 @@
 		};
 	}
 
-	const DOT_TONE: Record<Tone, string> = {
-		success: 'bg-success',
-		warn: 'bg-warn',
-		danger: 'bg-danger',
-		brand: 'bg-brand',
-		muted: 'bg-muted',
-		ink: 'bg-ink'
-	};
-
-	// ---- exclusão ----
-
-	let deleteOpen = $state(false);
-	let deleting = $state(false);
-
-	async function handleDelete(): Promise<void> {
-		if (!detail) return;
-		deleting = true;
-		try {
-			await deleteItem(detail.id);
-			toasts.success('Item excluído');
-			await goto('/estoque/itens', { invalidateAll: true });
-		} catch (err) {
-			toastError(err, 'Não foi possível excluir o item');
-			deleteOpen = false;
-			deleting = false;
-		}
+	function categorias(detail: ItemDetail): string {
+		return categoriaMeta(detail.categoria).label;
 	}
 </script>
 
 <svelte:head>
-	<title>{detail?.name ?? 'Item'} — Estoque — FabLab</title>
+	<title>{detail?.nome ?? 'Item'} — Estoque — FabLab</title>
 </svelte:head>
 
 {#if loadError && !detail}
@@ -233,12 +230,6 @@
 		>
 			<Icon name="chevron-left" class="h-3.5 w-3.5" /> Voltar para itens
 		</a>
-		{#if canEdit}
-			<RowActions
-				actions={[{ id: 'delete', label: 'Excluir item', icon: 'trash', tone: 'danger' }]}
-				onSelect={() => (deleteOpen = true)}
-			/>
-		{/if}
 	</div>
 
 	<!-- Hero -->
@@ -250,16 +241,12 @@
 				<Icon name="photo" class="h-10 w-10 text-muted/60" />
 			</div>
 			<div class="min-w-0 flex-1">
-				<p class="font-mono text-xs text-muted">{detail.code}</p>
 				<h1 class="mt-0.5 truncate text-2xl font-semibold tracking-tight text-ink">
-					{detail.name}
+					{detail.nome}
 				</h1>
 				<p class="mt-1 text-sm text-muted">
-					{detail.category.label} · {detail.location.label} · {detail.unit}
-				</p>
-				<p class="mt-2 text-xs text-muted">
-					Atualizado {detail.updatedRelative ?? 'recentemente'}
-					{#if detail.updatedBy}por <span class="text-ink">{detail.updatedBy}</span>{/if}
+					{categorias(detail)} · {detail.unidadeMedida} ·
+					{localizacaoLabel(detail.localizacao)}
 				</p>
 			</div>
 			<StatusBadge {...statusMeta(detail.status)} />
@@ -271,32 +258,35 @@
 		<div class="rounded-xl border border-border bg-surface p-4">
 			<span class="text-xs text-muted">Qtd. atual</span>
 			<div class="mt-1 flex items-baseline gap-1.5">
-				<span class="text-2xl font-semibold tracking-tight {qtyClass(detail.current, detail.minimum)}">
-					{fmtQty(detail.current)}
+				<span
+					class="text-2xl font-semibold tracking-tight {qtyClass(detail.quantidadeAtual, detail.estoqueMinimo)}"
+				>
+					{fmtQty(detail.quantidadeAtual)}
 				</span>
 			</div>
 			<p class="mt-1 text-[11px] text-muted">
-				{detail.current < detail.minimum ? 'abaixo do mínimo' : 'dentro do esperado'}
+				{detail.quantidadeAtual < detail.estoqueMinimo ? 'abaixo do mínimo' : 'dentro do esperado'}
 			</p>
 		</div>
 
 		<div class="rounded-xl border border-border bg-surface p-4">
 			<span class="text-xs text-muted">Qtd. mínima</span>
 			<div class="mt-1 flex items-baseline gap-1.5">
-				<span class="text-2xl font-semibold tracking-tight">{fmtQty(detail.minimum)}</span>
+				<span class="text-2xl font-semibold tracking-tight">
+					{fmtQty(detail.estoqueMinimo)}
+				</span>
 			</div>
-			<p class="mt-1 text-[11px] text-muted">ponto de pedido: {detail.reorderPoint ?? '—'}</p>
+			<p class="mt-1 text-[11px] text-muted">em {detail.unidadeMedida}</p>
 		</div>
 
 		<div class="rounded-xl border border-border bg-surface p-4">
 			<span class="text-xs text-muted">Empréstimos</span>
 			<div class="mt-1 flex items-baseline gap-1.5">
-				<span class="text-2xl font-semibold tracking-tight">{detail.activeLoans}</span>
-				<span class="text-xs text-muted">ativos</span>
+				<span class="text-2xl font-semibold tracking-tight">
+					{detail.activeLoans ?? '—'}
+				</span>
+				{#if detail.activeLoans !== undefined}<span class="text-xs text-muted">ativos</span>{/if}
 			</div>
-			<p class="mt-1 text-[11px] text-muted">
-				último: {detail.lastLoan ? fmtDate(detail.lastLoan.at) : '—'}
-			</p>
 		</div>
 
 		<div class="rounded-xl border border-border bg-surface p-4">
@@ -306,11 +296,6 @@
 					{detail.lastEntry ? fmtDate(detail.lastEntry.at) : '—'}
 				</span>
 			</div>
-			<p class="mt-1 text-[11px] text-success">
-				{#if detail.lastEntry}
-					+{fmtQty(detail.lastEntry.quantity, detail.unit)} · {detail.lastEntry.kind}
-				{/if}
-			</p>
 		</div>
 	</div>
 
@@ -334,12 +319,12 @@
 		<div class="p-6">
 			{#if activeTab === 'visao'}
 				<div class="space-y-8">
-					{#if detail.description}
+					{#if detail.descricao}
 						<div>
 							<h2 class="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
 								Descrição
 							</h2>
-							<p class="text-sm leading-relaxed text-ink">{detail.description}</p>
+							<p class="text-sm leading-relaxed text-ink">{detail.descricao}</p>
 						</div>
 					{/if}
 
@@ -350,14 +335,14 @@
 						<dl
 							class="grid grid-cols-1 divide-y divide-border/50 overflow-hidden rounded-lg border border-border sm:grid-cols-[220px_1fr]"
 						>
-							{@render specRow('Código interno', detail.code, 'font-mono')}
-							{@render specRow('Categoria', detail.category.label)}
-							{@render specRow('Unidade', detail.unit)}
-							{@render specRow('Localização', detail.location.label)}
-							{@render specRow('Estoque mínimo', fmtQty(detail.minimum, detail.unit))}
-							{@render specRow('Estoque máximo', detail.maximum != null ? fmtQty(detail.maximum, detail.unit) : '—')}
-							{@render specRow('Ponto de pedido', detail.reorderPoint != null ? fmtQty(detail.reorderPoint, detail.unit) : '—')}
-							{@render specRow('Lead time (dias)', detail.leadTimeDays != null ? String(detail.leadTimeDays) : '—')}
+							{@render specRow('Categoria', categorias(detail))}
+							{@render specRow('Unidade', detail.unidadeMedida)}
+							{@render specRow('Localização', localizacaoLabel(detail.localizacao))}
+							{@render specRow(
+								'Estoque mínimo',
+								fmtQty(detail.estoqueMinimo, detail.unidadeMedida)
+							)}
+							{@render specRow('Estoque máximo', detail.maximum != null ? fmtQty(detail.maximum, detail.unidadeMedida) : '—')}
 							{@render specRow('Valor unitário', fmtMoney(detail.unitValue))}
 						</dl>
 					</div>
@@ -404,7 +389,7 @@
 								<p class="mt-0.5 text-lg font-semibold text-success">
 									+{mov.summary?.entries?.count ?? 0} · {fmtQty(
 										mov.summary?.entries?.sum ?? 0,
-										detail.unit
+										detail.unidadeMedida
 									)}
 								</p>
 							</div>
@@ -413,7 +398,7 @@
 								<p class="mt-0.5 text-lg font-semibold text-danger">
 									−{mov.summary?.exits?.count ?? 0} · {fmtQty(
 										mov.summary?.exits?.sum ?? 0,
-										detail.unit
+										detail.unidadeMedida
 									)}
 								</p>
 							</div>
@@ -429,7 +414,6 @@
 										<th class="px-4 py-2.5 font-medium">Tipo</th>
 										<th class="px-4 py-2.5 text-right font-medium">Qtd</th>
 										<th class="px-4 py-2.5 font-medium">Referência</th>
-										<th class="px-4 py-2.5 font-medium">Responsável</th>
 									</tr>
 								</thead>
 								<tbody class="divide-y divide-border">
@@ -446,7 +430,6 @@
 												{m.type === 'in' ? '+' : '−'}{fmtQty(m.quantity, m.item.unit)}
 											</td>
 											<td class="px-4 py-3 text-muted">{m.reference ?? '—'}</td>
-											<td class="px-4 py-3 text-muted">{m.responsible?.name ?? '—'}</td>
 										</tr>
 									{/each}
 								</tbody>
@@ -466,71 +449,11 @@
 				{/if}
 
 			{:else if activeTab === 'emprestimos'}
-				{#if tabLoading[KEY_LOANS] && loans === null}
-					<TableSkeleton rows={5} />
-				{:else if tabError[KEY_LOANS] && loans === null}
-					<ErrorBanner
-						message="Empréstimos indisponíveis"
-						hint={tabError[KEY_LOANS]}
-						onRetry={() => retryTab(KEY_LOANS)}
-					/>
-				{:else if loans && loans.length === 0}
-					<EmptyState
-						icon="arrow-uturn-left"
-						title="Sem empréstimos"
-						description="Nenhum empréstimo registrado para este item."
-					/>
-				{:else if loans}
-					<div class="overflow-x-auto">
-						<table class="w-full text-sm">
-							<thead>
-								<tr
-									class="border-b border-border text-left text-[11px] uppercase tracking-wide text-muted"
-								>
-									<th class="px-4 py-2.5 font-medium">Tomador</th>
-									<th class="px-4 py-2.5 font-medium">Finalidade</th>
-									<th class="px-4 py-2.5 font-medium">Qtd</th>
-									<th class="px-4 py-2.5 font-medium">Retirada</th>
-									<th class="px-4 py-2.5 font-medium">Prazo</th>
-									<th class="px-4 py-2.5 font-medium">Status</th>
-								</tr>
-							</thead>
-							<tbody class="divide-y divide-border">
-								{#each loans as l (l.id)}
-									{@const overdue = loanComputedMeta(l.computed).color === 'danger'}
-									<tr class:border-l-2={overdue} class:border-danger={overdue}>
-										<td class="px-4 py-3">
-											<div class="flex items-center gap-2">
-												<Avatar
-													name={l.borrower.name}
-													initialsOverride={l.borrower.initials}
-													size="xs"
-												/>
-												<span class="text-ink">{l.borrower.name}</span>
-											</div>
-										</td>
-										<td class="px-4 py-3 text-muted">{l.purpose ?? '—'}</td>
-										<td class="px-4 py-3 font-mono">{fmtQty(l.quantity, l.item.unit)}</td>
-										<td class="px-4 py-3 text-muted">{fmtDate(l.borrowDate)}</td>
-										<td class="px-4 py-3 text-muted">
-											{fmtDate(l.dueDate)}
-											{#if l.computed === 'atrasado' && l.overdueDays > 0}
-												<span class="ml-1 text-xs font-semibold text-danger">
-													(atrasado {l.overdueDays}d)
-												</span>
-											{:else if l.computed === 'vence_hoje'}
-												<span class="ml-1 text-xs font-semibold text-warn">(hoje)</span>
-											{/if}
-										</td>
-										<td class="px-4 py-3">
-											<StatusBadge {...loanComputedMeta(l.computed)} />
-										</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
-				{/if}
+				<EmptyState
+					icon="arrow-uturn-left"
+					title="Sem empréstimos"
+					description="Nenhum empréstimo registrado para este item."
+				/>
 
 			{:else if activeTab === 'fornecedores'}
 				{#if tabLoading[KEY_SUP] && suppliers === null}
@@ -547,78 +470,14 @@
 						title="Sem fornecedores"
 						description="Nenhum fornecedor vinculado a este item."
 					/>
-				{:else if suppliers}
-					<div class="overflow-x-auto">
-						<table class="w-full text-sm">
-							<thead>
-								<tr
-									class="border-b border-border text-left text-[11px] uppercase tracking-wide text-muted"
-								>
-									<th class="px-4 py-2.5 font-medium">Fornecedor</th>
-									<th class="px-4 py-2.5 font-medium">Última compra</th>
-									<th class="px-4 py-2.5 text-right font-medium">Valor</th>
-									<th class="px-4 py-2.5 font-medium">Itens</th>
-								</tr>
-							</thead>
-							<tbody class="divide-y divide-border">
-								{#each suppliers as s (s.id)}
-									<tr>
-										<td class="px-4 py-3">
-											<div class="flex items-center gap-2">
-												<Avatar name={s.name} size="xs" />
-												<div>
-													<p class="text-ink">{s.name}</p>
-													{#if s.lastPurchase?.notaFiscal}
-														<p class="text-xs text-muted">NF {s.lastPurchase.notaFiscal}</p>
-													{/if}
-												</div>
-											</div>
-										</td>
-										<td class="px-4 py-3 text-muted">
-											{s.lastPurchase ? fmtDate(s.lastPurchase.date) : '—'}
-										</td>
-										<td class="px-4 py-3 text-right font-mono">
-											{fmtMoney(s.lastPurchase?.value)}
-										</td>
-										<td class="px-4 py-3 text-muted">{s.itemsCount}</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
 				{/if}
 
 			{:else if activeTab === 'historico'}
-				{#if tabLoading[KEY_HIST] && history === null}
-					<TableSkeleton rows={5} />
-				{:else if tabError[KEY_HIST] && history === null}
-					<ErrorBanner
-						message="Histórico indisponível"
-						hint={tabError[KEY_HIST]}
-						onRetry={() => retryTab(KEY_HIST)}
-					/>
-				{:else if history && history.length === 0}
-					<EmptyState
-						icon="clock"
-						title="Sem histórico"
-						description="Nenhuma alteração registrada para este item."
-					/>
-				{:else if history}
-					<ul role="list" class="mx-2">
-						{#each history as entry (entry.id)}
-							<li class="relative flex gap-3 pb-6 pl-4 last:pb-0">
-								<span
-									class="absolute left-0 top-1.5 h-2 w-2 rounded-full {DOT_TONE[entry.tone]}"
-									aria-hidden="true"></span>
-								<span class="absolute bottom-0 left-[3px] top-5 w-px bg-border" aria-hidden="true"></span>
-								<div>
-									<p class="text-sm font-medium text-ink">{entry.title}</p>
-									<p class="mt-0.5 text-xs text-muted">{entry.by} · {fmtDate(entry.at)}</p>
-								</div>
-							</li>
-						{/each}
-					</ul>
-				{/if}
+				<EmptyState
+					icon="clock"
+					title="Sem histórico"
+					description="Nenhuma alteração registrada para este item."
+				/>
 			{/if}
 		</div>
 	</section>
@@ -630,13 +489,3 @@
 		<dd class="px-4 py-2.5 text-sm {extra}">{value}</dd>
 	</div>
 {/snippet}
-
-<ConfirmDialog
-	open={deleteOpen}
-	title="Excluir item"
-	message={`Esta ação apagará "${detail?.code ?? ''}" do estoque. Ela não pode ser desfeita.`}
-	confirmLabel="Excluir"
-	loading={deleting}
-	onCancel={() => (deleteOpen = false)}
-	onConfirm={handleDelete}
-/>

@@ -9,11 +9,13 @@ import {
 	canSeeAdvertencias,
 	canSeeLoans,
 	canSeeMachines,
+	canVerFornecedores,
 	canView,
 	canViewConfiguracoes,
 	hasPermissao,
 	isAdmin,
-	isResponsavelAtribuido
+	isResponsavelAtribuido,
+	isResponsavelEstoque
 } from '$lib/utils/permissions';
 import type { Module, User } from '$lib/types/auth';
 import type { Nivel, PermissaoMatriz, PermissaoNivel } from '$lib/types/configuracoes';
@@ -91,6 +93,81 @@ describe('permissions', () => {
 		it('roles explícitas "edit" concedem edição', () => {
 			const u = user({ role: 2, roles: { estoque: 'edit' } });
 			expect(canEdit(u, 'estoque')).toBe(true);
+		});
+
+		it('responsável por estoque (roles 1..3) edita estoque mesmo sem grant', () => {
+			for (const role of [1, 2, 3] as const) {
+				const u = user({ role, responsibilities: { estoque: ['cat_3d'] } });
+				expect(canEdit(u, 'estoque')).toBe(true);
+			}
+		});
+
+		it('responsável por estoque não é ampliado para outros módulos', () => {
+			const u = user({ role: 2, responsibilities: { estoque: ['cat_3d'] } });
+			expect(canEdit(u, 'producao')).toBe(false);
+			expect(canEdit(u, 'financeiro')).toBe(false);
+			expect(canEdit(u, 'vendas')).toBe(false);
+			expect(canEdit(u, 'rh')).toBe(true);
+		});
+
+		it('Recrutando (role 4) responsável por estoque NÃO edita (acesso bloqueado)', () => {
+			const u = user({ role: 4, responsibilities: { estoque: ['cat_3d'] } });
+			expect(canEdit(u, 'estoque')).toBe(false);
+			expect(canView(u, 'estoque')).toBe(false);
+		});
+	});
+
+	describe('isResponsavelEstoque', () => {
+		it('admin (role 0) é responsável por estoque', () => {
+			expect(isResponsavelEstoque(user({ role: 0 }))).toBe(true);
+		});
+
+		it('Bolsista sem responsabilidade NÃO é responsável por estoque', () => {
+			expect(isResponsavelEstoque(user({ role: 1 }))).toBe(false);
+		});
+
+		it('Bolsista com responsabilidade.assign é responsável por estoque', () => {
+			const u = user({ role: 1, responsibilities: { estoque: ['cat_3d'] } });
+			expect(isResponsavelEstoque(u)).toBe(true);
+		});
+
+		it('Recrutando (role 4) nunca é responsável por estoque', () => {
+			const u = user({ role: 4, responsibilities: { estoque: ['cat_3d'] } });
+			expect(isResponsavelEstoque(u)).toBe(false);
+		});
+
+		it('role 2/3 sem responsabilidade não é responsável', () => {
+			expect(isResponsavelEstoque(user({ role: 2 }))).toBe(false);
+			expect(isResponsavelEstoque(user({ role: 3 }))).toBe(false);
+		});
+
+		it('responsabilidade de outro módulo não conta', () => {
+			const u = user({ role: 1, responsibilities: { producao: ['laser'] } });
+			expect(isResponsavelEstoque(u)).toBe(false);
+		});
+
+		it('negado para usuário nulo', () => {
+			expect(isResponsavelEstoque(null)).toBe(false);
+		});
+	});
+
+	describe('canVerFornecedores', () => {
+		it('admin vê fornecedores', () => {
+			expect(canVerFornecedores(user({ role: 0 }))).toBe(true);
+		});
+
+		it('Bolsista (role 1) vê fornecedores', () => {
+			expect(canVerFornecedores(user({ role: 1 }))).toBe(true);
+		});
+
+		it('roles 2..4 não veem fornecedores', () => {
+			for (const role of [2, 3, 4] as const) {
+				expect(canVerFornecedores(user({ role }))).toBe(false);
+			}
+		});
+
+		it('negado para usuário nulo', () => {
+			expect(canVerFornecedores(null)).toBe(false);
 		});
 	});
 

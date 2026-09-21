@@ -120,7 +120,7 @@
 	function metaOf(m: Movement): { label: string; color: Tone } {
 		return isIn
 			? entryKindMeta(m.kind ?? 'ajuste')
-			: exitReasonMeta(m.reason ?? 'consumo_interno');
+			: exitReasonMeta(m.reason ?? 'CONSUMO');
 	}
 </script>
 

@@ -1,30 +1,35 @@
 import { redirect } from '@sveltejs/kit';
 import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
+import type { IdLabel } from '$lib/types/stock';
 import { auth } from '$lib/stores/auth';
 import { canEdit } from '$lib/utils/permissions';
-import { fetchCategories } from '$lib/api/stock/items';
-import { fetchLocationOptions } from '$lib/api/stock/locations';
+import { listarLocalizacoes } from '$lib/api/stock/locations';
+import { localizacaoLabel } from '$lib/utils/stock-status';
 
 export const ssr = false;
 export const prerender = false;
+
+const CATEGORIAS: IdLabel[] = [
+	{ id: 'INSUMO', label: 'Insumo' },
+	{ id: 'FERRAMENTA', label: 'Ferramenta' },
+	{ id: 'PECA', label: 'Peça' }
+];
 
 export const load: PageLoad = async ({ fetch }) => {
 	if (!canEdit(get(auth).user, 'estoque')) {
 		throw redirect(302, '/estoque/itens');
 	}
 
-	let categories;
-	let locations;
+	let locations: IdLabel[] = [];
 	try {
-		[categories, locations] = await Promise.all([
-			fetchCategories(fetch).catch(() => [] as never[]),
-			fetchLocationOptions(fetch).catch(() => [] as never[])
-		]);
+		locations = (await listarLocalizacoes(fetch)).map((l) => ({
+			id: l.id,
+			label: localizacaoLabel(l)
+		}));
 	} catch {
-		categories = [];
 		locations = [];
 	}
 
-	return { categories, locations };
+	return { categories: CATEGORIAS, locations };
 };

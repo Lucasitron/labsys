@@ -36,10 +36,23 @@ export function canView(user: User | null, module: Module): boolean {
 	return VIEW_RULES[module].includes(user.role);
 }
 
+export function isResponsavelEstoque(user: User | null): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	if (user.role === 4) return false;
+	return (user.responsibilities?.estoque?.length ?? 0) > 0;
+}
+
+export function canVerFornecedores(user: User | null): boolean {
+	if (!user) return false;
+	return isAdmin(user) || user.role === 1;
+}
+
 export function canEdit(user: User | null, module: Module): boolean {
 	if (!user) return false;
 	if (user.role === 0) return true;
 	if (user.roles?.[module] === 'edit') return true;
+	if (module === 'estoque' && isResponsavelEstoque(user)) return true;
 
 	return EDIT_RULES[module].includes(user.role);
 }

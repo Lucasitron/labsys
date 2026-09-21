@@ -1,27 +1,52 @@
-import type { CreateMovementPayload, MovementParams, MovementsResult } from '$lib/types/stock';
+import type {
+	CreateEntradaPayload,
+	CreateSaidaPayload,
+	EntradaResponse,
+	SaidaResponse
+} from '$lib/types/stock';
 import { buildQuery, stockFetch } from './request';
 
-const BASE = '/stock/movements';
+// ---- Entradas ----
 
-export async function fetchMovements(
-	fetchFn: typeof fetch,
-	params: MovementParams
-): Promise<MovementsResult> {
-	const qs = buildQuery({
-		type: params.type,
-		page: params.page,
-		pageSize: params.pageSize,
-		search: params.search,
-		kind: params.kinds,
-		reason: params.reasons,
-		period: params.period,
-		itemId: params.itemId
-	});
-	return stockFetch<MovementsResult>(`${BASE}${qs}`, {}, fetchFn);
+export async function listarEntradasPorItem(
+	idItem: string,
+	fetchFn: typeof fetch = fetch
+): Promise<EntradaResponse[]> {
+	return stockFetch<EntradaResponse[]>(`/estoque/entradas${buildQuery({ idItem })}`, {}, fetchFn);
 }
 
-export function createMovement(payload: CreateMovementPayload): Promise<unknown> {
-	return stockFetch<unknown>(BASE, {
+export async function buscarEntrada(
+	id: string,
+	fetchFn: typeof fetch = fetch
+): Promise<EntradaResponse> {
+	return stockFetch<EntradaResponse>(`/estoque/entradas/${id}`, {}, fetchFn);
+}
+
+export async function criarEntrada(payload: CreateEntradaPayload): Promise<EntradaResponse> {
+	return stockFetch<EntradaResponse>('/estoque/entradas', {
+		method: 'POST',
+		body: JSON.stringify(payload)
+	});
+}
+
+// ---- Saídas ----
+
+export async function listarSaidasPorItem(
+	idItem: string,
+	fetchFn: typeof fetch = fetch
+): Promise<SaidaResponse[]> {
+	return stockFetch<SaidaResponse[]>(`/estoque/saidas${buildQuery({ idItem })}`, {}, fetchFn);
+}
+
+export async function buscarSaida(
+	id: string,
+	fetchFn: typeof fetch = fetch
+): Promise<SaidaResponse> {
+	return stockFetch<SaidaResponse>(`/estoque/saidas/${id}`, {}, fetchFn);
+}
+
+export async function criarSaida(payload: CreateSaidaPayload): Promise<SaidaResponse> {
+	return stockFetch<SaidaResponse>('/estoque/saidas', {
 		method: 'POST',
 		body: JSON.stringify(payload)
 	});

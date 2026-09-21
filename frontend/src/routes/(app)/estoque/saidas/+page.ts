@@ -1,12 +1,12 @@
 import type { PageLoad } from './$types';
-import { fetchMovements } from '$lib/api/stock/movements';
 import { arrParam, intParam, strParam } from '$lib/utils/stock-url';
 import type { MovementListState } from '$lib/components/estoque/MovementList.svelte';
+import type { MovementsResult } from '$lib/types/stock';
 
 export const ssr = false;
 export const prerender = false;
 
-export const load: PageLoad = async ({ url, fetch }) => {
+export const load: PageLoad = async ({ url }) => {
 	const searchParams = url.searchParams;
 	const params: MovementListState = {
 		search: strParam(searchParams, 'search'),
@@ -16,22 +16,13 @@ export const load: PageLoad = async ({ url, fetch }) => {
 		pageSize: intParam(searchParams, 'pageSize', 10, 10, 100)
 	};
 
-	try {
-		const result = await fetchMovements(fetch, {
-			type: 'out',
-			page: params.page,
-			pageSize: params.pageSize,
-			search: params.search,
-			kinds: [],
-			reasons: params.keys,
-			period: params.period
-		});
-		return { params, result, error: null as string | null };
-	} catch (err) {
-		return {
-			params,
-			result: null,
-			error: err instanceof Error ? err.message : 'Erro ao carregar saídas'
-		};
-	}
+	// R-9: backend não expõe listagem global de movimentações (só por item). Bloco 2
+	// implementa o histórico agregado; enquanto isso a tela mostra o estado vazio.
+	const result: MovementsResult = {
+		movements: [],
+		pagination: { page: 1, pageSize: params.pageSize, totalItems: 0, totalPages: 1 },
+		filters: { kinds: [], reasons: [], periods: [] }
+	};
+
+	return { params, result, error: null as string | null };
 };

@@ -1,25 +1,20 @@
-import type { SuppliersResult } from '$lib/types/stock';
-import { buildQuery, stockFetch } from './request';
+import type { CreateSupplierPayload, Fornecedor } from '$lib/types/stock';
+import { stockFetch } from './request';
 
-export async function fetchSuppliers(
-	fetchFn: typeof fetch,
-	params: { page: number; pageSize: number; search: string }
-): Promise<SuppliersResult> {
-	const qs = buildQuery({
-		page: params.page,
-		pageSize: params.pageSize,
-		search: params.search
+// 🔴 Est-006 (TODO): GET /estoque/fornecedores requer perfil ADMIN ou BOLSISTA no backend.
+export async function listarFornecedores(
+	fetchFn: typeof fetch = fetch
+): Promise<Fornecedor[]> {
+	return stockFetch<Fornecedor[]>('/estoque/fornecedores', {}, fetchFn);
+}
+
+export async function criarFornecedor(payload: CreateSupplierPayload): Promise<Fornecedor> {
+	return stockFetch<Fornecedor>('/estoque/fornecedores', {
+		method: 'POST',
+		body: JSON.stringify(payload)
 	});
-	return stockFetch<SuppliersResult>(`/stock/suppliers${qs}`, {}, fetchFn);
 }
 
-export async function fetchSupplierOptions(fetchFn: typeof fetch): Promise<
-	{ id: string; name: string }[]
-> {
-	const result = await stockFetch<SuppliersResult>(
-		'/stock/suppliers?page=1&pageSize=500',
-		{},
-		fetchFn
-	);
-	return (result.suppliers ?? []).map((s) => ({ id: s.id, name: s.name }));
-}
+// Aliases legados (páginas ainda importam `fetchSupplierOptions`).
+export const listarFornecedoresOptions = listarFornecedores;
+export const fetchSupplierOptions = listarFornecedores;
