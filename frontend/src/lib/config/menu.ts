@@ -1,5 +1,5 @@
 import type { Module, User } from '$lib/types/auth';
-import { canSee5S, canSeeAdvertencias } from '$lib/utils/permissions';
+import { canSee5S, canSeeAdvertencias, isAdmin } from '$lib/utils/permissions';
 
 export type MenuIcon =
 	| 'dashboard'
@@ -62,7 +62,18 @@ export const menuItems: MenuItem[] = [
 	},
 	{ label: 'Financeiro', path: '/financeiro', module: 'financeiro', icon: 'financeiro' },
 	{ label: 'Notificações', path: '/notificacoes', module: 'notificacoes', icon: 'notificacoes' },
-	{ label: 'Configurações', path: '/configuracoes', module: 'configuracoes', icon: 'configuracoes' }
+	{
+		label: 'Configurações',
+		path: '/configuracoes',
+		module: 'configuracoes',
+		icon: 'configuracoes',
+		children: [
+			{ label: 'Meu perfil', path: '/configuracoes/perfil' },
+			{ label: 'Usuários', path: '/configuracoes/usuarios', canSee: isAdmin },
+			{ label: 'Permissões', path: '/configuracoes/permissoes', canSee: isAdmin },
+			{ label: 'Sistema', path: '/configuracoes/sistema', canSee: isAdmin }
+		]
+	}
 ];
 
 export interface Crumb {

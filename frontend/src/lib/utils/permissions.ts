@@ -1,4 +1,5 @@
 import type { Module, Role, User } from '$lib/types/auth';
+import type { PermissaoMatriz, PermissaoNivel } from '$lib/types/configuracoes';
 
 export const VIEW_RULES: Record<Module, readonly Role[]> = {
 	dashboard: [0, 1, 2, 3, 4],
@@ -92,4 +93,31 @@ export function canEditProducao(
 	if (canEdit(user, 'producao')) return true;
 	if (recurso) return isResponsavelAtribuido(user, recurso);
 	return false;
+}
+
+export function isAdmin(user: User | null): boolean {
+	return user?.role === 0;
+}
+
+export function canViewConfiguracoes(user: User | null): boolean {
+	return isAdmin(user);
+}
+
+export function hasPermissao(
+	user: User | null,
+	modulo: Module,
+	acao: PermissaoNivel,
+	matriz?: PermissaoMatriz
+): boolean {
+	if (!user) return false;
+	if (acao === 'Nenhum') return false;
+	if (isAdmin(user)) return true;
+
+	if (matriz) {
+		const celula = matriz[modulo]?.[user.role];
+		if (acao === 'Editar') return celula === 'Editar';
+		return celula === 'Editar' || celula === 'Ver';
+	}
+
+	return acao === 'Editar' ? canEdit(user, modulo) : canView(user, modulo);
 }
