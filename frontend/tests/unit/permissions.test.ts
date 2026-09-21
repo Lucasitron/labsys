@@ -10,9 +10,13 @@ import {
 	canSeeLoans,
 	canSeeMachines,
 	canView,
+	canViewConfiguracoes,
+	hasPermissao,
+	isAdmin,
 	isResponsavelAtribuido
 } from '$lib/utils/permissions';
 import type { Module, User } from '$lib/types/auth';
+import type { Nivel, PermissaoMatriz, PermissaoNivel } from '$lib/types/configuracoes';
 
 function user(overrides: Partial<User> = {}): User {
 	return {
@@ -23,6 +27,28 @@ function user(overrides: Partial<User> = {}): User {
 		role: 2,
 		...overrides
 	};
+}
+
+function matrizCom(modulo: Module, nivel: Nivel, valor: PermissaoNivel): PermissaoMatriz {
+	const modulos: Module[] = [
+		'dashboard',
+		'rh',
+		'estoque',
+		'vendas',
+		'financeiro',
+		'producao',
+		'notificacoes',
+		'configuracoes'
+	];
+	const niveis: Nivel[] = [0, 1, 2, 3, 4];
+	const mat = {} as PermissaoMatriz;
+	for (const m of modulos) {
+		mat[m] = {} as Record<Nivel, PermissaoNivel>;
+		for (const n of niveis) {
+			mat[m][n] = m === modulo && n === nivel ? valor : 'Nenhum';
+		}
+	}
+	return mat;
 }
 
 describe('permissions', () => {
@@ -288,6 +314,79 @@ describe('permissions', () => {
 		it('producao é view para roles 1..3 e edit somente para admin', () => {
 			expect(VIEW_RULES.producao).toEqual([0, 1, 2, 3]);
 			expect(EDIT_RULES.producao).toEqual([0]);
+		});
+	});
+
+	describe('isAdmin', () => {
+		it('admin (role 0) é true', () => {
+			expect(isAdmin(user({ role: 0 }))).toBe(true);
+		});
+
+		it('roles 1..4 não são admin', () => {
+			for (const role of [1, 2, 3, 4] as const) {
+				expect(isAdmin(user({ role }))).toBe(false);
+			}
+		});
+
+		it('negado para usuário nulo', () => {
+			expect(isAdmin(null)).toBe(false);
+		});
+	});
+
+	describe('canViewConfiguracoes', () => {
+		it('admin vê o módulo configurações', () => {
+			expect(canViewConfiguracoes(user({ role: 0 }))).toBe(true);
+		});
+
+		it('roles 1..4 não veem configurações (Admin-only)', () => {
+			for (const role of [1, 2, 3, 4] as const) {
+				expect(canViewConfiguracoes(user({ role }))).toBe(false);
+			}
+		});
+	});
+
+	describe('hasPermissao', () => {
+		it('admin sempre tem permissão para Ver e Editar', () => {
+			const admin = user({ role: 0 });
+			expect(hasPermissao(admin, 'configuracoes', 'Ver')).toBe(true);
+			expect(hasPermissao(admin, 'configuracoes', 'Editar')).toBe(true);
+		});
+
+		it('acao "Nenhum" é sempre negada, mesmo para admin', () => {
+			expect(hasPermissao(user({ role: 0 }), 'configuracoes', 'Nenhum')).toBe(false);
+			expect(hasPermissao(user({ role: 2 }), 'configuracoes', 'Nenhum')).toBe(false);
+		});
+
+		it('com matriz, célula "Ver" concede Ver mas não Editar', () => {
+			const mat = matrizCom('configuracoes', 2, 'Ver');
+			const u = user({ role: 2 });
+			expect(hasPermissao(u, 'configuracoes', 'Ver', mat)).toBe(true);
+			expect(hasPermissao(u, 'configuracoes', 'Editar', mat)).toBe(false);
+		});
+
+		it('com matriz, célula "Editar" concede Ver e Editar', () => {
+			const mat = matrizCom('configuracoes', 3, 'Editar');
+			const u = user({ role: 3 });
+			expect(hasPermissao(u, 'configuracoes', 'Ver', mat)).toBe(true);
+			expect(hasPermissao(u, 'configuracoes', 'Editar', mat)).toBe(true);
+		});
+
+		it('com matriz, célula "Nenhum" nega mesmo com grant de roles', () => {
+			const mat = matrizCom('configuracoes', 2, 'Nenhum');
+			const u = user({ role: 2, roles: { configuracoes: 'view' } });
+			expect(hasPermissao(u, 'configuracoes', 'Ver', mat)).toBe(false);
+		});
+
+		it('sem matriz, fallback "Ver" usa canView e "Editar" usa canEdit', () => {
+			expect(hasPermissao(user({ role: 4 }), 'configuracoes', 'Ver')).toBe(true);
+			expect(hasPermissao(user({ role: 4 }), 'configuracoes', 'Editar')).toBe(false);
+			expect(
+				hasPermissao(user({ role: 2, roles: { configuracoes: 'edit' } }), 'configuracoes', 'Editar')
+			).toBe(true);
+		});
+
+		it('negado para usuário nulo', () => {
+			expect(hasPermissao(null, 'configuracoes', 'Ver')).toBe(false);
 		});
 	});
 });
