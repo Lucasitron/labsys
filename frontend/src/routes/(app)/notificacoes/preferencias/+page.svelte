@@ -3,10 +3,9 @@
 	import type {
 		NotificationChannel,
 		NotificationPreferences,
-		NotificationType,
-		Tone
+		NotificationType
 	} from '$lib/types/notifications';
-	import { NOTIFICATION_TYPES, TYPE_META } from '$lib/utils/notification-format';
+	import { NOTIFICATION_TYPES, TONE_STYLES, TYPE_META } from '$lib/utils/notification-format';
 	import { toasts } from '$lib/stores/toast';
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -37,15 +36,6 @@
 			description: 'Enviadas como notificação no dispositivo do destinatário.'
 		}
 	];
-
-	const ICON_STYLES: Record<Tone, string> = {
-		brand: 'bg-brand/15 border-brand/30 text-brand',
-		warn: 'bg-warn/15 border-warn/30 text-warn',
-		success: 'bg-success/15 border-success/30 text-success',
-		danger: 'bg-danger/15 border-danger/30 text-danger',
-		ink: 'bg-ink/15 border-ink/30 text-ink',
-		muted: 'bg-muted/15 border-muted/30 text-muted'
-	};
 
 	function matrizPadrao(): NotificationPreferences {
 		const m = {} as NotificationPreferences;
@@ -233,7 +223,7 @@
 							<div class="grid min-w-[600px] grid-cols-[minmax(160px,1.6fr)_1fr_1fr_1fr] items-center gap-3 border-b border-border px-4 py-3 transition-colors hover:bg-elevated/40">
 								<div class="flex min-w-0 items-center gap-2.5">
 									<span
-										class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border {ICON_STYLES[TYPE_META[tipo].tone]}"
+										class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border {TONE_STYLES[TYPE_META[tipo].tone]}"
 										aria-hidden="true"
 									>
 										<Icon name={TYPE_META[tipo].icon} class="h-4 w-4" />

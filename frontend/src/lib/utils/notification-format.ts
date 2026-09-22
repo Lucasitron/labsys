@@ -1,6 +1,15 @@
 import type { IconName } from '$lib/components/ui/Icon.svelte';
 import type { NotificationChannel, NotificationType, Tone } from '$lib/types/notifications';
 
+export const TONE_STYLES: Record<Tone, string> = {
+	brand: 'bg-brand/15 border-brand/30 text-brand',
+	warn: 'bg-warn/15 border-warn/30 text-warn',
+	success: 'bg-success/15 border-success/30 text-success',
+	danger: 'bg-danger/15 border-danger/30 text-danger',
+	ink: 'bg-ink/15 border-ink/30 text-ink',
+	muted: 'bg-muted/15 border-muted/30 text-muted'
+};
+
 export interface TypeMeta {
 	label: string;
 	icon: IconName;

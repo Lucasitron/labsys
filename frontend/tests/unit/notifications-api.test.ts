@@ -179,9 +179,4 @@ describe('api/notifications — montagem de rotas e query strings', () => {
 
 		expect(apiFetchMock.mock.calls[0]![0]).toBe('/notifications/history');
 	});
-
-	it('re-exporta fetchUnreadCount de api/dashboard (sem duplicar)', async () => {
-		const mod = await freshApi();
-		expect(mod.fetchUnreadCount).toBeTypeOf('function');
-	});
 });

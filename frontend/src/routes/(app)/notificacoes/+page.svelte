@@ -173,6 +173,7 @@
 	async function markAll(): Promise<void> {
 		const items = data?.items ?? [];
 		const snapshot = items.map((n) => n.read);
+		const countAnterior = count;
 		items.forEach((n) => {
 			n.read = true;
 		});
@@ -181,13 +182,12 @@
 
 		try {
 			await markAllRead();
-			count = get(unreadCount);
 			toasts.success('Todas as notificações marcadas como lidas');
 		} catch (err: unknown) {
 			items.forEach((n, index) => {
 				n.read = snapshot[index];
 			});
-			count = get(unreadCount);
+			count = countAnterior;
 			toastError('Erro ao marcar as notificações como lidas');
 			void err;
 		}
@@ -253,6 +253,7 @@
 					message={error}
 					hint="Não foi possível carregar suas notificações. Verifique sua conexão e tente novamente."
 					onRetry={retry}
+					testid="notifications-retry"
 				/>
 			</div>
 		{:else if loading && data === null}

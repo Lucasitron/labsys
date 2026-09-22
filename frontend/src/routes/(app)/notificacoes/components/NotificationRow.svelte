@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { Notification, Tone } from '$lib/types/notifications';
+	import type { Notification } from '$lib/types/notifications';
 	import { relativeTime } from '$lib/utils/format';
-	import { TYPE_META } from '$lib/utils/notification-format';
+	import { TONE_STYLES, TYPE_META } from '$lib/utils/notification-format';
 
 	interface Props {
 		notification: Notification;
@@ -11,17 +11,8 @@
 
 	let { notification, onRead }: Props = $props();
 
-	const ICON_STYLES: Record<Tone, string> = {
-		brand: 'bg-brand/15 border-brand/30 text-brand',
-		warn: 'bg-warn/15 border-warn/30 text-warn',
-		success: 'bg-success/15 border-success/30 text-success',
-		danger: 'bg-danger/15 border-danger/30 text-danger',
-		ink: 'bg-ink/15 border-ink/30 text-ink',
-		muted: 'bg-muted/15 border-muted/30 text-muted'
-	};
-
-	const meta = $derived(TYPE_META[notification.type]);
-	const iconStyle = $derived(ICON_STYLES[meta.tone]);
+	const meta = $derived(TYPE_META[notification.type] ?? TYPE_META.sistema);
+	const iconStyle = $derived(TONE_STYLES[meta.tone]);
 </script>
 
 <article

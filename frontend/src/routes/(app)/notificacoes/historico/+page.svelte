@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { history } from '$lib/api/notifications';
 	import type {
+		HistoryEntry,
 		HistoryFilters,
 		NotificationChannel,
-		NotificationType,
-		Tone
+		NotificationType
 	} from '$lib/types/notifications';
-	import { CHANNEL_BADGE, NOTIFICATION_TYPES, TYPE_META } from '$lib/utils/notification-format';
+	import { CHANNEL_BADGE, NOTIFICATION_TYPES, TONE_STYLES, TYPE_META } from '$lib/utils/notification-format';
 	import Chip from '$lib/components/ui/Chip.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
@@ -18,31 +18,7 @@
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import TableSkeleton from '$lib/components/ui/TableSkeleton.svelte';
 
-	interface HistoryEntry {
-		id: string;
-		title: string;
-		type: NotificationType;
-		recipient: string;
-		channel: NotificationChannel;
-		read: boolean;
-		sentAt: string;
-	}
-
-	interface HistoryPayload {
-		items?: HistoryEntry[];
-		total?: number;
-	}
-
 	const PAGE_SIZE = 10;
-
-	const ICON_STYLES: Record<Tone, string> = {
-		brand: 'bg-brand/15 text-brand border-brand/30',
-		warn: 'bg-warn/15 text-warn border-warn/30',
-		success: 'bg-success/15 text-success border-success/30',
-		danger: 'bg-danger/15 text-danger border-danger/30',
-		ink: 'bg-ink/15 text-ink border-ink/30',
-		muted: 'bg-muted/15 text-muted border-muted/30'
-	};
 
 	const PERIODS = [
 		{ id: 'today', label: 'Hoje' },
@@ -116,10 +92,8 @@
 		void history({ ...filters })
 			.then((res) => {
 				if (id !== fetchCounter) return;
-				const payload = res as HistoryPayload;
-				const items = payload.items ?? [];
-				allItems = items;
-				totalItems = payload.total ?? items.length;
+				allItems = res.items;
+				totalItems = res.total;
 			})
 			.catch((err: unknown) => {
 				if (id !== fetchCounter) return;
@@ -342,7 +316,7 @@
 					</thead>
 					<tbody>
 						{#each pageItems as row (row.id)}
-							{@const meta = TYPE_META[row.type]}
+							{@const meta = TYPE_META[row.type] ?? TYPE_META.sistema}
 							<tr
 								data-testid="history-row"
 								class="border-b border-border transition-colors hover:bg-elevated/40"
@@ -352,7 +326,7 @@
 								</td>
 								<td class="px-4 py-3">
 									<span
-										class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap {ICON_STYLES[meta.tone]}"
+										class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap {TONE_STYLES[meta.tone]}"
 									>
 										<Icon name={meta.icon} class="h-3 w-3" />
 										{meta.label}

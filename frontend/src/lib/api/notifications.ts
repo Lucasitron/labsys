@@ -1,16 +1,14 @@
 import { get } from 'svelte/store';
 import { apiFetch } from './client';
-import { fetchUnreadCount } from './dashboard';
 import { auth } from '$lib/stores/auth';
 import type {
 	HistoryFilters,
+	HistoryPayload,
 	Notification,
 	NotificationPreferences,
 	NotificationType,
 	PagedNotifications
 } from '$lib/types/notifications';
-
-export { fetchUnreadCount };
 
 function bearer(): Record<string, string> {
 	const { token } = get(auth);
@@ -74,7 +72,10 @@ export async function savePreferences(
 	}, fetchFn);
 }
 
-export async function history(filters: HistoryFilters = {}, fetchFn: typeof fetch = fetch): Promise<unknown> {
+export async function history(
+	filters: HistoryFilters = {},
+	fetchFn: typeof fetch = fetch
+): Promise<HistoryPayload> {
 	const query = new URLSearchParams();
 	if (filters.search !== undefined) query.set('search', filters.search);
 	if (filters.type !== undefined) query.set('type', filters.type);
@@ -82,7 +83,7 @@ export async function history(filters: HistoryFilters = {}, fetchFn: typeof fetc
 	if (filters.channel !== undefined) query.set('channel', filters.channel);
 	if (filters.period !== undefined) query.set('period', filters.period);
 	const qs = query.toString();
-	return await apiFetch<unknown>(
+	return await apiFetch<HistoryPayload>(
 		`/notifications/history${qs ? `?${qs}` : ''}`,
 		{ headers: bearer() },
 		fetchFn

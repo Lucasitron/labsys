@@ -177,8 +177,9 @@ describe('notificacoes +page (lista central)', () => {
 
 		await waitFor(() => expect(screen.getByTestId('notifications-error')).toBeTruthy());
 		expect(screen.getByRole('alert').textContent).toContain('Falha de rede.');
+		expect(screen.getByTestId('notifications-retry')).toBeTruthy();
 
-		await fireEvent.click(screen.getByText('Tentar novamente'));
+		await fireEvent.click(screen.getByTestId('notifications-retry'));
 
 		await waitFor(() => expect(screen.getAllByTestId('notification-row')).toHaveLength(1));
 		expect(listMock).toHaveBeenCalledTimes(2);
@@ -229,6 +230,18 @@ describe('notificacoes +page (lista central)', () => {
 		await waitFor(() => expect(screen.getAllByText('Lida')).toHaveLength(2));
 		expect(screen.queryAllByTestId('notification-mark-read')).toHaveLength(0);
 		expect(toastSuccessMock).toHaveBeenCalledWith('Todas as notificações marcadas como lidas');
+	});
+
+	it('mark-all sucesso: botão "Marcar todas" desaparece (contador zera)', async () => {
+		unreadCountStore.set(2);
+		listMock.mockResolvedValue(pagina([notif(), notif({ id: 'n2' })]));
+		markAllReadMock.mockResolvedValue(undefined);
+		render(NotifPage);
+
+		await waitFor(() => expect(screen.getByTestId('notification-mark-all-read')).toBeTruthy());
+		await fireEvent.click(screen.getByTestId('notification-mark-all-read'));
+
+		await waitFor(() => expect(screen.queryByTestId('notification-mark-all-read')).toBeNull());
 	});
 
 	it('mark-all some quando contador é 0 e reaparece quando o store atualiza', async () => {

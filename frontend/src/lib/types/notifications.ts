@@ -40,4 +40,19 @@ export interface HistoryFilters {
 	period?: string;
 }
 
+export interface HistoryEntry {
+	id: string;
+	title: string;
+	type: NotificationType;
+	recipient: string;
+	channel: NotificationChannel;
+	read: boolean;
+	sentAt: string;
+}
+
+export interface HistoryPayload {
+	items: HistoryEntry[];
+	total: number;
+}
+
 export type { UnreadCount };
