@@ -156,6 +156,14 @@
 			importError = 'Selecione um arquivo CSV para importar';
 			return;
 		}
+		if (!(importFile.type === 'text/csv' || importFile.name.toLowerCase().endsWith('.csv'))) {
+			importError = 'O arquivo deve ser um CSV (.csv)';
+			return;
+		}
+		if (importFile.size > 10_000_000) {
+			importError = 'O arquivo deve ter no máximo 10 MB';
+			return;
+		}
 		importing = true;
 		importError = '';
 		try {

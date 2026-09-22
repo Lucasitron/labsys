@@ -52,6 +52,10 @@
 
 	function exportarCsv(): void {
 		if (!bom) return;
+		const sanitizeCell = (value: unknown): string => {
+			const text = String(value);
+			return /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+		};
 		const header = ['Item', 'Quantidade prevista', 'Quantidade real', 'Unidade', 'Disponibilidade'];
 		const rows = bom.itens.map((item) => {
 			const estoque = itens.find((i) => i.id === item.idItem);
@@ -64,20 +68,21 @@
 			];
 		});
 		const csv = [header, ...rows]
-			.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+			.map((row) => row.map((cell) => `"${sanitizeCell(cell).replace(/"/g, '""')}"`).join(';'))
 			.join('\n');
 		const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
 		const url = URL.createObjectURL(blob);
 		const link = document.createElement('a');
 		link.href = url;
-		const fileName = (bom.nome || 'bom').toLowerCase().replace(/\s+/g, '-');
+		const base = String(bom.nome ?? '').toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+		const fileName = base || 'bom';
 		link.download = `${fileName}.csv`;
 		link.click();
 		URL.revokeObjectURL(url);
 		toasts.info('Exportação CSV iniciada');
 	}
 
-	// Escrita canEdit: consumo da BOM registrado via POST /estoque/boms/consumo (contrato R-8).
+	// Escrita canEdit: consumo da BOM registrado via POST /estoque/boms/{id}/consumo (contrato R-8).
 	let confirmConsumo = $state(false);
 	let consumindo = $state(false);
 
@@ -85,7 +90,7 @@
 		if (!bom) return;
 		consumindo = true;
 		try {
-			await registrarConsumoApi({
+			await registrarConsumoApi(bom.id, {
 				itens: bom.itens.map((i) => ({ idItem: i.idItem, quantidade: i.quantidadePrevista }))
 			});
 			confirmConsumo = false;

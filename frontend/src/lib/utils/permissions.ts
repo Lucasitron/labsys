@@ -43,11 +43,6 @@ export function isResponsavelEstoque(user: User | null): boolean {
 	return (user.responsibilities?.estoque?.length ?? 0) > 0;
 }
 
-export function canVerFornecedores(user: User | null): boolean {
-	if (!user) return false;
-	return isAdmin(user) || user.role === 1;
-}
-
 export function canEdit(user: User | null, module: Module): boolean {
 	if (!user) return false;
 	if (user.role === 0) return true;

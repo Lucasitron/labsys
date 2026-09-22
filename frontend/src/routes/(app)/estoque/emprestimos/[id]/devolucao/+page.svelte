@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
-	import { ApiError } from '$lib/api/client';
 	import { devolverEmprestimo } from '$lib/api/stock/loans';
 	import { toasts, toastError } from '$lib/stores/toast';
 	import { fmtDate, fmtQty, toDateInputValue, daysFromToday } from '$lib/utils/stock-format';
@@ -41,11 +40,7 @@
 			await goto('/estoque/emprestimos?tab=historico', { invalidateAll: true });
 		} catch (err) {
 			openConfirm = false;
-			if (err instanceof ApiError && err.status === 409) {
-				toastError(err, 'Não foi possível registrar a devolução');
-			} else {
-				toastError(err, 'Não foi possível registrar a devolução');
-			}
+			toastError(err, 'Não foi possível registrar a devolução');
 		} finally {
 			submitting = false;
 		}

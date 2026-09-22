@@ -15,6 +15,5 @@ export async function criarFornecedor(payload: CreateSupplierPayload): Promise<F
 	});
 }
 
-// Aliases legados (páginas ainda importam `fetchSupplierOptions`).
-export const listarFornecedoresOptions = listarFornecedores;
+// Alias de compatibilidade usado pelas páginas (lista ≠ opções).
 export const fetchSupplierOptions = listarFornecedores;

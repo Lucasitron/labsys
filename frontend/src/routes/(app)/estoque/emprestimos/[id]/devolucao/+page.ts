@@ -3,7 +3,7 @@ import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
 import type { Emprestimo } from '$lib/types/stock';
 import { auth } from '$lib/stores/auth';
-import { canEdit } from '$lib/utils/permissions';
+import { canEdit, canSeeLoans } from '$lib/utils/permissions';
 import { ApiError } from '$lib/api/client';
 import { buscarEmprestimo } from '$lib/api/stock/loans';
 import { searchPeople } from '$lib/api/rh';
@@ -12,6 +12,10 @@ export const ssr = false;
 export const prerender = false;
 
 export const load: PageLoad = async ({ params, fetch }) => {
+	if (!canSeeLoans(get(auth).user)) {
+		throw redirect(303, '/estoque');
+	}
+
 	if (!canEdit(get(auth).user, 'estoque')) {
 		throw redirect(302, `/estoque/emprestimos/${params.id}`);
 	}

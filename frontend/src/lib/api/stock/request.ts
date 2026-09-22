@@ -1,6 +1,6 @@
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
-import { ApiError, API_BASE } from '../client';
+import { ApiError, API_BASE, sanitizeRedirect } from '../client';
 import { auth, logout } from '$lib/stores/auth';
 import { browser } from '$app/environment';
 
@@ -14,7 +14,7 @@ function loginRedirectTarget(): string {
 	if (!browser) return fallback;
 	const current = window.location.pathname + window.location.search;
 	if (current === '/auth/login') return fallback;
-	return current;
+	return sanitizeRedirect(current);
 }
 
 async function handleUnauthorized(err: unknown): Promise<never> {

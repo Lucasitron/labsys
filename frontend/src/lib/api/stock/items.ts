@@ -1,6 +1,5 @@
 import type {
 	CategoriaEnum,
-	ItemStatus,
 	StockItem,
 	CreateItemPayload,
 	UpdateItemPayload
@@ -61,11 +60,6 @@ export async function atualizarItem(
 	);
 }
 
-// Est-003: remover `deleteItem` — backend não expõe DELETE /itens/{id}. (bloco 2 remove o botão)
-export function deleteItem(_id: string): Promise<never> {
-	return Promise.reject(new Error('DELETE /itens/{id} não disponível no backend (TODO G-9)'));
-}
-
 export async function importarCsv(
 	file: File,
 	fetchFn: typeof fetch = fetch
@@ -87,21 +81,4 @@ export async function exportarCsv(fetchFn: typeof fetch = fetch): Promise<void> 
 	link.download = 'itens.csv';
 	link.click();
 	URL.revokeObjectURL(url);
-}
-
-// ---- Helpers de exibição (sem API) ----
-
-export function fetchStatuses(): { id: ItemStatus; label: string }[] {
-	return [
-		{ id: 'available', label: 'Disponível' },
-		{ id: 'low', label: 'Baixo' },
-		{ id: 'out', label: 'Esgotado' },
-		{ id: 'loaned', label: 'Emprestado' },
-		{ id: 'maintenance', label: 'Manutenção' }
-	];
-}
-
-// Legacy alias (est-012 migra a tela para `exportarCsv`).
-export async function exportItemsCsv(): Promise<void> {
-	return exportarCsv();
 }

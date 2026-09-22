@@ -9,7 +9,6 @@
 
 	interface Props {
 		onSelect: (item: StockItem | null) => void;
-		onUnit?: (unit: string) => void;
 		selected?: StockItem | null;
 		placeholder?: string;
 		showStock?: boolean;
@@ -19,7 +18,6 @@
 
 	let {
 		onSelect,
-		onUnit,
 		selected = null,
 		placeholder = 'Buscar item por nome…',
 		showStock = false,
@@ -102,7 +100,6 @@
 	function pick(item: StockItem): void {
 		selected = item;
 		onSelect(item);
-		onUnit?.(item.unidadeMedida);
 		query = item.nome;
 		open = false;
 	}

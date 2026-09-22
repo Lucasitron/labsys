@@ -9,7 +9,6 @@ import {
 	canSeeAdvertencias,
 	canSeeLoans,
 	canSeeMachines,
-	canVerFornecedores,
 	canView,
 	canViewConfiguracoes,
 	hasPermissao,
@@ -148,26 +147,6 @@ describe('permissions', () => {
 
 		it('negado para usuário nulo', () => {
 			expect(isResponsavelEstoque(null)).toBe(false);
-		});
-	});
-
-	describe('canVerFornecedores', () => {
-		it('admin vê fornecedores', () => {
-			expect(canVerFornecedores(user({ role: 0 }))).toBe(true);
-		});
-
-		it('Bolsista (role 1) vê fornecedores', () => {
-			expect(canVerFornecedores(user({ role: 1 }))).toBe(true);
-		});
-
-		it('roles 2..4 não veem fornecedores', () => {
-			for (const role of [2, 3, 4] as const) {
-				expect(canVerFornecedores(user({ role }))).toBe(false);
-			}
-		});
-
-		it('negado para usuário nulo', () => {
-			expect(canVerFornecedores(null)).toBe(false);
 		});
 	});
 

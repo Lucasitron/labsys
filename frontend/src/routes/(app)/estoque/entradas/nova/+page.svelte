@@ -39,7 +39,7 @@
 		if (!quantity || numeric(quantity) <= 0) next.quantity = 'Informe uma quantidade maior que zero';
 		if (!date) next.date = 'Informe a data';
 		if (noSuppliers) {
-			if (!supplierId.trim()) next.supplierId = 'Informe o fornecedor (campo obrigatório)';
+			next.supplierId = 'Lista de fornecedores indisponível — contate o administrador';
 		} else if (!supplierId) {
 			next.supplierId = 'Selecione o fornecedor';
 		}
@@ -56,7 +56,7 @@
 		try {
 			await criarEntrada({
 				idItem: item!.id,
-				idFornecedor: noSuppliers ? supplierId.trim() || null : supplierId || null,
+				idFornecedor: supplierId || null,
 				quantidade: numeric(quantity),
 				valorUnitario: unitValue ? numeric(unitValue) : null,
 				dataEntrada: date,
@@ -149,9 +149,8 @@
 		data-testid="ent-nova-aviso"
 		class="rounded-xl border border-warn/30 bg-warn/5 px-4 py-3 text-sm text-ink"
 	>
-		<strong class="font-semibold">Atenção 🟡</strong> A lista de fornecedores não pôde ser carregada
-		(contrato atual restringe a perfis de administração). Informe o nome do fornecedor no campo
-		dedicado.
+		<strong class="font-semibold">Atenção 🟡</strong> A lista de fornecedores não pôde ser
+		carregada. O registro de entrada fica bloqueado até o administrador disponibilizá-la.
 	</div>
 {/if}
 
@@ -224,32 +223,18 @@
 		<h2 class="mb-4 text-xs font-medium uppercase tracking-wide text-muted">Fornecedor e detalhes</h2>
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 			<div>
-				{#if noSuppliers}
-					<label for="entry-supplier" class="mb-1 block text-xs font-medium text-muted">
-						Fornecedor <span class="text-danger">*</span>
-					</label>
-					<input
-						id="entry-supplier"
-						type="text"
-						bind:value={supplierId}
-						placeholder="Nome do fornecedor"
-						class="w-full rounded-lg border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 {errors.supplierId
-							? 'border-danger'
-							: ''}"
-					/>
-				{:else}
-					<Select
-						id="entry-supplier"
-						label="Fornecedor *"
-						options={data.suppliers}
-						value={supplierId}
-						onChange={(v) => {
-							supplierId = v;
-							clearField('supplierId');
-						}}
-						placeholder="Selecione…"
-					/>
-				{/if}
+				<Select
+					id="entry-supplier"
+					label="Fornecedor *"
+					options={data.suppliers}
+					value={supplierId}
+					disabled={noSuppliers}
+					onChange={(v) => {
+						supplierId = v;
+						clearField('supplierId');
+					}}
+					placeholder="Selecione…"
+				/>
 				{#if errors.supplierId}
 					<p class="mt-1 text-xs font-medium text-danger">{errors.supplierId}</p>
 				{/if}

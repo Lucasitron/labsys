@@ -349,7 +349,7 @@ describe('estoque/api-stock — loans (empréstimos)', () => {
 		const [url, init] = fetchMock.mock.calls[0]!;
 		expect(url).toBe('http://api.test/estoque/emprestimos/l-1/devolucao');
 		expect(init!.method).toBe('PUT');
-		expect(init!.body).toBe(JSON.stringify({}));
+		expect(init!.body).toBeUndefined();
 		expect(result.status).toBe('DEVOLVIDO');
 	});
 });

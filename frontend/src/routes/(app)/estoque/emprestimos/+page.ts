@@ -1,5 +1,9 @@
+import { redirect } from '@sveltejs/kit';
+import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
 import type { Emprestimo, LoanTab } from '$lib/types/stock';
+import { auth } from '$lib/stores/auth';
+import { canSeeLoans } from '$lib/utils/permissions';
 import { listarAtrasados } from '$lib/api/stock/loans';
 import { searchPeople } from '$lib/api/rh';
 import { strParam } from '$lib/utils/stock-url';
@@ -9,6 +13,10 @@ export const ssr = false;
 export const prerender = false;
 
 export const load: PageLoad = async ({ url, fetch }) => {
+	if (!canSeeLoans(get(auth).user)) {
+		throw redirect(303, '/estoque');
+	}
+
 	const raw = strParam(url.searchParams, 'tab');
 	const tab: LoanTab =
 		raw === 'ativos' || raw === 'atrasados' || raw === 'historico' ? raw : 'atrasados';

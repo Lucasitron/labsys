@@ -23,7 +23,6 @@ export async function criarEmprestimo(payload: CreateEmprestimoPayload): Promise
 
 export async function devolverEmprestimo(id: string): Promise<Emprestimo> {
 	return stockFetch<Emprestimo>(`/estoque/emprestimos/${id}/devolucao`, {
-		method: 'PUT',
-		body: JSON.stringify({})
+		method: 'PUT'
 	});
 }

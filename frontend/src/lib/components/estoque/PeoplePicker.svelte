@@ -10,7 +10,6 @@
 		placeholder?: string;
 		disabled?: boolean;
 		hint?: string;
-		defaultOption?: PersonOption | null;
 	}
 
 	let {
@@ -18,8 +17,7 @@
 		selected = null,
 		placeholder = 'Digite ao menos 2 caracteres para buscar…',
 		disabled = false,
-		hint = '',
-		defaultOption = null
+		hint = ''
 	}: Props = $props();
 
 	let query = $state(selected?.name ?? '');
@@ -31,11 +29,6 @@
 	let root: HTMLDivElement | undefined = $state();
 
 	onMount(() => {
-		if (defaultOption && !selected) {
-			selected = defaultOption;
-			onSelect(defaultOption);
-			query = defaultOption.name;
-		}
 		const onDoc = (event: MouseEvent): void => {
 			if (root && !root.contains(event.target as Node)) open = false;
 		};

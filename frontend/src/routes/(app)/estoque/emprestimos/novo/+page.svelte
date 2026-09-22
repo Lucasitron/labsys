@@ -51,6 +51,7 @@
 			next.quantity = `Quantidade disponível: ${fmtQty(item.quantidadeAtual, unit)}. Informe um valor menor ou igual.`;
 		}
 		if (!prazo) next.prazo = 'Informe a data prevista de devolução';
+		else if (prazo < toDateInputValue()) next.prazo = 'Data deve ser hoje ou futura';
 		errors = next;
 		return Object.keys(next).length === 0;
 	}

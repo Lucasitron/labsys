@@ -79,17 +79,7 @@ export interface StockItem {
 }
 
 export interface ItemDetail extends StockItem {
-	// UI-only (D-3): campos legados mantidos somente p/ compat das telas atuais (removidos no bloco 2).
-	code?: string;
-	maximum?: number | null;
-	reorderPoint?: number | null;
-	leadTimeDays?: number | null;
-	unitValue?: number | null;
-	updatedBy?: string | null;
-	updatedRelative?: string | null;
-	lastEntry?: { at: string; quantity: number; kind: EntryKind } | null;
-	lastLoan?: { at: string } | null;
-	bomUsage?: { projectId: string; projectName: string; qty: number; unit: string }[];
+	// UI-only (D-3): área de operação derivada das telas atuais (backend não expõe).
 }
 
 export interface CreateItemPayload {
@@ -242,24 +232,6 @@ export interface CreateEmprestimoPayload {
 	observacao?: string;
 }
 
-// View de empréstimo para a tela de detalhe atual (bloco 2 migra para Emprestimo).
-export interface Loan {
-	id: string;
-	item: { id: string; code: string; name: string; unit: string };
-	borrower: { id: string; name: string; initials: string };
-	quantity: number;
-	borrowDate: string;
-	dueDate: string;
-	status: LoanStatus;
-	computed: LoanComputed;
-	overdueDays: number;
-	purpose?: string;
-	condition?: LoanCondition | null;
-	returnDate?: string | null;
-	returnedQuantity?: number;
-	responsible?: string;
-}
-
 // ---- BOM (backend BomResponse) ----
 
 export interface BomItemResponse {
@@ -309,39 +281,4 @@ export interface CreateLocationPayload {
 	prateleira?: string;
 	caixa?: string;
 	descricao?: string;
-}
-
-// ---- Projetos (legado: 🔴 backend não expõe listagem — fetchProjects com TODO) ----
-
-export interface ProjectOption {
-	id: string;
-	code: string;
-	name: string;
-}
-
-// ---- Fornecedor / fornecedores (legado: tela atual de item) ----
-
-export interface Supplier {
-	id: string;
-	name: string;
-	email?: string;
-	cnpj?: string;
-	contactPhone?: string;
-	itemsCount: number;
-	rating: number;
-	lastPurchase?: {
-		date: string;
-		value?: number | null;
-		notaFiscal?: string;
-	} | null;
-}
-
-// ---- Histórico (legado: tela atual de item) ----
-
-export interface HistoryEntry {
-	id: string;
-	title: string;
-	by: string;
-	at: string;
-	tone: Tone;
 }
