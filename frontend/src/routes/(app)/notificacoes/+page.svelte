@@ -34,7 +34,7 @@
 	let count = $state(get(unreadCount));
 	let updatedAt = $state(new Date().toISOString());
 	let retryTick = $state(0);
-	let fetchCounter = $state(0);
+	let fetchCounter = 0;
 
 	const query = $derived(page.url.searchParams);
 

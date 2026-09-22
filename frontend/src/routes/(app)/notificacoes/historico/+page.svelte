@@ -82,7 +82,7 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let retryTick = $state(0);
-	let fetchCounter = $state(0);
+	let fetchCounter = 0;
 
 	const filters = $derived.by(() => {
 		const f: HistoryFilters = {};
