@@ -61,7 +61,17 @@ export const menuItems: MenuItem[] = [
 		]
 	},
 	{ label: 'Financeiro', path: '/financeiro', module: 'financeiro', icon: 'financeiro' },
-	{ label: 'Notificações', path: '/notificacoes', module: 'notificacoes', icon: 'notificacoes' },
+	{
+		label: 'Notificações',
+		path: '/notificacoes',
+		module: 'notificacoes',
+		icon: 'notificacoes',
+		children: [
+			{ label: 'Minhas notificações', path: '/notificacoes' },
+			{ label: 'Preferências de canais', path: '/notificacoes/preferencias', canSee: isAdmin },
+			{ label: 'Histórico', path: '/notificacoes/historico', canSee: isAdmin }
+		]
+	},
 	{
 		label: 'Configurações',
 		path: '/configuracoes',
