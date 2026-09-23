@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { PageProps } from './$types';
+	import { get } from 'svelte/store';
+	import { auth } from '$lib/stores/auth';
 	import type { ExtratoMensalHoras, HoraApontamento } from '$lib/types/rh';
 	import { getHorasDisponiveis, listApontamentos } from '$lib/api/rh/horas';
 	import { horaStatusMeta, nivelMeta, personStatusMeta } from '$lib/utils/rh-status';
+	import { isProprioRegistro } from '$lib/utils/permissions';
 	import { toasts } from '$lib/stores/toast';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
@@ -17,6 +20,7 @@
 	let { data }: PageProps = $props();
 
 	const canEdit = $derived(data.canEdit ?? false);
+	const usuario = $derived(get(auth).user);
 	const pessoa = $derived(data.pessoa);
 	const naoEncontrada = $derived(data.notFound);
 	const erroPagina = $derived(data.error);
@@ -114,12 +118,20 @@
 	const qualificacao = $derived(pessoa?.qualification ?? 0);
 	const ehInstrutor = $derived(pessoa?.isInstrutor === true);
 
-	const abas = [
-		{ id: 'visao-geral', label: 'Visão geral' },
-		{ id: 'horas', label: 'Horas' },
-		{ id: 'treinamentos', label: 'Treinamentos' },
-		{ id: 'historico', label: 'Histórico de nível' }
-	];
+	// Estagiário/Recrutando (roles 3/4) vê Horas/Treinamentos/Histórico só do próprio
+	// registro (D-7: sem redirect p/ não mascarar mapeamento token→pessoa ausente).
+	const verSensivel = $derived(
+		!((usuario?.role === 3 || usuario?.role === 4) && !isProprioRegistro(usuario, id))
+	);
+
+	const abas = $derived(
+		[
+			{ id: 'visao-geral', label: 'Visão geral' },
+			{ id: 'horas', label: 'Horas' },
+			{ id: 'treinamentos', label: 'Treinamentos' },
+			{ id: 'historico', label: 'Histórico de nível' }
+		].filter((t) => verSensivel || t.id === 'visao-geral')
+	);
 
 	const nivelAtual = $derived(pessoa ? nivelMeta(pessoa.nivel) : null);
 	const statusAtual = $derived(pessoa ? personStatusMeta(pessoa.status) : null);
@@ -172,7 +184,7 @@
 	{:else if erroPagina || !pessoa}
 		<ErrorBanner
 			message="Não foi possível carregar a pessoa"
-			hint={erroPagina ?? 'Verifique sua conexão e tente novamente.'}
+			hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte."
 			onRetry={() => void goto(`/pessoas/${id}${window.location.search}`, { invalidateAll: true })}
 			testid="person-detail-retry"
 		/>
@@ -331,7 +343,7 @@
 					{:else if horasErro}
 						<ErrorBanner
 							message="Não foi possível carregar as horas"
-							hint={horasErro}
+							hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte."
 							onRetry={recarregarHoras}
 							testid="person-horas-retry"
 						/>

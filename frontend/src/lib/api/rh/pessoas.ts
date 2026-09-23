@@ -64,5 +64,9 @@ export async function updatePessoa(
 	);
 }
 
+export async function deletePessoa(id: string, fetchFn: typeof fetch = fetch): Promise<void> {
+	await apiFetch<void>(`/api/rh/pessoas/${id}`, { method: 'DELETE', headers: bearer() }, fetchFn);
+}
+
 export { searchPeople } from '$lib/api/rh';
 export type { PersonOption } from '$lib/api/rh';

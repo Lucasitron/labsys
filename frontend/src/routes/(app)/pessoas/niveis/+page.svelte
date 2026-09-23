@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { getNiveis, alterarNivel, convidarUsuario } from '$lib/api/rh/niveis';
+	import { get } from 'svelte/store';
+	import { auth } from '$lib/stores/auth';
 	import type { Nivel, NivelMatrix } from '$lib/types/rh';
 	import { nivelMeta } from '$lib/utils/rh-status';
+	import { isAdmin } from '$lib/utils/permissions';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
@@ -15,13 +18,22 @@
 
 	const NIVEIS_FALLBACK: Nivel[] = ['admin', 'bolsista', 'voluntario', 'estagiario', 'recrutando'];
 
+	const usuario = $derived(get(auth).user);
+
 	let dados = $state<NivelMatrix | null>(null);
 	let carregando = $state(true);
 	let erro = $state<string | null>(null);
 	let recarregar = $state(0);
 	let trocandoId = $state<string | null>(null);
 
-	const niveis = $derived(dados?.niveis?.length ? dados.niveis : NIVEIS_FALLBACK);
+	const niveis = $derived(
+		(dados?.niveis?.length ? dados.niveis : NIVEIS_FALLBACK).filter(
+			(n) => n !== 'admin' || isAdmin(usuario)
+		)
+	);
+	const NIVEIS_CONVITE = $derived(
+		NIVEIS_FALLBACK.filter((n) => n !== 'admin' || isAdmin(usuario))
+	);
 	const modulos = $derived(dados?.modulos ?? []);
 	const membros = $derived(dados?.membros ?? []);
 
@@ -181,7 +193,7 @@
 	{#if erro && !carregando}
 		<ErrorBanner
 			message="Não foi possível carregar os níveis"
-			hint={erro}
+			hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte."
 			onRetry={tentarNovamente}
 		/>
 	{:else if carregando}
@@ -371,7 +383,7 @@
 					class="{inputCls} {errosConvite['nivel'] ? inputErroCls : ''}"
 				>
 					<option value="" disabled>Selecione…</option>
-					{#each NIVEIS_FALLBACK as nivel (nivel)}
+					{#each NIVEIS_CONVITE as nivel (nivel)}
 						<option value={nivel}>{nivelMeta(nivel).label}</option>
 					{/each}
 				</select>

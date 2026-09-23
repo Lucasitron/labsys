@@ -133,7 +133,7 @@
 	</div>
 
 	{#if erro && !carregando}
-		<ErrorBanner message="Não foi possível carregar os guias" hint={erro} onRetry={tentarNovamente} />
+		<ErrorBanner message="Não foi possível carregar os guias" hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte." onRetry={tentarNovamente} />
 	{:else if carregando}
 		<div class="grid gap-4 md:grid-cols-2" aria-hidden="true">
 			{#each [0, 1, 2, 3] as i (i)}

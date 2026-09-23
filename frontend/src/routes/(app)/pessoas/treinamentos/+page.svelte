@@ -201,7 +201,7 @@
 	{#if erro && !carregando}
 		<ErrorBanner
 			message="Não foi possível carregar os treinamentos"
-			hint={erro}
+			hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte."
 			onRetry={tentarNovamente}
 		/>
 	{:else if carregando}

@@ -246,7 +246,7 @@
 		{#if erroBloco}
 			<ErrorBanner
 				message="Não foi possível atualizar o treinamento"
-				hint={erroBloco}
+				hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte."
 				onRetry={tentarNovamente}
 			/>
 		{/if}

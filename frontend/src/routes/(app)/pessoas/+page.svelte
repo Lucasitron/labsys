@@ -2,10 +2,10 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { Nivel, Person } from '$lib/types/rh';
-	import { updatePessoa } from '$lib/api/rh/pessoas';
-	import { apiFetch } from '$lib/api/client';
+	import { deletePessoa, updatePessoa } from '$lib/api/rh/pessoas';
 	import { auth } from '$lib/stores/auth';
 	import { get } from 'svelte/store';
+	import { isAdmin } from '$lib/utils/permissions';
 	import { nivelMeta, personStatusMeta } from '$lib/utils/rh-status';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
@@ -29,6 +29,7 @@
 	let { data }: PageProps = $props();
 
 	const canEdit = $derived(data.canEdit ?? false);
+	const usuario = $derived(get(auth).user);
 	const params = $derived(data.params);
 	const resultado = $derived(data.resultado);
 	const erro = $derived(data.error);
@@ -48,8 +49,10 @@
 		label: personStatusMeta(id as 'ativo' | 'inativo' | 'afastado').label
 	}));
 
-	const NIVEL_OPCOES = (['admin', 'bolsista', 'voluntario', 'estagiario', 'recrutando'] as Nivel[]).map(
-		(id) => ({ id, label: nivelMeta(id).label })
+	const NIVEL_OPCOES = $derived(
+		(['admin', 'bolsista', 'voluntario', 'estagiario', 'recrutando'] as Nivel[])
+			.map((id) => ({ id, label: nivelMeta(id).label }))
+			.filter((n) => n.id !== 'admin' || isAdmin(usuario))
 	);
 
 	const SETOR_OPCOES = ['Administrativo', 'Eletrônica', 'Software', 'Mecatrônica', 'Design'].map(
@@ -166,11 +169,7 @@
 	}
 
 	async function excluirPessoa(id: string): Promise<void> {
-		const { token } = get(auth);
-		await apiFetch(`/api/rh/pessoas/${id}`, {
-			method: 'DELETE',
-			headers: token ? { Authorization: `Bearer ${token}` } : {}
-		});
+		await deletePessoa(id);
 	}
 
 	async function confirmarExcluir(): Promise<void> {
@@ -259,7 +258,7 @@
 	{#if comErro}
 		<ErrorBanner
 			message="Não foi possível carregar as pessoas"
-			hint={erro ?? 'Verifique sua conexão e tente novamente.'}
+			hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte."
 			onRetry={tentarNovamente}
 			testid="person-retry"
 		/>

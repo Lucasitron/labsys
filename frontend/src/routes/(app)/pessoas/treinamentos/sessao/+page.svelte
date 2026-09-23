@@ -230,7 +230,7 @@
 		</PageHeader>
 
 		{#if erro && !carregando}
-			<ErrorBanner message="Não foi possível carregar as sessões" hint={erro} onRetry={tentarNovamente} />
+			<ErrorBanner message="Não foi possível carregar as sessões" hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte." onRetry={tentarNovamente} />
 		{:else if carregando}
 			<div class="rounded-xl border border-border bg-surface p-4">
 				<TableSkeleton rows={4} columns={4} />

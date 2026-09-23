@@ -15,40 +15,6 @@ function bearer(): Record<string, string> {
 	return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export async function listHoras(
-	params: { status?: HoraStatus; periodo?: string } = {},
-	fetchFn: typeof fetch = fetch
-): Promise<HorasResult> {
-	const query = new URLSearchParams();
-	if (params.status) query.set('status', params.status);
-	if (params.periodo) query.set('periodo', params.periodo);
-	const qs = query.toString();
-	return await apiFetch<HorasResult>(
-		`/api/rh/horas${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
-		fetchFn
-	);
-}
-
-export async function registrarHoras(
-	payload: RegistrarHorasPayload,
-	fetchFn: typeof fetch = fetch
-): Promise<HoraApontamento> {
-	return await apiFetch<HoraApontamento>(
-		'/api/rh/horas',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
-		fetchFn
-	);
-}
-
-export async function validarHoras(id: string, fetchFn: typeof fetch = fetch): Promise<HoraApontamento> {
-	return await apiFetch<HoraApontamento>(
-		`/api/rh/horas/${id}/validar`,
-		{ method: 'PATCH', headers: bearer() },
-		fetchFn
-	);
-}
-
 export async function rejeitarHoras(
 	id: string,
 	payload: RejeitarHorasPayload,

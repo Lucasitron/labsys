@@ -321,6 +321,7 @@
 		{/snippet}
 	</PageHeader>
 
+	{#if !ehEstagiario}
 	<section aria-label="Extrato mensal">
 		{#if carregando && !extrato}
 			<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -375,6 +376,7 @@
 			</div>
 		{/if}
 	</section>
+	{/if}
 
 	<div class="flex flex-wrap items-center gap-2">
 		<Tabs tabs={abas} active={abaAtiva} onChange={(id) => navegar({ status: id as HoraStatus })} />
@@ -402,7 +404,7 @@
 	</div>
 
 	{#if erro && !carregando}
-		<ErrorBanner message="Não foi possível carregar as horas" hint={erro} onRetry={tentarNovamente} />
+		<ErrorBanner message="Não foi possível carregar as horas" hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte." onRetry={tentarNovamente} />
 	{:else if carregando}
 		<div class="rounded-xl border border-border bg-surface p-4">
 			<TableSkeleton rows={5} columns={5} />

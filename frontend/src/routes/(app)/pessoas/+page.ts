@@ -40,11 +40,11 @@ export const load: PageLoad = async ({ url, fetch }) => {
 			fetch
 		);
 		return { params, resultado, error: null as string | null };
-	} catch (err) {
+	} catch {
 		return {
 			params,
 			resultado: null,
-			error: err instanceof Error ? err.message : 'Não foi possível carregar as pessoas'
+			error: 'Não foi possível carregar as pessoas'
 		};
 	}
 };

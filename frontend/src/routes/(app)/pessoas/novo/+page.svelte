@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { PageProps } from './$types';
-	import type { Nivel, PersonType } from '$lib/types/rh';
+	import { get } from 'svelte/store';
+	import { auth } from '$lib/stores/auth';
+	import type { CreatePessoaPayload, Nivel, PersonType } from '$lib/types/rh';
 	import { createPessoa } from '$lib/api/rh/pessoas';
 	import { ApiError } from '$lib/api/client';
 	import { nivelMeta } from '$lib/utils/rh-status';
+	import { isAdmin } from '$lib/utils/permissions';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
@@ -16,6 +19,7 @@
 	let { data }: PageProps = $props();
 
 	const canEdit = $derived(data.canEdit ?? false);
+	const usuarioLogado = $derived(get(auth).user);
 
 	// Rota bloqueada para view-only/Recrutando.
 	$effect(() => {
@@ -46,8 +50,10 @@
 		{ id: 'estagiario', label: 'Estagiário', description: 'Estágio curricular', color: 'warn' as const }
 	];
 
-	const NIVEL_OPCOES = (['admin', 'bolsista', 'voluntario', 'estagiario', 'recrutando'] as Nivel[]).map(
-		(id) => ({ id, label: nivelMeta(id).label })
+	const NIVEL_OPCOES = $derived(
+		(['admin', 'bolsista', 'voluntario', 'estagiario', 'recrutando'] as Nivel[])
+			.map((id) => ({ id, label: nivelMeta(id).label }))
+			.filter((n) => n.id !== 'admin' || isAdmin(usuarioLogado))
 	);
 
 	const GRUPO_OPCOES = ['G-01', 'G-02', 'G-03', 'G-04', 'G-05'].map((id) => ({
@@ -107,19 +113,23 @@
 		try {
 			// Campos extras (cpf/nascimento/curso/credencial) seguem o contrato PUT/POST
 			// documentado 🟡 (D-2); o vínculo de credencial com /api/auth/users será confirmado.
-			const extras: Record<string, string> = {
+			const extras: Pick<
+				CreatePessoaPayload,
+				'cpf' | 'dataNascimento' | 'cursoTurma' | 'username' | 'senha'
+			> = {
 				...(cpf.trim() ? { cpf: cpf.trim() } : {}),
 				...(nascimento ? { dataNascimento: nascimento } : {}),
 				...(cursoTurma.trim() ? { cursoTurma: cursoTurma.trim() } : {}),
 				...(usuario ? { username: usuario } : {}),
 				...(senha ? { senha } : {})
 			};
+			const nivelSelecionado: Nivel = nivel === '' ? 'voluntario' : nivel;
 			await createPessoa({
 				name: nome.trim(),
 				email: email.trim(),
 				...(telefone.trim() ? { phone: telefone.trim() } : {}),
 				type: tipo,
-				nivel: nivel as Nivel,
+				nivel: nivelSelecionado,
 				grupoId: grupo,
 				isInstrutor: ehInstrutor,
 				...(ehInstrutor && qualificacao > 0 ? { qualification: qualificacao } : {}),

@@ -87,6 +87,15 @@ export interface CreatePessoaPayload {
 	grupoId?: string;
 	isInstrutor?: boolean;
 	qualification?: number;
+	cpf?: string;
+	dataNascimento?: string;
+	cursoTurma?: string;
+	username?: string;
+	senha?: string;
+	dataAdmissao?: string;
+	department?: string;
+	shift?: string;
+	status?: PersonStatus;
 }
 
 export type UpdatePessoaPayload = Partial<CreatePessoaPayload>;

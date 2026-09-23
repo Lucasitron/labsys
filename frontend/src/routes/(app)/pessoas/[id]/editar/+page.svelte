@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { PageProps } from './$types';
-	import type { Nivel, PersonStatus } from '$lib/types/rh';
+	import { get } from 'svelte/store';
+	import { auth } from '$lib/stores/auth';
+	import type { Nivel, PersonStatus, UpdatePessoaPayload } from '$lib/types/rh';
 	import { updatePessoa } from '$lib/api/rh/pessoas';
 	import { ApiError } from '$lib/api/client';
+	import { isAdmin } from '$lib/utils/permissions';
 	import { nivelMeta, personStatusMeta } from '$lib/utils/rh-status';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
@@ -16,13 +19,16 @@
 	let { data }: PageProps = $props();
 
 	const canEdit = $derived(data.canEdit ?? false);
+	const usuario = $derived(get(auth).user);
 	const pessoa = $derived(data.pessoa);
 	const id = $derived(data.id);
 
 	const carregando = $derived(!pessoa && !data.notFound && !data.error);
 
-	const NIVEL_OPCOES = (['admin', 'bolsista', 'voluntario', 'estagiario', 'recrutando'] as Nivel[]).map(
-		(n) => ({ id: n, label: nivelMeta(n).label })
+	const NIVEL_OPCOES = $derived(
+		(['admin', 'bolsista', 'voluntario', 'estagiario', 'recrutando'] as Nivel[])
+			.map((n) => ({ id: n, label: nivelMeta(n).label }))
+			.filter((n) => n.id !== 'admin' || isAdmin(usuario))
 	);
 	const STATUS_OPCOES = (['ativo', 'inativo', 'afastado'] as PersonStatus[]).map((s) => ({
 		id: s,
@@ -88,7 +94,7 @@
 		try {
 			// department/shift/status/admission seguem o contrato PUT documentado 🟡;
 			// os tipos B1 cobrem o núcleo (Partial<CreatePessoaPayload>).
-			const extras: Record<string, string> = {
+			const extras: Pick<UpdatePessoaPayload, 'dataAdmissao' | 'department' | 'shift' | 'status'> = {
 				...(admissao ? { dataAdmissao: admissao } : {}),
 				...(departamento ? { department: departamento } : {}),
 				...(turno ? { shift: turno } : {}),
@@ -156,7 +162,7 @@
 			<Icon name="lock" class="mt-0.5 h-4 w-4 shrink-0 text-brandhi" />
 			<p class="text-xs text-muted">
 				Somente <span class="text-ink">Admin</span> ou o <span class="text-ink">responsável</span>
-				pelo cadastro podem editar. Seu acesso é de leitura — o botão de edição não é exibido
+				pelo cadastro podem editar. Seu acesso é de leitura — os campos estão desabilitados
 				para este perfil.
 			</p>
 		</div>
@@ -182,7 +188,7 @@
 	{:else if data.error || (!carregando && !pessoa)}
 		<ErrorBanner
 			message="Não foi possível carregar a pessoa"
-			hint={data.error ?? 'Verifique sua conexão e tente novamente.'}
+			hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte."
 			onRetry={() => void goto(`/pessoas/${id}/editar`, { invalidateAll: true })}
 			testid="edit-person-retry"
 		/>
@@ -373,10 +379,15 @@
 			<div class="flex items-start gap-3 rounded-xl border border-border bg-elevated/50 p-4">
 				<Icon name="lock" class="mt-0.5 h-4 w-4 shrink-0 text-muted" />
 				<p class="text-xs text-muted">
-					Credenciais de acesso não são alteradas aqui; níveis são geridos em
-					<a href="/pessoas/niveis" class="font-medium text-brandhi hover:text-brand">
-						Níveis &amp; acesso (Admin)
-					</a>.
+					Credenciais de acesso não são alteradas aqui;
+					{#if isAdmin(usuario)}
+						níveis são geridos em
+						<a href="/pessoas/niveis" class="font-medium text-brandhi hover:text-brand">
+							Níveis &amp; acesso (Admin)
+						</a>.
+					{:else}
+						níveis são geridos em Níveis &amp; acesso (Admin).
+					{/if}
 				</p>
 			</div>
 

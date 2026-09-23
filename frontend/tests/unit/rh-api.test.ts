@@ -120,6 +120,16 @@ describe('rh/api — pessoas', () => {
 		expect(chamada().init['method']).toBe('PUT');
 		expect(chamada().init['body']).toBe(JSON.stringify({ name: 'Ana S.' }));
 	});
+
+	it('deletePessoa faz DELETE /api/rh/pessoas/{id}', async () => {
+		apiFetchMock.mockResolvedValue(undefined);
+		const { deletePessoa } = await freshPessoas();
+
+		await deletePessoa('p1');
+
+		expect(chamada().path).toBe('/api/rh/pessoas/p1');
+		expect(chamada().init['method']).toBe('DELETE');
+	});
 });
 
 describe('rh/api — processo seletivo', () => {
@@ -172,27 +182,14 @@ describe('rh/api — processo seletivo', () => {
 });
 
 describe('rh/api — horas', () => {
-	it('listHoras monta query com status/periodo', async () => {
-		apiFetchMock.mockResolvedValue({ hours: [], counts: {} });
-		const { listHoras } = await freshHoras();
-
-		await listHoras({ status: 'pendente', periodo: '2026-09' });
-
-		expect(chamada().path).toBe('/api/rh/horas?status=pendente&periodo=2026-09');
-	});
-
-	it('validarHoras e rejeitarHoras usam PATCH com motivo na rejeição', async () => {
+	it('rejeitarHoras usa PATCH com motivo na rejeição', async () => {
 		apiFetchMock.mockResolvedValue({ id: 'h1' });
-		const { validarHoras, rejeitarHoras } = await freshHoras();
-
-		await validarHoras('h1');
-		expect(chamada(0).path).toBe('/api/rh/horas/h1/validar');
-		expect(chamada(0).init['method']).toBe('PATCH');
+		const { rejeitarHoras } = await freshHoras();
 
 		await rejeitarHoras('h1', { reason: 'Horário divergente da escala.' });
-		expect(chamada(1).path).toBe('/api/rh/horas/h1/rejeitar');
-		expect(chamada(1).init['method']).toBe('PATCH');
-		expect(chamada(1).init['body']).toBe(
+		expect(chamada(0).path).toBe('/api/rh/horas/h1/rejeitar');
+		expect(chamada(0).init['method']).toBe('PATCH');
+		expect(chamada(0).init['body']).toBe(
 			JSON.stringify({ reason: 'Horário divergente da escala.' })
 		);
 	});
@@ -340,12 +337,11 @@ describe('rh/api — guardas de naming PT e R-5', () => {
 			nivel: 'bolsista'
 		});
 		await pessoas.updatePessoa('p1', { name: 'B' });
+		await pessoas.deletePessoa('p1');
 		await ps.listPS({ estagio: 'triagem' });
 		await ps.createGrupo({ name: 'G', tutorId: 'p1', memberIds: [] });
 		await ps.moverEstagio('g1', 'entrevista');
 		await ps.avaliarMembro('g1', 'c1', { nota: 7, feedback: 'Ok' });
-		await horas.listHoras({ status: 'pendente' });
-		await horas.validarHoras('h1');
 		await horas.rejeitarHoras('h1', { reason: 'x' });
 		await horas.getHorasDisponiveis();
 		await horas.listApontamentos({ status: 'pendente' });

@@ -50,6 +50,7 @@ const mocks = vi.hoisted(() => {
 		getPessoa: vi.fn(),
 		createPessoa: vi.fn(),
 		updatePessoa: vi.fn(),
+		deletePessoa: vi.fn(),
 		listHoras: vi.fn(),
 		registrarHoras: vi.fn(),
 		validarHoras: vi.fn(),
@@ -94,7 +95,8 @@ vi.mock('$lib/api/rh/pessoas', () => ({
 	listPessoas: mocks.listPessoas,
 	getPessoa: mocks.getPessoa,
 	createPessoa: mocks.createPessoa,
-	updatePessoa: mocks.updatePessoa
+	updatePessoa: mocks.updatePessoa,
+	deletePessoa: mocks.deletePessoa
 }));
 vi.mock('$lib/api/rh/horas', () => ({
 	listHoras: mocks.listHoras,
@@ -357,7 +359,8 @@ describe('rh-pages — lista de pessoas (server-side)', () => {
 		expect(screen.queryByText('Novo cadastro')).toBeNull();
 	});
 
-	it('excluir inline chama DELETE /api/rh/pessoas/{id} (contrato assumido)', async () => {
+	it('excluir usa deletePessoa (DELETE /api/rh/pessoas/{id})', async () => {
+		mocks.deletePessoa.mockResolvedValue(undefined);
 		render(ListaPage, {
 			props: { data: { ...baseLista(), resultado: RESULTADO_CHEIO, error: null }, params: {} }
 		});
@@ -370,10 +373,8 @@ describe('rh-pages — lista de pessoas (server-side)', () => {
 
 		await fireEvent.click(screen.getAllByText('Excluir').at(-1)!);
 
-		await waitFor(() => expect(mocks.apiFetch).toHaveBeenCalledTimes(1));
-		const [path, init] = mocks.apiFetch.mock.calls[0] as [string, { method: string }];
-		expect(path).toBe('/api/rh/pessoas/p1');
-		expect(init.method).toBe('DELETE');
+		await waitFor(() => expect(mocks.deletePessoa).toHaveBeenCalledTimes(1));
+		expect(mocks.deletePessoa).toHaveBeenCalledWith('p1');
 		await waitFor(() =>
 			expect(mocks.toastSuccess).toHaveBeenCalledWith('Pessoa excluída com sucesso.')
 		);

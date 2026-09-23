@@ -18,7 +18,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			id: params.id,
 			pessoa: null,
 			notFound: false,
-			error: err instanceof Error ? err.message : 'Não foi possível carregar a pessoa'
+			error: 'Não foi possível carregar a pessoa'
 		};
 	}
 };

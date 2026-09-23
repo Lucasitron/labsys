@@ -112,8 +112,8 @@
 		abaAtiva === 'todos' ? itens : itens.filter((t) => STATUS_ABA[abaAtiva].includes(t.status))
 	);
 
-	function emBreve(acao: string): void {
-		toasts.info(`${acao} em breve.`);
+	function emBreve(_acao: string): void {
+		toasts.warn('Ação indisponível: endpoint de agenda pendente (D-9).');
 	}
 
 	// ---- Modal agendar (POST 🔴 D-9: sem endpoint no backend) ----
@@ -254,7 +254,7 @@
 	</div>
 
 	{#if erro && !carregando}
-		<ErrorBanner message="Não foi possível carregar a agenda" hint={erro} onRetry={tentarNovamente} />
+		<ErrorBanner message="Não foi possível carregar a agenda" hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte." onRetry={tentarNovamente} />
 	{:else if carregando}
 		<div class="rounded-xl border border-border bg-surface p-4">
 			<TableSkeleton rows={5} columns={6} />
@@ -360,7 +360,7 @@
 		{#if erroDisp && !carregandoDisp}
 			<ErrorBanner
 				message="Não foi possível carregar a disponibilidade"
-				hint={erroDisp}
+				hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte."
 				onRetry={tentarNovamente}
 			/>
 		{:else if carregandoDisp}
