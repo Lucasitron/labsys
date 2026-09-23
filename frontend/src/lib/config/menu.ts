@@ -45,7 +45,16 @@ export const menuItems: MenuItem[] = [
 			{ label: 'BOM', path: '/estoque/bom' }
 		]
 	},
-	{ label: 'Vendas & CRM', path: '/vendas', module: 'vendas', icon: 'vendas' },
+	{ label: 'Vendas & CRM', path: '/vendas', module: 'vendas', icon: 'vendas',
+		children: [
+			{ label: 'Clientes', path: '/vendas/clientes' },
+			{ label: 'Orçamentos', path: '/vendas/orcamentos' },
+			{ label: 'Encomendas', path: '/vendas/encomendas' },
+			{ label: 'Marketplace', path: '/vendas/marketplace' },
+			{ label: 'Marketing', path: '/vendas/marketing' },
+			{ label: 'Solicitações de edição', path: '/vendas/solicitacoes' }
+		]
+	},
 	{
 		label: 'Produção',
 		path: '/producao',
