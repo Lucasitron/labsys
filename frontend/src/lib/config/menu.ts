@@ -21,7 +21,15 @@ export interface MenuItem {
 
 export const menuItems: MenuItem[] = [
 	{ label: 'Dashboard', path: '/dashboard', module: 'dashboard', icon: 'dashboard' },
-	{ label: 'Pessoas & RH', path: '/pessoas', module: 'rh', icon: 'rh' },
+	{ label: 'Pessoas & RH', path: '/pessoas', module: 'rh', icon: 'rh',
+		children: [
+			{ label: 'Pessoas', path: '/pessoas' },
+			{ label: 'Processo seletivo', path: '/pessoas/processo-seletivo' },
+			{ label: 'Registro de horas', path: '/pessoas/registro-horas' },
+			{ label: 'Treinamentos', path: '/pessoas/treinamentos' },
+			{ label: 'Níveis & acesso', path: '/pessoas/niveis', canSee: isAdmin }
+		]
+	},
 	{
 		label: 'Estoque',
 		path: '/estoque',
