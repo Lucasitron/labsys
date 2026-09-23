@@ -10,13 +10,14 @@
 		Orcamento
 	} from '$lib/types/vendas';
 	import type { StockItem } from '$lib/types/stock';
-	import { getCliente, listClientes } from '$lib/api/vendas/clientes';
+	import { listClientes } from '$lib/api/vendas/clientes';
 	import {
 		createOrcamento,
 		getOrcamento,
 		updateOrcamento
 	} from '$lib/api/vendas/orcamentos';
 	import { listarItens } from '$lib/api/stock/items';
+	import { ApiError } from '$lib/api/client';
 	import { canEditVendas } from '$lib/utils/permissions';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
@@ -56,7 +57,6 @@
 	interface ClienteSel {
 		id: string;
 		nome: string;
-		email?: string;
 	}
 
 	let clienteSel = $state<ClienteSel | null>(null);
@@ -90,11 +90,6 @@
 		if (orc.validade) validade = orc.validade.slice(0, 10);
 		observacoes = orc.observacoes ?? '';
 		podeEditarOrigem = canEditVendas(usuario, { createdBy: orc.createdBy });
-		void getCliente(orc.cliente.id)
-			.then((c: Cliente) => {
-				clienteSel = { id: c.id, nome: c.nome, email: c.email };
-			})
-			.catch(() => {});
 	}
 
 	$effect(() => {
@@ -117,7 +112,7 @@
 
 	// ---- Busca de cliente (debounce 300ms + AbortController) ----
 
-	let resultadosCliente = $state<Cliente[]>([]);
+	let resultadosCliente = $state<Pick<Cliente, 'id' | 'nome' | 'codigo'>[]>([]);
 	let buscandoCliente = $state(false);
 	let erroBuscaCliente = $state<string | null>(null);
 	let ultimoTermoCliente = $state('');
@@ -157,12 +152,12 @@
 		} catch (err) {
 			if (sinal.aborted) return;
 			buscandoCliente = false;
-			erroBuscaCliente = err instanceof Error ? err.message : 'Erro ao buscar clientes.';
+			erroBuscaCliente = toUserMessage(err).message;
 		}
 	}
 
-	function selecionarCliente(c: Cliente): void {
-		clienteSel = { id: c.id, nome: c.nome, email: c.email };
+	function selecionarCliente(c: Pick<Cliente, 'id' | 'nome' | 'codigo'>): void {
+		clienteSel = { id: c.id, nome: c.nome };
 		resultadosCliente = [];
 		if (erros['cliente']) erros = { ...erros, cliente: '' };
 	}
@@ -227,7 +222,7 @@
 			if (!sinal.aborted) materiais = lista;
 		} catch (err) {
 			if (sinal.aborted) return;
-			materiaisErro = err instanceof Error ? err.message : 'Erro ao carregar materiais.';
+			materiaisErro = toUserMessage(err).message;
 		} finally {
 			if (!sinal.aborted) materiaisCarregando = false;
 		}
@@ -346,6 +341,10 @@
 
 	async function salvar(): Promise<void> {
 		if (ocupado) return;
+		if (modoEdicao && !podeEditarOrigem) {
+			toasts.warn('Sem permissão para esta ação.');
+			return;
+		}
 		const novos: Record<string, string> = {};
 		if (!clienteSel) novos['cliente'] = 'Selecione o cliente do orçamento.';
 		if (itens.length === 0) novos['itens'] = 'Adicione ao menos 1 item ao orçamento.';
@@ -372,7 +371,11 @@
 			toasts.success(modoEdicao ? 'Orçamento atualizado.' : 'Orçamento criado com sucesso.');
 			void goto(`/vendas/orcamentos/${salvo.id}`);
 		} catch (err) {
-			erroTopo = toUserMessage(err).message;
+			if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
+			} else {
+				erroTopo = toUserMessage(err).message;
+			}
 		} finally {
 			ocupado = false;
 		}
@@ -456,9 +459,6 @@
 					<Avatar name={clienteSel.nome} size="sm" tone="brand" />
 					<div class="min-w-0 flex-1">
 						<p class="truncate text-sm font-medium text-ink">{clienteSel.nome}</p>
-						{#if clienteSel.email}
-							<p class="truncate text-xs text-muted">{clienteSel.email}</p>
-						{/if}
 					</div>
 					{#if !modoEdicao}
 						<button
@@ -505,7 +505,7 @@
 										<span class="min-w-0 flex-1">
 											<span class="block truncate text-sm font-medium text-ink">{c.nome}</span>
 											<span class="block truncate font-mono text-xs text-muted">
-												{c.codigo} · {c.documento}
+												{c.codigo} · {c.nome}
 											</span>
 										</span>
 									</button>

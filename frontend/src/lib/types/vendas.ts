@@ -212,6 +212,8 @@ export interface SolicitacaoEdicao {
 	status: SolicitacaoStatus;
 	solicitante: string;
 	motivo?: string;
+	decididoPor?: string;
+	decididoEm?: string;
 	createdBy: string;
 }
 

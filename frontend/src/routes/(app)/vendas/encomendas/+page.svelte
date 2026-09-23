@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
+	import { get } from 'svelte/store';
+	import { auth } from '$lib/stores/auth';
 	import type { Cliente, Encomenda, KanbanStatus, OrdemOrigem } from '$lib/types/vendas';
 	import { listClientes } from '$lib/api/vendas/clientes';
 	import { createEncomenda, moverKanban } from '$lib/api/vendas/encomendas';
 	import { ApiError } from '$lib/api/client';
+	import { canEditVendas } from '$lib/utils/permissions';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
 	import { formatNumber } from '$lib/utils/format';
@@ -24,6 +27,7 @@
 
 	let { data }: PageProps = $props();
 
+	const usuario = $derived(get(auth).user);
 	const params = $derived(data.params);
 	const resultado = $derived(data.resultado);
 	const erro = $derived(data.error);
@@ -75,7 +79,7 @@
 				id: col.id,
 				label: col.id,
 				tone: col.tone,
-				count: servida ?? daColuna.length,
+				count: servida ?? 0,
 				cards: daColuna.map(
 					(e): KanbanCard => ({
 						id: e.id,
@@ -159,6 +163,10 @@
 
 	async function mover(enc: Encomenda, destino: KanbanStatus): Promise<void> {
 		popoverMover = null;
+		if (!canEditVendas(usuario, { createdBy: enc.createdBy })) {
+			toasts.warn('Somente o criador ou Admin pode mover esta encomenda.');
+			return;
+		}
 		if (movendoId) return;
 		movendoId = enc.id;
 		try {
@@ -168,6 +176,9 @@
 		} catch (err) {
 			if (err instanceof ApiError && err.status === 409) {
 				toasts.warn('Conflito de versão — atualize a tela.');
+				await invalidateAll();
+			} else if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
 			} else {
 				toasts.danger(toUserMessage(err).message);
 			}
@@ -242,7 +253,7 @@
 		} catch (err) {
 			if (sinal.aborted) return;
 			buscandoCliente = false;
-			erroBuscaCliente = err instanceof Error ? err.message : 'Erro ao buscar clientes.';
+			erroBuscaCliente = toUserMessage(err).message;
 		}
 	}
 
@@ -281,7 +292,11 @@
 			modalAberto = false;
 			await invalidateAll();
 		} catch (err) {
-			toasts.danger(toUserMessage(err).message);
+			if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
+			} else {
+				toasts.danger(toUserMessage(err).message);
+			}
 		} finally {
 			ocupado = false;
 		}
@@ -445,7 +460,7 @@
 		{:else}
 			<div class="sr-only">
 				{#each COLUNAS as col (col.id)}
-					<span data-testid="kanban-col-{col.slug}">Coluna {col.id}</span>
+					<div data-testid="kanban-col-{col.slug}">Coluna {col.id}</div>
 				{/each}
 			</div>
 			<KanbanBoard columns={colunas}>

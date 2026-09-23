@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
+	import { get } from 'svelte/store';
+	import { auth } from '$lib/stores/auth';
 	import type { Prioridade, TarefaMarketing, TarefaStatus } from '$lib/types/vendas';
 	import { createTarefa, updateTarefa } from '$lib/api/vendas/marketing';
+	import { ApiError } from '$lib/api/client';
+	import { canEditVendas } from '$lib/utils/permissions';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
 	import { formatNumber } from '$lib/utils/format';
@@ -22,6 +26,7 @@
 
 	let { data }: PageProps = $props();
 
+	const usuario = $derived(get(auth).user);
 	const params = $derived(data.params);
 	const resultado = $derived(data.resultado);
 	const erro = $derived(data.error);
@@ -117,6 +122,10 @@
 	let atualizandoId = $state<string | null>(null);
 
 	async function mudarStatus(tarefa: TarefaMarketing, status: TarefaStatus): Promise<void> {
+		if (!canEditVendas(usuario, { createdBy: tarefa.createdBy })) {
+			toasts.warn('Somente o criador ou Admin pode alterar esta tarefa.');
+			return;
+		}
 		if (atualizandoId) return;
 		atualizandoId = tarefa.id;
 		try {
@@ -124,7 +133,11 @@
 			toasts.success(`Tarefa "${tarefa.titulo}" atualizada para ${status}.`);
 			await invalidateAll();
 		} catch (err) {
-			toasts.danger(toUserMessage(err).message);
+			if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
+			} else {
+				toasts.danger(toUserMessage(err).message);
+			}
 		} finally {
 			atualizandoId = null;
 		}
@@ -187,7 +200,11 @@
 			modalAberto = false;
 			await invalidateAll();
 		} catch (err) {
-			toasts.danger(toUserMessage(err).message);
+			if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
+			} else {
+				toasts.danger(toUserMessage(err).message);
+			}
 		} finally {
 			ocupado = false;
 		}
@@ -395,6 +412,7 @@
 								{@const statusMeta = tarefaStatusMeta(tarefa.status)}
 								{@const prioMeta = prioridadeMeta(tarefa.prioridade)}
 								{@const vencido = prazoVencido(tarefa)}
+								{@const podeAlterar = canEditVendas(usuario, { createdBy: tarefa.createdBy })}
 								<tr
 									data-testid="mk-tarefa"
 									class="border-b border-border transition last:border-0 hover:bg-elevated/40"
@@ -432,19 +450,19 @@
 													id: 'concluir',
 													label: 'Concluir',
 													icon: 'check',
-													hidden: tarefa.status === 'Concluída'
+													hidden: tarefa.status === 'Concluída' || !podeAlterar
 												},
 												{
 													id: 'andamento',
 													label: 'Em andamento',
 													icon: 'arrow-right',
-													hidden: tarefa.status === 'Em Andamento'
+													hidden: tarefa.status === 'Em Andamento' || !podeAlterar
 												},
 												{
 													id: 'reabrir',
 													label: 'Reabrir',
 													icon: 'arrow-uturn-left',
-													hidden: tarefa.status === 'Pendente'
+													hidden: tarefa.status === 'Pendente' || !podeAlterar
 												}
 											]}
 											onSelect={(id) => acaoLinha(tarefa, id)}

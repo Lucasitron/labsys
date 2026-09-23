@@ -1,5 +1,5 @@
 import type { Module, User } from '$lib/types/auth';
-import { canSee5S, canSeeAdvertencias, isAdmin } from '$lib/utils/permissions';
+import { canDecideVendas, canSee5S, canSeeAdvertencias, isAdmin } from '$lib/utils/permissions';
 
 export type MenuIcon =
 	| 'dashboard'
@@ -52,7 +52,7 @@ export const menuItems: MenuItem[] = [
 			{ label: 'Encomendas', path: '/vendas/encomendas' },
 			{ label: 'Marketplace', path: '/vendas/marketplace' },
 			{ label: 'Marketing', path: '/vendas/marketing' },
-			{ label: 'Solicitações de edição', path: '/vendas/solicitacoes' }
+			{ label: 'Solicitações de edição', path: '/vendas/solicitacoes', canSee: canDecideVendas }
 		]
 	},
 	{

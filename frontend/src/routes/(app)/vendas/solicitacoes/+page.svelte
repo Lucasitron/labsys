@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
+	import { get } from 'svelte/store';
+	import { auth } from '$lib/stores/auth';
 	import type { SolicitacaoEdicao, SolicitacaoStatus } from '$lib/types/vendas';
 	import { decidirSolicitacao } from '$lib/api/vendas/solicitacoes';
 	import { ApiError } from '$lib/api/client';
+	import { canDecideVendas } from '$lib/utils/permissions';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
 	import { formatNumber } from '$lib/utils/format';
@@ -17,6 +20,7 @@
 
 	let { data }: PageProps = $props();
 
+	const usuario = $derived(get(auth).user);
 	const params = $derived(data.params);
 	const resultado = $derived(data.resultado);
 	const erro = $derived(data.error);
@@ -106,6 +110,10 @@
 
 	async function confirmarDecisao(): Promise<void> {
 		if (!alvo || ocupado) return;
+		if (!canDecideVendas(usuario)) {
+			toasts.warn('Sem permissão para esta ação.');
+			return;
+		}
 		if (!aprovada && !motivo.trim()) {
 			erroMotivo = 'Informe o motivo da rejeição.';
 			return;
@@ -120,7 +128,9 @@
 			alvo = null;
 			await invalidateAll();
 		} catch (err) {
-			if (err instanceof ApiError && err.status === 400) {
+			if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
+			} else if (err instanceof ApiError && err.status === 400) {
 				erroMotivo = 'Informe o motivo da rejeição.';
 			} else {
 				toasts.danger(toUserMessage(err).message);
@@ -300,7 +310,9 @@
 						{:else}
 							<div class="mt-3 rounded-md border border-border bg-surface px-3 py-2">
 								<p class="text-xs text-muted">
-									Decidida por {solicitacao.solicitante}
+									Decidida por {solicitacao.decididoPor ?? '—'}{solicitacao.decididoEm
+										? ` · ${solicitacao.decididoEm}`
+										: ''}
 									{#if solicitacao.motivo}
 										<span class="mt-0.5 block text-ink">Motivo: {solicitacao.motivo}</span>
 									{/if}

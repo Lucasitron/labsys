@@ -25,6 +25,9 @@
 
 	let tipo = $state<TipoSolicitacao>('Alteração de dados');
 	let campoAtual = $state(campo);
+	$effect(() => {
+		campoAtual = campo;
+	});
 	let valorProposto = $state('');
 	let justificativa = $state('');
 	let ocupado = $state(false);

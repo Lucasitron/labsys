@@ -222,7 +222,7 @@ describe('vendas-pages — lista de clientes (states)', () => {
 	it('skeleton quando resultado e erro são nulos (sem rows)', () => {
 		render(ClientesPage, {
 			// Skeleton (resultado+erro nulos) não é estado do load: cast local.
-			props: { data: { user: null, canEdit: false, params: PARAMS_CLIENTES, resultado: null, error: null } as never, params: {} }
+			props: { data: { user: null, params: PARAMS_CLIENTES, resultado: null, error: null } as never, params: {} }
 		});
 
 		expect(screen.queryByTestId('cliente-row')).toBeNull();
@@ -231,7 +231,7 @@ describe('vendas-pages — lista de clientes (states)', () => {
 
 	it('sucesso: rows desktop+mobile por cliente', () => {
 		render(ClientesPage, {
-			props: { data: { user: null, canEdit: false, params: PARAMS_CLIENTES, resultado: RESULTADO_CLIENTES, error: null }, params: {} }
+			props: { data: { user: null, params: PARAMS_CLIENTES, resultado: RESULTADO_CLIENTES, error: null }, params: {} }
 		});
 
 		expect(screen.getAllByTestId('cliente-row')).toHaveLength(2);
@@ -240,7 +240,7 @@ describe('vendas-pages — lista de clientes (states)', () => {
 
 	it('empty sem filtros mostra CTA de cadastro', () => {
 		render(ClientesPage, {
-			props: { data: { user: null, canEdit: false, params: PARAMS_CLIENTES, resultado: RESULTADO_VAZIO, error: null }, params: {} }
+			props: { data: { user: null, params: PARAMS_CLIENTES, resultado: RESULTADO_VAZIO, error: null }, params: {} }
 		});
 
 		expect(screen.getByText('Nenhum cliente cadastrado')).toBeTruthy();
@@ -252,7 +252,6 @@ describe('vendas-pages — lista de clientes (states)', () => {
 			props: {
 				data: {
 					user: null,
-					canEdit: false,
 					params: { ...PARAMS_CLIENTES, search: 'zzz' },
 					resultado: RESULTADO_VAZIO,
 					error: null
@@ -272,7 +271,7 @@ describe('vendas-pages — lista de clientes (states)', () => {
 	it('erro mostra banner e Tentar novamente refaz via goto', async () => {
 		render(ClientesPage, {
 			props: {
-				data: { user: null, canEdit: false, params: PARAMS_CLIENTES, resultado: null, error: 'Falha de rede.' },
+				data: { user: null, params: PARAMS_CLIENTES, resultado: null, error: 'Falha de rede.' },
 				params: {}
 			}
 		});
@@ -289,7 +288,7 @@ describe('vendas-pages — RBAC hide (Sugerir alteração × Editar)', () => {
 	it('!canEdit na lista: menu mostra "Sugerir alteração" e omite Editar do DOM', async () => {
 		auth.set({ user: OUTRO, token: 'tk', isAuthenticated: true });
 		render(ClientesPage, {
-			props: { data: { user: null, canEdit: false, params: PARAMS_CLIENTES, resultado: RESULTADO_CLIENTES, error: null }, params: {} }
+			props: { data: { user: null, params: PARAMS_CLIENTES, resultado: RESULTADO_CLIENTES, error: null }, params: {} }
 		});
 
 		await fireEvent.click(screen.getAllByLabelText('Ações de Ana Souza')[0]!);
@@ -301,7 +300,7 @@ describe('vendas-pages — RBAC hide (Sugerir alteração × Editar)', () => {
 	it('canEdit (criador) na lista: menu mostra Editar e omite Sugerir', async () => {
 		auth.set({ user: CRIADOR, token: 'tk', isAuthenticated: true });
 		render(ClientesPage, {
-			props: { data: { user: null, canEdit: false, params: PARAMS_CLIENTES, resultado: RESULTADO_CLIENTES, error: null }, params: {} }
+			props: { data: { user: null, params: PARAMS_CLIENTES, resultado: RESULTADO_CLIENTES, error: null }, params: {} }
 		});
 
 		await fireEvent.click(screen.getAllByLabelText('Ações de Ana Souza')[0]!);
@@ -314,7 +313,7 @@ describe('vendas-pages — RBAC hide (Sugerir alteração × Editar)', () => {
 		auth.set({ user: OUTRO, token: 'tk', isAuthenticated: true });
 		render(ClienteDetPage, {
 			props: {
-				data: { user: null, canEdit: false, id: 'c1', tab: 'visao-geral', cliente: CLIENTE, notFound: false, error: null },
+				data: { user: null, id: 'c1', tab: 'visao-geral', cliente: CLIENTE, notFound: false, error: null },
 				params: { id: 'c1' }
 			}
 		});
@@ -327,7 +326,7 @@ describe('vendas-pages — RBAC hide (Sugerir alteração × Editar)', () => {
 		auth.set({ user: OUTRO, token: 'tk', isAuthenticated: true });
 		render(OrcDetPage, {
 			props: {
-				data: { user: null, canEdit: false, id: 'oc1', orcamento: ORCAMENTO_BASE, notFound: false, error: null },
+				data: { user: null, id: 'oc1', orcamento: ORCAMENTO_BASE, notFound: false, error: null },
 				params: { id: 'oc1' }
 			}
 		});
@@ -341,7 +340,6 @@ describe('vendas-pages — Kanban de encomendas (moverKanban)', () => {
 	function dadosKanban() {
 		return {
 			user: null,
-			canEdit: false,
 			params: { status_kanban: '', search: '', clienteId: '' },
 			resultado: {
 				encomendas: [ENCOMENDA],
@@ -359,6 +357,7 @@ describe('vendas-pages — Kanban de encomendas (moverKanban)', () => {
 	});
 
 	it('mover chama moverKanban com destino, toast e refetch', async () => {
+		auth.set({ user: CRIADOR, token: 'tk', isAuthenticated: true });
 		mocks.moverKanban.mockResolvedValue({ statusNovo: 'Produção' });
 		render(EncomendasPage, { props: { data: dadosKanban(), params: {} } });
 
@@ -373,6 +372,7 @@ describe('vendas-pages — Kanban de encomendas (moverKanban)', () => {
 	});
 
 	it('409 no move vira toast "atualize a tela" (sem refetch silencioso)', async () => {
+		auth.set({ user: CRIADOR, token: 'tk', isAuthenticated: true });
 		mocks.moverKanban.mockRejectedValueOnce(new mocks.ApiError(409, 'CONFLITO', 'Versão antiga.'));
 		render(EncomendasPage, { props: { data: dadosKanban(), params: {} } });
 
@@ -387,9 +387,10 @@ describe('vendas-pages — Kanban de encomendas (moverKanban)', () => {
 
 describe('vendas-pages — detalhe do orçamento (banner de conversão)', () => {
 	it('banner só em Aprovado sem encomenda', () => {
+		auth.set({ user: CRIADOR, token: 'tk', isAuthenticated: true });
 		render(OrcDetPage, {
 			props: {
-				data: { user: null, canEdit: false, id: 'oc1', orcamento: ORCAMENTO_BASE, notFound: false, error: null },
+				data: { user: null, id: 'oc1', orcamento: ORCAMENTO_BASE, notFound: false, error: null },
 				params: { id: 'oc1' }
 			}
 		});
@@ -403,7 +404,6 @@ describe('vendas-pages — detalhe do orçamento (banner de conversão)', () => 
 			props: {
 				data: {
 					user: null,
-					canEdit: false,
 					id: 'oc1',
 					orcamento: { ...ORCAMENTO_BASE, status: 'Recusado' as const },
 					notFound: false,
@@ -422,7 +422,6 @@ describe('vendas-pages — detalhe do orçamento (banner de conversão)', () => 
 			props: {
 				data: {
 					user: null,
-					canEdit: false,
 					id: 'oc1',
 					orcamento: { ...ORCAMENTO_BASE, encomendaId: 'e1' },
 					notFound: false,
@@ -437,10 +436,11 @@ describe('vendas-pages — detalhe do orçamento (banner de conversão)', () => 
 	});
 
 	it('converter chama createEncomenda com {idOrcamento} + toast + refetch', async () => {
+		auth.set({ user: CRIADOR, token: 'tk', isAuthenticated: true });
 		mocks.createEncomenda.mockResolvedValue({ ...ENCOMENDA, codigo: 'EN-0001' });
 		render(OrcDetPage, {
 			props: {
-				data: { user: null, canEdit: false, id: 'oc1', orcamento: ORCAMENTO_BASE, notFound: false, error: null },
+				data: { user: null, id: 'oc1', orcamento: ORCAMENTO_BASE, notFound: false, error: null },
 				params: { id: 'oc1' }
 			}
 		});
@@ -459,7 +459,6 @@ describe('vendas-pages — solicitações (decisão + erro)', () => {
 	function dadosSol() {
 		return {
 			user: null,
-			canEdit: false,
 			params: { tab: 'pendentes' },
 			resultado: {
 				solicitacoes: [SOLICITACAO],
@@ -474,7 +473,6 @@ describe('vendas-pages — solicitações (decisão + erro)', () => {
 			props: {
 				data: {
 					user: null,
-					canEdit: false,
 					params: { tab: 'pendentes' },
 					resultado: null,
 					error: 'Falha de rede.'
@@ -491,6 +489,7 @@ describe('vendas-pages — solicitações (decisão + erro)', () => {
 	});
 
 	it('aprovar chama decidirSolicitacao({aprovada:true}) + toast + refetch', async () => {
+		auth.set({ user: ADMIN, token: 'tk', isAuthenticated: true });
 		mocks.decidirSolicitacao.mockResolvedValue({ ...SOLICITACAO, status: 'Aprovada' });
 		render(SolPage, { props: { data: dadosSol(), params: {} } });
 
@@ -506,6 +505,7 @@ describe('vendas-pages — solicitações (decisão + erro)', () => {
 	});
 
 	it('rejeitar sem motivo mostra inline e NÃO chama a API', async () => {
+		auth.set({ user: ADMIN, token: 'tk', isAuthenticated: true });
 		render(SolPage, { props: { data: dadosSol(), params: {} } });
 
 		await fireEvent.click(screen.getByTestId('sol-rejeitar'));
@@ -518,6 +518,7 @@ describe('vendas-pages — solicitações (decisão + erro)', () => {
 	});
 
 	it('rejeitar com motivo chama decidirSolicitacao com motivo', async () => {
+		auth.set({ user: ADMIN, token: 'tk', isAuthenticated: true });
 		mocks.decidirSolicitacao.mockResolvedValue({ ...SOLICITACAO, status: 'Rejeitada' });
 		render(SolPage, { props: { data: dadosSol(), params: {} } });
 
@@ -537,14 +538,14 @@ describe('vendas-pages — solicitações (decisão + erro)', () => {
 });
 
 describe('vendas-pages — guarda do módulo (load sem render)', () => {
-	it('admin em /vendas/clientes recebe canEdit', () => {
+	it('admin em /vendas/clientes passa (sem canEdit morto)', () => {
 		auth.set({ user: ADMIN, token: 'tk', isAuthenticated: true });
 
 		const saida = vendasLayoutLoad({ url: new URL('http://localhost/vendas/clientes') }) as {
 			canEdit: boolean;
 		};
 
-		expect(saida).toEqual({ canEdit: true });
+		expect(saida).toEqual({});
 	});
 
 	it('responsável de vendas em /vendas/solicitacoes passa (canDecide)', () => {
@@ -558,7 +559,7 @@ describe('vendas-pages — guarda do módulo (load sem render)', () => {
 			canEdit: boolean;
 		};
 
-		expect(saida).toEqual({ canEdit: false });
+		expect(saida).toEqual({});
 	});
 
 	it('!canDecide em /vendas/solicitacoes é redirecionado (303 /vendas/clientes)', () => {

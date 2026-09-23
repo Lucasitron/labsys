@@ -6,6 +6,7 @@
 	import type { Cliente, Tag } from '$lib/types/vendas';
 	import type { Tone } from '$lib/types/stock';
 	import { bulkAdicionarTag, deleteCliente, listTags } from '$lib/api/vendas/clientes';
+	import { ApiError } from '$lib/api/client';
 	import { canEditVendas } from '$lib/utils/permissions';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
@@ -189,6 +190,11 @@
 
 	async function confirmarExcluir(): Promise<void> {
 		if (!alvoExclusao) return;
+		const alvo = clientes.find((c) => c.id === alvoExclusao);
+		if (alvo && !canEditVendas(usuario, { createdBy: alvo.createdBy })) {
+			toasts.warn('Sem permissão para esta ação.');
+			return;
+		}
 		ocupado = true;
 		try {
 			await deleteCliente(alvoExclusao);
@@ -198,7 +204,11 @@
 			selecionados = [];
 			await invalidateAll();
 		} catch (err) {
-			toasts.danger(toUserMessage(err).message);
+			if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
+			} else {
+				toasts.danger(toUserMessage(err).message);
+			}
 		} finally {
 			ocupado = false;
 		}
@@ -216,6 +226,14 @@
 
 	async function confirmarAdicionarTag(): Promise<void> {
 		if (selecionados.length === 0 || !tagAlvo) return;
+		const alheio = selecionados.some((id) => {
+			const alvo = clientes.find((c) => c.id === id);
+			return alvo ? !canEditVendas(usuario, { createdBy: alvo.createdBy }) : true;
+		});
+		if (alheio) {
+			toasts.warn('Somente o criador ou Admin pode etiquetar estes clientes.');
+			return;
+		}
 		ocupado = true;
 		try {
 			await bulkAdicionarTag(selecionados, tagAlvo);
@@ -226,7 +244,11 @@
 			selecionados = [];
 			await invalidateAll();
 		} catch (err) {
-			toasts.danger(toUserMessage(err).message);
+			if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
+			} else {
+				toasts.danger(toUserMessage(err).message);
+			}
 		} finally {
 			ocupado = false;
 		}

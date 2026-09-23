@@ -6,13 +6,14 @@
 	import type { Encomenda, Interacao, Orcamento, TipoInteracao } from '$lib/types/vendas';
 	import type { Tone } from '$lib/types/stock';
 	import { deleteCliente } from '$lib/api/vendas/clientes';
+	import { ApiError } from '$lib/api/client';
 	import { listInteracoes, registrarInteracao } from '$lib/api/vendas/interacoes';
 	import { listOrcamentos } from '$lib/api/vendas/orcamentos';
 	import { listEncomendas } from '$lib/api/vendas/encomendas';
 	import { canEditVendas } from '$lib/utils/permissions';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
-	import { formatMoneyBRL, formatDateBR } from '$lib/utils/vendas-format';
+	import { formatMoneyBRL, formatDateBR, maskDocumento } from '$lib/utils/vendas-format';
 	import { formatNumber } from '$lib/utils/format';
 	import {
 		interacaoTipoMeta,
@@ -81,8 +82,13 @@
 
 	function telefoneHref(telefone: string): string {
 		const digitos = telefone.replace(/\D/g, '');
-		return digitos ? `tel:+${digitos}` : '#';
+		return digitos ? `tel:+${digitos}` : '';
 	}
+
+	const emailValido = $derived(
+		cliente ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cliente.email.trim()) : false
+	);
+	const telefoneDigitos = $derived(cliente ? cliente.telefone.replace(/\D/g, '') : '');
 
 	const abas = [
 		{ id: 'visao-geral', label: 'Visão geral' },
@@ -97,13 +103,21 @@
 	let ocupado = $state(false);
 
 	async function confirmarExcluir(): Promise<void> {
+		if (!cliente || !canEditVendas(usuario, { createdBy: cliente.createdBy })) {
+			toasts.warn('Sem permissão para esta ação.');
+			return;
+		}
 		ocupado = true;
 		try {
 			await deleteCliente(id);
 			toasts.success('Cliente excluído com sucesso.');
 			void goto('/vendas/clientes');
 		} catch (err) {
-			toasts.danger(toUserMessage(err).message);
+			if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
+			} else {
+				toasts.danger(toUserMessage(err).message);
+			}
 		} finally {
 			ocupado = false;
 		}
@@ -129,8 +143,7 @@
 				if (!sinal.aborted) interacoes = res;
 			})
 			.catch((err: unknown) => {
-				if (!sinal.aborted)
-					interacoesErro = err instanceof Error ? err.message : 'Erro ao carregar interações.';
+				if (!sinal.aborted) interacoesErro = toUserMessage(err).message;
 			})
 			.finally(() => {
 				if (!sinal.aborted) interacoesCarregando = false;
@@ -212,8 +225,7 @@
 				if (!sinal.aborted) orcamentos = res.orcamentos;
 			})
 			.catch((err: unknown) => {
-				if (!sinal.aborted)
-					orcamentosErro = err instanceof Error ? err.message : 'Erro ao carregar orçamentos.';
+				if (!sinal.aborted) orcamentosErro = toUserMessage(err).message;
 			})
 			.finally(() => {
 				if (!sinal.aborted) orcamentosCarregando = false;
@@ -240,8 +252,7 @@
 				if (!sinal.aborted) encomendas = res.encomendas;
 			})
 			.catch((err: unknown) => {
-				if (!sinal.aborted)
-					encomendasErro = err instanceof Error ? err.message : 'Erro ao carregar encomendas.';
+				if (!sinal.aborted) encomendasErro = toUserMessage(err).message;
 			})
 			.finally(() => {
 				if (!sinal.aborted) encomendasCarregando = false;
@@ -358,22 +369,40 @@
 					{/if}
 				</div>
 				<div class="flex shrink-0 items-center gap-2">
-					<a
-						href={`mailto:${cliente.email}`}
-						aria-label={`Enviar e-mail para ${cliente.nome}`}
-						title={cliente.email}
-						class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-elevated text-base transition hover:border-brand/50 hover:text-brandhi"
-					>
-						<span aria-hidden="true">✉</span>
-					</a>
-					<a
-						href={telefoneHref(cliente.telefone)}
-						aria-label={`Ligar para ${cliente.nome}`}
-						title={cliente.telefone}
-						class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-elevated text-base transition hover:border-brand/50 hover:text-brandhi"
-					>
-						<span aria-hidden="true">📞</span>
-					</a>
+					{#if emailValido}
+						<a
+							href={`mailto:${encodeURIComponent(cliente.email)}`}
+							aria-label={`Enviar e-mail para ${cliente.nome}`}
+							title={cliente.email}
+							class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-elevated text-base transition hover:border-brand/50 hover:text-brandhi"
+						>
+							<span aria-hidden="true">✉</span>
+						</a>
+					{:else}
+						<span
+							title="E-mail inválido"
+							class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-elevated text-base opacity-50"
+						>
+							<span aria-hidden="true">✉</span>
+						</span>
+					{/if}
+					{#if telefoneDigitos}
+						<a
+							href={telefoneHref(cliente.telefone)}
+							aria-label={`Ligar para ${cliente.nome}`}
+							title={cliente.telefone}
+							class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-elevated text-base transition hover:border-brand/50 hover:text-brandhi"
+						>
+							<span aria-hidden="true">📞</span>
+						</a>
+					{:else}
+						<span
+							title="Telefone inválido"
+							class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-elevated text-base text-muted"
+						>
+							<span aria-hidden="true">—</span>
+						</span>
+					{/if}
 				</div>
 			</div>
 		</section>
@@ -437,7 +466,9 @@
 							</div>
 							<div>
 								<dt class="text-xs text-muted">{cliente.tipoPessoa === 'pf' ? 'CPF' : 'CNPJ'}</dt>
-								<dd class="mt-0.5 font-mono text-xs text-muted">{cliente.documento}</dd>
+								<dd class="mt-0.5 font-mono text-xs text-muted">
+									{#if podeEditar}{cliente.documento}{:else}{maskDocumento(cliente.documento)}{/if}
+								</dd>
 							</div>
 							<div>
 								<dt class="text-xs text-muted">Tipo</dt>

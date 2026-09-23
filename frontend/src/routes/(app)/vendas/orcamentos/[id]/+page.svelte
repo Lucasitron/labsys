@@ -4,6 +4,7 @@
 	import { get } from 'svelte/store';
 	import { auth } from '$lib/stores/auth';
 	import { createEncomenda } from '$lib/api/vendas/encomendas';
+	import { ApiError } from '$lib/api/client';
 	import { canEditVendas } from '$lib/utils/permissions';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
@@ -68,14 +69,23 @@
 	let convertendo = $state(false);
 
 	async function criarEncomendaDoOrcamento(): Promise<void> {
-		if (convertendo || !orcamento) return;
+		if (!orcamento) return;
+		if (!canEditVendas(usuario, { createdBy: orcamento.createdBy })) {
+			toasts.warn('Somente o criador ou Admin pode mover esta encomenda.');
+			return;
+		}
+		if (convertendo) return;
 		convertendo = true;
 		try {
 			const encomenda = await createEncomenda({ idOrcamento: id });
 			toasts.success(`Encomenda ${encomenda.codigo} criada na Fila.`);
 			await invalidateAll();
 		} catch (err) {
-			toasts.danger(toUserMessage(err).message);
+			if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
+			} else {
+				toasts.danger(toUserMessage(err).message);
+			}
 		} finally {
 			convertendo = false;
 		}
@@ -216,7 +226,7 @@
 		</section>
 
 		<!-- Banner de conversão (só Aprovado sem encomenda) -->
-		{#if mostraConversao}
+		{#if mostraConversao && podeEditar}
 			<section
 				aria-label="Converter orçamento em encomenda"
 				class="flex flex-col gap-3 rounded-xl border border-brand/40 bg-brand/10 p-5 sm:flex-row sm:items-center sm:justify-between"
@@ -365,11 +375,11 @@
 				<!-- Histórico -->
 				<section
 					class="rounded-xl border border-border bg-surface p-5"
-					aria-label="Histórico do orçamento"
+					aria-label="Resumo do orçamento"
 				>
-					<h2 class="text-sm font-semibold text-ink">Histórico</h2>
+					<h2 class="text-sm font-semibold text-ink">Resumo do orçamento</h2>
 					<div class="mt-3">
-						<Timeline items={timelineItens} label="Histórico do orçamento" />
+						<Timeline items={timelineItens} label="Resumo do orçamento" />
 					</div>
 				</section>
 			</div>

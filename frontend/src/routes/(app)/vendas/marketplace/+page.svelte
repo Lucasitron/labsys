@@ -4,6 +4,7 @@
 	import type { Encomenda, Plataforma, RegistroMarketplace } from '$lib/types/vendas';
 	import { registrarVenda } from '$lib/api/vendas/marketplace';
 	import { listEncomendas } from '$lib/api/vendas/encomendas';
+	import { ApiError } from '$lib/api/client';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
 	import { formatNumber } from '$lib/utils/format';
@@ -163,7 +164,7 @@
 		} catch (err) {
 			if (sinal.aborted) return;
 			buscandoEnc = false;
-			erroBuscaEnc = err instanceof Error ? err.message : 'Erro ao buscar encomendas.';
+			erroBuscaEnc = toUserMessage(err).message;
 		}
 	}
 
@@ -184,6 +185,8 @@
 			novos['dataVenda'] = 'Informe uma data válida.';
 		if (taxa === null || !Number.isFinite(taxa) || taxa < 0)
 			novos['taxa'] = 'Informe a taxa em reais (valor, nunca percentual).';
+		if (encSel && taxa !== null && taxa > encSel.valorFinal)
+			novos['taxa'] = 'Taxa não pode exceder o valor da encomenda.';
 		erros = novos;
 		if (Object.keys(novos).length > 0 || !encSel || !plataforma) return;
 		ocupado = true;
@@ -199,7 +202,11 @@
 			modalAberto = false;
 			await invalidateAll();
 		} catch (err) {
-			toasts.danger(toUserMessage(err).message);
+			if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
+			} else {
+				toasts.danger(toUserMessage(err).message);
+			}
 		} finally {
 			ocupado = false;
 		}

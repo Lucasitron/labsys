@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { get } from 'svelte/store';
 import { auth } from '$lib/stores/auth';
-import { canDecideVendas, canView, isAdmin } from '$lib/utils/permissions';
+import { canDecideVendas, canView } from '$lib/utils/permissions';
 
 export const ssr = false;
 export const prerender = false;
@@ -21,5 +21,5 @@ export function load({ url }: { url: URL }) {
 		throw redirect(303, '/vendas/clientes');
 	}
 
-	return { canEdit: isAdmin(user) };
+	return {};
 }

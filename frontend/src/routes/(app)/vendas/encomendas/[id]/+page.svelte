@@ -98,7 +98,12 @@
 
 	async function avancar(destino: KanbanStatus): Promise<void> {
 		avancarAberto = false;
-		if (avancando || !encomenda) return;
+		if (!encomenda) return;
+		if (!canEditVendas(usuario, { createdBy: encomenda.createdBy })) {
+			toasts.warn('Somente o criador ou Admin pode mover esta encomenda.');
+			return;
+		}
+		if (avancando) return;
 		avancando = true;
 		try {
 			await moverKanban(id, { statusKanban: destino });
@@ -107,6 +112,9 @@
 		} catch (err) {
 			if (err instanceof ApiError && err.status === 409) {
 				toasts.warn('Conflito de versão — atualize a tela.');
+				await invalidateAll();
+			} else if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
 			} else {
 				toasts.danger(toUserMessage(err).message);
 			}

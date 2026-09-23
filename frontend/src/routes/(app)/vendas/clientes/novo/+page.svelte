@@ -14,7 +14,7 @@
 	import RadioCards from '$lib/components/ui/RadioCards.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
-	const usuario = get(auth).user;
+	const usuario = $derived(get(auth).user);
 
 	const editarId = $derived(page.url.searchParams.get('editar') ?? '');
 	const duplicarId = $derived(page.url.searchParams.get('duplicar') ?? '');
@@ -41,6 +41,7 @@
 	let carregandoOrigem = $state(false);
 	let erroOrigem = $state<string | null>(null);
 	let origemPronta = $state(false);
+	let origemCreatedBy = $state<string | undefined>(undefined);
 
 	let ocupado = $state(false);
 	let tagCriando = $state(false);
@@ -159,6 +160,7 @@
 		cepCtrl?.abort();
 		const ctrl = new AbortController();
 		cepCtrl = ctrl;
+		const timerCep = setTimeout(() => ctrl.abort(), 8000);
 		try {
 			const res = await fetch(`https://viacep.com.br/ws/${d}/json/`, { signal: ctrl.signal });
 			const dados = (await res.json()) as {
@@ -178,9 +180,13 @@
 			if (dados.localidade) cidade = dados.localidade;
 			if (dados.uf) uf = dados.uf;
 		} catch {
-			if (!ctrl.signal.aborted) cepErro = 'Não foi possível buscar o CEP. Preencha manualmente.';
+			if (cepCtrl === ctrl)
+				cepErro = ctrl.signal.aborted
+					? 'Tempo esgotado ao buscar o CEP. Preencha manualmente.'
+					: 'Não foi possível buscar o CEP. Preencha manualmente.';
 		} finally {
-			if (!ctrl.signal.aborted) cepBuscando = false;
+			clearTimeout(timerCep);
+			if (cepCtrl === ctrl) cepBuscando = false;
 		}
 	}
 
@@ -250,6 +256,10 @@
 			erroTopo = 'Verifique os campos destacados e tente novamente.';
 			return;
 		}
+		if (modoEdicao && !canEditVendas(usuario, { createdBy: origemCreatedBy })) {
+			toasts.warn('Sem permissão para esta ação.');
+			return;
+		}
 		ocupado = true;
 		try {
 			const endereco = montarEndereco();
@@ -288,6 +298,8 @@
 					erros = { ...erros, documento: 'Este documento já está cadastrado.' };
 				}
 				erroTopo = 'Registro duplicado. Ajuste o campo destacado.';
+			} else if (err instanceof ApiError && err.status === 403) {
+				toasts.warn('Sem permissão para esta ação.');
 			} else {
 				erroTopo = toUserMessage(err).message;
 			}
@@ -350,14 +362,14 @@
 				nome = editarId ? origem.nome : `${origem.nome} (cópia)`;
 				documento = editarId ? mascararDocumento(origem.documento, origem.tipoPessoa) : '';
 				email = editarId ? origem.email : '';
-				telefone = mascararTelefone(origem.telefone);
-				rua = editarId && origem.endereco ? origem.endereco : (origem.endereco ?? '');
+				telefone = editarId ? mascararTelefone(origem.telefone) : '';
+				rua = editarId && origem.endereco ? origem.endereco : '';
+				origemCreatedBy = origem.createdBy;
 				tagIds = origem.tags.map((t) => t.id);
 				origemPronta = true;
 			})
 			.catch((err: unknown) => {
-				if (!sinal.aborted)
-					erroOrigem = err instanceof Error ? err.message : 'Erro ao carregar o cliente.';
+				if (!sinal.aborted) erroOrigem = toUserMessage(err).message;
 			})
 			.finally(() => {
 				if (!sinal.aborted) carregandoOrigem = false;
@@ -565,6 +577,10 @@
 							<p role="alert" class="mt-1 text-xs text-danger">{erros['cep']}</p>
 						{:else if cepErro}
 							<p role="alert" class="mt-1 text-xs text-warn">{cepErro}</p>
+						{:else}
+							<p class="mt-1 text-xs text-muted">
+								CEP usado apenas para autocompletar o endereço (ViaCEP).
+							</p>
 						{/if}
 					</div>
 					<div>
