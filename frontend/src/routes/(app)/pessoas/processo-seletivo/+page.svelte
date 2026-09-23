@@ -317,8 +317,10 @@
 
 	async function salvarAvaliacao(): Promise<void> {
 		if (mutando || !alvoAval) return;
-		const nota = Number(notaAval.replace(',', '.'));
-		if (notaAval.trim() === '' || !Number.isFinite(nota) || nota < 0 || nota > 10) {
+		// bind:value em type="number" coage para number/null — normalizar antes de validar.
+		const textoNota = String(notaAval ?? '').replace(',', '.');
+		const nota = Number(textoNota);
+		if (textoNota.trim() === '' || !Number.isFinite(nota) || nota < 0 || nota > 10) {
 			erroAval = 'Informe uma nota de 0 a 10.';
 			return;
 		}
