@@ -148,6 +148,25 @@ export function canViewConfiguracoes(user: User | null): boolean {
 	return isAdmin(user);
 }
 
+export function isResponsavelVendas(user: User | null): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	if (user.role === 4) return false;
+	return (user.responsibilities?.vendas?.length ?? 0) > 0;
+}
+
+export function canEditVendas(user: User | null, record: { createdBy?: string }): boolean {
+	if (!user) return false;
+	if (isAdmin(user)) return true;
+	if (!record.createdBy) return false;
+	return user.id === record.createdBy;
+}
+
+export function canDecideVendas(user: User | null): boolean {
+	if (!user) return false;
+	return isAdmin(user) || isResponsavelVendas(user);
+}
+
 export function hasPermissao(
 	user: User | null,
 	modulo: Module,
