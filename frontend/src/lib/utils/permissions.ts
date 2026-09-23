@@ -48,6 +48,7 @@ export function canEdit(user: User | null, module: Module): boolean {
 	if (user.role === 0) return true;
 	if (user.roles?.[module] === 'edit') return true;
 	if (module === 'estoque' && isResponsavelEstoque(user)) return true;
+	if (module === 'rh' && isResponsavelRH(user)) return true;
 
 	return EDIT_RULES[module].includes(user.role);
 }
@@ -105,6 +106,42 @@ export function canEditProducao(
 
 export function isAdmin(user: User | null): boolean {
 	return user?.role === 0;
+}
+
+export function isResponsavelRH(user: User | null): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	if (user.role === 4) return false;
+	return (user.responsibilities?.rh?.length ?? 0) > 0;
+}
+
+export function isTutor(user: User | null): boolean {
+	return isResponsavelRH(user);
+}
+
+export function isInstrutor(user: User | null): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	return (user.responsibilities?.rh ?? []).some((r) => r.toLowerCase().includes('instrutor'));
+}
+
+export function canEditRH(user: User | null, recurso?: string): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	if (user.roles?.rh === 'edit') return true;
+	if (user.role !== 1 && user.role !== 2) return false;
+	if (!isResponsavelRH(user)) return false;
+	if (recurso) return (user.responsibilities?.rh ?? []).includes(recurso);
+	return true;
+}
+
+export function canSeeNiveis(user: User | null): boolean {
+	return isAdmin(user);
+}
+
+export function isProprioRegistro(user: User | null, pessoaId: string): boolean {
+	if (!user || !pessoaId) return false;
+	return user.id === pessoaId;
 }
 
 export function canViewConfiguracoes(user: User | null): boolean {
