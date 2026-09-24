@@ -28,6 +28,10 @@ eureka:
   instance:
     prefer-ip-address: true
 
+jwt:
+  secret: ${JWT_SECRET:trocar-em-producao-com-no-minimo-32-caracteres-123456}
+  issuer: ${JWT_ISSUER:fablab}
+
 management:
   endpoints:
     web:
