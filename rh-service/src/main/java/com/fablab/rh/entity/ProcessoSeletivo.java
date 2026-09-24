@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -52,4 +53,14 @@ public class ProcessoSeletivo {
 
     @Column(name = "resultado_final")
     private String resultadoFinal;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_grupo")
+    private GrupoProcessoSeletivo grupo;
+
+    @Column(name = "nota", precision = 4, scale = 2)
+    private BigDecimal nota;
+
+    @Column(name = "feedback")
+    private String feedback;
 }

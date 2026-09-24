@@ -16,4 +16,10 @@ public interface ProcessoSeletivoRepository extends JpaRepository<ProcessoSeleti
     boolean existsByCandidatoId(Long pessoaId);
 
     List<ProcessoSeletivo> findByStatusProcesso(StatusProcesso status);
+
+    List<ProcessoSeletivo> findByGrupoId(Long grupoId);
+
+    List<ProcessoSeletivo> findByGrupoIsNull();
+
+    long countByStatusProcesso(StatusProcesso status);
 }

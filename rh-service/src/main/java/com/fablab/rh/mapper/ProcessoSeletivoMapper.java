@@ -19,6 +19,9 @@ public final class ProcessoSeletivoMapper {
                 processo.getTutor().getId(),
                 processo.getStatusProcesso(),
                 processo.getDataInscricao(),
-                processo.getResultadoFinal());
+                processo.getResultadoFinal(),
+                processo.getGrupo() == null ? null : processo.getGrupo().getId(),
+                processo.getNota(),
+                processo.getFeedback());
     }
 }

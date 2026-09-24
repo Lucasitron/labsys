@@ -1,6 +1,7 @@
 package com.fablab.rh.dto;
 
 import com.fablab.rh.entity.StatusProcesso;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -13,5 +14,8 @@ public record ProcessoSeletivoResponse(
         Long idTutor,
         StatusProcesso statusProcesso,
         LocalDate dataInscricao,
-        String resultadoFinal) {
+        String resultadoFinal,
+        Long idGrupo,
+        BigDecimal nota,
+        String feedback) {
 }
