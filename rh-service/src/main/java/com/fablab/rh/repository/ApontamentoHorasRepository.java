@@ -20,6 +20,8 @@ public interface ApontamentoHorasRepository extends JpaRepository<ApontamentoHor
     List<ApontamentoHoras> findByFuncionarioIdAndStatusAndConsolidadoFalse(Long funcionarioId,
                                                                            StatusApontamento status);
 
+    long countByFuncionarioIdAndStatus(Long funcionarioId, StatusApontamento status);
+
     @Query("""
             select coalesce(sum(a.horasTrabalhadas), 0)
             from ApontamentoHoras a

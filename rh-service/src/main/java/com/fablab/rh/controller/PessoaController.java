@@ -1,5 +1,7 @@
 package com.fablab.rh.controller;
 
+import com.fablab.rh.dto.ExclusaoResponse;
+import com.fablab.rh.dto.PessoaDetalheResponse;
 import com.fablab.rh.dto.PessoaRequest;
 import com.fablab.rh.dto.PessoaResponse;
 import com.fablab.rh.dto.PessoasPaginaResponse;
@@ -12,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,6 +61,19 @@ public class PessoaController {
     public ResponseEntity<PessoaResponse> buscar(@PathVariable Long id,
                                                  @AuthenticationPrincipal RhPrincipal principal) {
         return ResponseEntity.ok(pessoaService.buscar(id, principal));
+    }
+
+    @GetMapping("/{id}/detalhe")
+    public ResponseEntity<PessoaDetalheResponse> detalhe(@PathVariable Long id,
+                                                         @AuthenticationPrincipal RhPrincipal principal) {
+        return ResponseEntity.ok(pessoaService.detalhe(id, principal));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ExclusaoResponse> excluir(@PathVariable Long id) {
+        pessoaService.excluir(id);
+        return ResponseEntity.ok(new ExclusaoResponse(true, id));
     }
 
     @PutMapping("/{id}")

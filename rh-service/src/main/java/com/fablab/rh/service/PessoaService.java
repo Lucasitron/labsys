@@ -2,20 +2,39 @@ package com.fablab.rh.service;
 
 import com.fablab.rh.dto.FacetaResponse;
 import com.fablab.rh.dto.FiltrosPessoasResponse;
+import com.fablab.rh.dto.HorasMesResponse;
+import com.fablab.rh.dto.HorasPorStatusResponse;
+import com.fablab.rh.dto.HistoricoNivelResponse;
 import com.fablab.rh.dto.PaginacaoResponse;
+import com.fablab.rh.dto.PendenciasResponse;
+import com.fablab.rh.dto.PessoaDetalheResponse;
 import com.fablab.rh.dto.PessoaRequest;
 import com.fablab.rh.dto.PessoaResponse;
 import com.fablab.rh.dto.PessoasPaginaResponse;
 import com.fablab.rh.dto.RhPrincipal;
+import com.fablab.rh.dto.TreinamentosResumoResponse;
+import com.fablab.rh.entity.AvaliacaoTreinamento;
 import com.fablab.rh.entity.Funcionario;
 import com.fablab.rh.entity.NivelAcesso;
 import com.fablab.rh.entity.Pessoa;
 import com.fablab.rh.entity.PessoaStatus;
+import com.fablab.rh.entity.StatusApontamento;
+import com.fablab.rh.entity.TipoApontamento;
+import com.fablab.rh.exception.ConflitoException;
 import com.fablab.rh.exception.ForbiddenException;
 import com.fablab.rh.exception.ResourceNotFoundException;
 import com.fablab.rh.mapper.PessoaMapper;
+import com.fablab.rh.mapper.TreinamentoMapper;
+import com.fablab.rh.repository.ApontamentoHorasRepository;
+import com.fablab.rh.repository.AvaliacaoTreinamentoRepository;
 import com.fablab.rh.repository.FuncionarioRepository;
+import com.fablab.rh.repository.HistoricoNivelRepository;
 import com.fablab.rh.repository.PessoaRepository;
+import com.fablab.rh.repository.ProcessoSeletivoRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -33,11 +52,23 @@ public class PessoaService {
 
     private final PessoaRepository pessoaRepository;
     private final FuncionarioRepository funcionarioRepository;
+    private final ApontamentoHorasRepository apontamentoRepository;
+    private final AvaliacaoTreinamentoRepository avaliacaoRepository;
+    private final HistoricoNivelRepository historicoRepository;
+    private final ProcessoSeletivoRepository processoRepository;
 
     public PessoaService(PessoaRepository pessoaRepository,
-                         FuncionarioRepository funcionarioRepository) {
+                         FuncionarioRepository funcionarioRepository,
+                         ApontamentoHorasRepository apontamentoRepository,
+                         AvaliacaoTreinamentoRepository avaliacaoRepository,
+                         HistoricoNivelRepository historicoRepository,
+                         ProcessoSeletivoRepository processoRepository) {
         this.pessoaRepository = pessoaRepository;
         this.funcionarioRepository = funcionarioRepository;
+        this.apontamentoRepository = apontamentoRepository;
+        this.avaliacaoRepository = avaliacaoRepository;
+        this.historicoRepository = historicoRepository;
+        this.processoRepository = processoRepository;
     }
 
     @Transactional
@@ -187,6 +218,98 @@ public class PessoaService {
         validarMatriculaDisponivel(request.matricula(), id);
         PessoaMapper.update(pessoa, request);
         return PessoaMapper.toResponse(pessoaRepository.save(pessoa));
+    }
+
+    /**
+     * Detalhe agregado (abas: visão geral, horas, treinamentos e histórico de
+     * nível). Sem vínculo de funcionário, os blocos agregados degradam para
+     * vazio.
+     */
+    @Transactional(readOnly = true)
+    public PessoaDetalheResponse detalhe(Long id, RhPrincipal principal) {
+        Pessoa pessoa = obter(id);
+        validarAcesso(pessoa, principal);
+
+        Funcionario funcionario = funcionarioRepository.findByPessoaId(id).orElse(null);
+        if (funcionario == null) {
+            return new PessoaDetalheResponse(
+                    PessoaMapper.toResponse(pessoa),
+                    null, null, null,
+                    new HorasMesResponse(BigDecimal.ZERO, BigDecimal.ZERO),
+                    new TreinamentosResumoResponse(0, null),
+                    new PendenciasResponse(0),
+                    new HorasPorStatusResponse(0, 0, 0),
+                    List.of(), List.of());
+        }
+
+        Long idFuncionario = funcionario.getId();
+        LocalDate hoje = LocalDate.now();
+        YearMonth mesAnterior = YearMonth.from(hoje).minusMonths(1);
+        BigDecimal atual = somarValidadasNoPeriodo(idFuncionario,
+                hoje.withDayOfMonth(1), hoje);
+        BigDecimal anterior = somarValidadasNoPeriodo(idFuncionario,
+                mesAnterior.atDay(1), mesAnterior.atEndOfMonth());
+
+        List<AvaliacaoTreinamento> avaliacoes = avaliacaoRepository.findByFuncionarioId(idFuncionario);
+        BigDecimal media = avaliacoes.isEmpty() ? null
+                : avaliacoes.stream().map(AvaliacaoTreinamento::getNota)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add)
+                        .divide(BigDecimal.valueOf(avaliacoes.size()), 2, RoundingMode.HALF_UP);
+
+        List<HistoricoNivelResponse> historico = historicoRepository.findByFuncionarioId(idFuncionario)
+                .stream().map(h -> new HistoricoNivelResponse(
+                        h.getNivelAntigo(), h.getNivelAntigo().getLabel(),
+                        h.getNivelNovo(), h.getNivelNovo().getLabel(),
+                        h.getAdmin().getPessoa().getNomeCompleto(),
+                        h.getDataAlteracao()))
+                .toList();
+
+        return new PessoaDetalheResponse(
+                PessoaMapper.toResponse(pessoa),
+                idFuncionario,
+                funcionario.getNivelAcesso(),
+                funcionario.getDepartamento(),
+                new HorasMesResponse(atual, anterior),
+                new TreinamentosResumoResponse(avaliacoes.size(), media),
+                new PendenciasResponse(apontamentoRepository.countByFuncionarioIdAndStatus(
+                        idFuncionario, StatusApontamento.PENDENTE)),
+                new HorasPorStatusResponse(
+                        apontamentoRepository.countByFuncionarioIdAndStatus(
+                                idFuncionario, StatusApontamento.PENDENTE),
+                        apontamentoRepository.countByFuncionarioIdAndStatus(
+                                idFuncionario, StatusApontamento.VALIDADO),
+                        apontamentoRepository.countByFuncionarioIdAndStatus(
+                                idFuncionario, StatusApontamento.REJEITADO)),
+                avaliacoes.stream().map(TreinamentoMapper::toAvaliacaoResponse).toList(),
+                historico);
+    }
+
+    /**
+     * Exclui a pessoa (Admin). Recusa quando há vínculo de funcionário ou
+     * processo seletivo, preservando a integridade referencial.
+     */
+    @Transactional
+    public void excluir(Long id) {
+        Pessoa pessoa = obter(id);
+        if (funcionarioRepository.existsByPessoaId(id)) {
+            throw new ConflitoException(
+                    "Pessoa possui vínculo de funcionário e não pode ser excluída: " + id);
+        }
+        if (processoRepository.existsByCandidatoId(id)) {
+            throw new ConflitoException(
+                    "Pessoa possui processo seletivo e não pode ser excluída: " + id);
+        }
+        pessoaRepository.delete(pessoa);
+    }
+
+    private BigDecimal somarValidadasNoPeriodo(Long idFuncionario, LocalDate inicio, LocalDate fim) {
+        BigDecimal encomenda = apontamentoRepository.sumHorasValidadasPorTipoEPeriodo(
+                idFuncionario, TipoApontamento.ENCOMENDA, inicio, fim);
+        BigDecimal projeto = apontamentoRepository.sumHorasValidadasPorTipoEPeriodo(
+                idFuncionario, TipoApontamento.PROJETO, inicio, fim);
+        BigDecimal totalEncomenda = encomenda == null ? BigDecimal.ZERO : encomenda;
+        BigDecimal totalProjeto = projeto == null ? BigDecimal.ZERO : projeto;
+        return totalEncomenda.add(totalProjeto);
     }
 
     public Pessoa obter(Long id) {
