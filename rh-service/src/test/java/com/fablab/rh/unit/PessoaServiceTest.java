@@ -42,7 +42,7 @@ class PessoaServiceTest {
     }
 
     private PessoaRequest request(String nome, String matricula) {
-        return new PessoaRequest(nome, matricula, null, null, null, null);
+        return new PessoaRequest(nome, matricula, null, null, null, null, null);
     }
 
     @Test

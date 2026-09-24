@@ -1,5 +1,6 @@
 package com.fablab.rh.mapper;
 
+import com.fablab.rh.dto.CpfUtil;
 import com.fablab.rh.dto.PessoaRequest;
 import com.fablab.rh.dto.PessoaResponse;
 import com.fablab.rh.entity.Pessoa;
@@ -21,6 +22,7 @@ public final class PessoaMapper {
         pessoa.setContato(request.contato());
         pessoa.setTurno(request.turno());
         pessoa.setStatus(request.status() == null ? PessoaStatus.ATIVO : request.status());
+        pessoa.setCpf(CpfUtil.normalizar(request.cpf()));
         return pessoa;
     }
 
@@ -39,6 +41,9 @@ public final class PessoaMapper {
         if (request.status() != null) {
             pessoa.setStatus(request.status());
         }
+        if (request.cpf() != null) {
+            pessoa.setCpf(CpfUtil.normalizar(request.cpf()));
+        }
     }
 
     public static PessoaResponse toResponse(Pessoa pessoa) {
@@ -49,6 +54,7 @@ public final class PessoaMapper {
                 pessoa.getDataAdmissao(),
                 pessoa.getContato(),
                 pessoa.getTurno(),
-                pessoa.getStatus());
+                pessoa.getStatus(),
+                CpfUtil.mascarar(pessoa.getCpf()));
     }
 }

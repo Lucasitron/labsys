@@ -50,6 +50,9 @@ public class Pessoa {
     @Column(name = "turno")
     private String turno;
 
+    @Column(name = "cpf", length = 11)
+    private String cpf;
+
     @Convert(converter = PessoaStatusConverter.class)
     @Column(name = "status", nullable = false)
     private PessoaStatus status;

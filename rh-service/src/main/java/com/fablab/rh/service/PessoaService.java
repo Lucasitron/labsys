@@ -1,5 +1,6 @@
 package com.fablab.rh.service;
 
+import com.fablab.rh.dto.CpfUtil;
 import com.fablab.rh.dto.FacetaResponse;
 import com.fablab.rh.dto.FiltrosPessoasResponse;
 import com.fablab.rh.dto.HorasMesResponse;
@@ -74,7 +75,9 @@ public class PessoaService {
     @Transactional
     public PessoaResponse cadastrar(PessoaRequest request) {
         validarMatriculaDisponivel(request.matricula(), null);
+        String cpf = validarCpf(request.cpf(), null);
         Pessoa pessoa = PessoaMapper.toEntity(request);
+        pessoa.setCpf(cpf);
         return PessoaMapper.toResponse(pessoaRepository.save(pessoa));
     }
 
@@ -216,7 +219,9 @@ public class PessoaService {
         Pessoa pessoa = obter(id);
         validarAcesso(pessoa, principal);
         validarMatriculaDisponivel(request.matricula(), id);
+        String cpf = request.cpf() == null ? pessoa.getCpf() : validarCpf(request.cpf(), id);
         PessoaMapper.update(pessoa, request);
+        pessoa.setCpf(cpf);
         return PessoaMapper.toResponse(pessoaRepository.save(pessoa));
     }
 
@@ -324,6 +329,24 @@ public class PessoaService {
                 throw new IllegalArgumentException("Matrícula já cadastrada: " + matricula);
             }
         }
+    }
+
+    /** Valida e normaliza o CPF (nulo quando ausente); rejeita inválido ou duplicado. */
+    private String validarCpf(String cpf, Long idAtual) {
+        String normalizado = CpfUtil.normalizar(cpf);
+        if (normalizado == null) {
+            return null;
+        }
+        if (!CpfUtil.valido(normalizado)) {
+            throw new IllegalArgumentException("CPF inválido");
+        }
+        if (pessoaRepository.existsByCpf(normalizado)) {
+            Pessoa existente = pessoaRepository.findByCpf(normalizado).orElse(null);
+            if (existente == null || !existente.getId().equals(idAtual)) {
+                throw new IllegalArgumentException("CPF já cadastrado");
+            }
+        }
+        return normalizado;
     }
 
     /**

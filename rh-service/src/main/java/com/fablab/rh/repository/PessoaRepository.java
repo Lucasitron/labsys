@@ -20,6 +20,10 @@ public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
 
     boolean existsByMatricula(String matricula);
 
+    boolean existsByCpf(String cpf);
+
+    Optional<Pessoa> findByCpf(String cpf);
+
     /**
      * Lista paginada com busca textual (nome/matrícula/contato) e filtros por
      * status, nível de acesso e departamento (via vínculo de funcionário).

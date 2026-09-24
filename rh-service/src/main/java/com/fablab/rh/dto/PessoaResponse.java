@@ -4,7 +4,7 @@ import com.fablab.rh.entity.PessoaStatus;
 import java.time.LocalDate;
 
 /**
- * Resposta com os dados de uma pessoa.
+ * Resposta com os dados de uma pessoa (CPF sempre mascarado — LGPD).
  */
 public record PessoaResponse(
         Long id,
@@ -13,5 +13,6 @@ public record PessoaResponse(
         LocalDate dataAdmissao,
         String contato,
         String turno,
-        PessoaStatus status) {
+        PessoaStatus status,
+        String cpf) {
 }
