@@ -9,8 +9,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fablab.auth.entity.Login;
 import com.fablab.auth.entity.Role;
+import com.fablab.auth.repository.PermissaoMatrizRepository;
+import com.fablab.auth.service.RbacService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Cobre o despacho AUTH-USUARIOS-001: {@code PUT /auth/senha},
@@ -22,6 +25,12 @@ class UsuariosPermissoesIntegrationTest extends BaseIntegrationTest {
 
     private Login admin;
     private Login bolsista;
+
+    @Autowired
+    private PermissaoMatrizRepository matrizRepository;
+
+    @Autowired
+    private RbacService rbacService;
 
     @BeforeEach
     void seed() {
@@ -299,8 +308,7 @@ class UsuariosPermissoesIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    void naoAdminNaoAcessaPermissoes() throws Exception {
-        String token = accessToken(bolsista, Role.BOLSISTA);
+    void naoAdminNaoAcessaPermissoes() throws Exception {        String token = accessToken(bolsista, Role.BOLSISTA);
 
         mockMvc.perform(get("/api/permissoes")
                         .header("Authorization", "Bearer " + token))
@@ -313,5 +321,75 @@ class UsuariosPermissoesIntegrationTest extends BaseIntegrationTest {
                                 {"valor":"Ver"}
                                 """))
                 .andExpect(status().isForbidden());
+    }
+
+    // Ressalva §6.1 (1): matriz persistente
+
+    @Test
+    void celulaAtualizadaPersisteAposRestartSimulado() throws Exception {
+        String token = accessToken(admin, Role.ADMIN);
+
+        mockMvc.perform(put("/api/permissoes/estoque/BOLSISTA")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content("""
+                                {"valor":"Nenhum"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.valor").value("Nenhum"));
+
+        mockMvc.perform(get("/api/permissoes")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.matriz[?(@.modulo=='estoque' && @.nivel=='BOLSISTA')].valor")
+                        .value("Nenhum"));
+
+        // Restart simulado: nova instância do serviço, sem nada em memória,
+        // precisa enxergar a célula salva no banco.
+        RbacService reiniciado = new RbacService(matrizRepository);
+        String valor = reiniciado.getFullMatrix().matriz().stream()
+                .filter(celula -> celula.modulo().equals("estoque") && celula.nivel().equals("BOLSISTA"))
+                .map(celula -> celula.valor())
+                .findFirst()
+                .orElseThrow();
+        org.assertj.core.api.Assertions.assertThat(valor).isEqualTo("Nenhum");
+        org.assertj.core.api.Assertions.assertThat(matrizRepository.count()).isEqualTo(8L * 5L);
+    }
+
+    // Ressalva §6.1 (2): senha trocada revoga o token atual
+
+    @Test
+    void alterarSenhaRevogaTokenAtualExigeNovoLogin() throws Exception {
+        String token = accessToken(bolsista, Role.BOLSISTA);
+
+        mockMvc.perform(put("/auth/senha")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content("""
+                                {"senhaAtual":"%s","novaSenha":"NovaSenha@456","confirmacaoSenha":"NovaSenha@456"}
+                                """.formatted(SENHA)))
+                .andExpect(status().isOk());
+
+        // Token usado na troca passa a ser recusado.
+        mockMvc.perform(get("/auth/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+
+        // Senha antiga não autentica mais.
+        mockMvc.perform(post("/auth/login")
+                        .contentType("application/json")
+                        .content("""
+                                {"email":"bolsista@fablab.io","senha":"%s"}
+                                """.formatted(SENHA)))
+                .andExpect(status().isUnauthorized());
+
+        // Senha nova segue válida para novo login.
+        mockMvc.perform(post("/auth/login")
+                        .contentType("application/json")
+                        .content("""
+                                {"email":"bolsista@fablab.io","senha":"NovaSenha@456"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").exists());
     }
 }
