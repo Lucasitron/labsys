@@ -5,6 +5,7 @@ import com.fablab.dashboard.dto.ActivityItemDto;
 import com.fablab.dashboard.dto.AuthPrincipal;
 import com.fablab.dashboard.dto.DashboardSummary;
 import com.fablab.dashboard.dto.KpiDto;
+import com.fablab.dashboard.dto.SliceDto;
 import com.fablab.dashboard.dto.TaskDto;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -53,6 +54,20 @@ public class DashboardService {
         kpis.put("notificationsUnread",
                 new KpiDto(dominioClient.unreadCount(bearer), null, null, "muted", false));
 
+        // Campos restritos: o backend é a autoridade — só Admin recebe
+        // loansOpen/machinesActive/machinesByStatus (o front apenas oculta).
+        List<SliceDto> machinesByStatus = List.of();
+        if (admin) {
+            List<JsonNode> emprestimos = dominioClient.emprestimosAtivos(bearer);
+            kpis.put("loansOpen", new KpiDto(emprestimos.size(), null, null, "muted", true));
+
+            List<JsonNode> maquinas = dominioClient.maquinas(bearer);
+            long ativas = maquinas.stream().filter(DashboardService::maquinaAtiva).count();
+            kpis.put("machinesActive",
+                    new KpiDto((int) ativas, maquinas.size(), null, "muted", true));
+            machinesByStatus = fatiasPorStatus(maquinas);
+        }
+
         List<ActivityItemDto> activity = java.util.stream.Stream.concat(
                         solicitacoes.stream().map(this::solicitacaoActivity),
                         emitidos.stream().map(this::emitidoActivity))
@@ -60,7 +75,32 @@ public class DashboardService {
                 .limit(8)
                 .toList();
 
-        return new DashboardSummary(tasks, kpis, List.of(), List.of(), activity);
+        return new DashboardSummary(tasks, kpis, List.of(), machinesByStatus, activity);
+    }
+
+    /** Máquina conta como ativa quando Disponível ou Em Uso (fora de Manutenção). */
+    private static boolean maquinaAtiva(JsonNode maquina) {
+        String status = text(maquina, "status");
+        return status != null
+                && (status.equalsIgnoreCase("DISPONIVEL") || status.equalsIgnoreCase("EM_USO"));
+    }
+
+    /** Agrupa as máquinas por status operacional para o donut do dashboard. */
+    private static List<SliceDto> fatiasPorStatus(List<JsonNode> maquinas) {
+        Map<String, Long> contagem = new LinkedHashMap<>();
+        for (JsonNode maquina : maquinas) {
+            String status = text(maquina, "status");
+            String chave = status == null ? "DESCONHECIDO" : status.toUpperCase();
+            contagem.merge(chave, 1L, Long::sum);
+        }
+        List<SliceDto> fatias = new ArrayList<>();
+        contagem.forEach((chave, count) -> fatias.add(switch (chave) {
+            case "DISPONIVEL" -> new SliceDto("disponivel", "Disponíveis", count.intValue(), "success");
+            case "EM_USO" -> new SliceDto("em_uso", "Em uso", count.intValue(), "brand");
+            case "MANUTENCAO" -> new SliceDto("manutencao", "Em manutenção", count.intValue(), "warn");
+            default -> new SliceDto(chave.toLowerCase(), chave, count.intValue(), "muted");
+        }));
+        return fatias;
     }
 
     private TaskDto toTask(JsonNode solicitacao, boolean admin) {

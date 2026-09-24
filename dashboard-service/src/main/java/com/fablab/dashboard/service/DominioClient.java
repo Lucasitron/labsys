@@ -59,9 +59,26 @@ public class DominioClient {
         return arrayOrEmpty(get(url + "/certificados/emitidos", bearer));
     }
 
+    /** Empréstimos com saída em aberto (lista vazia se o Estoque estiver fora). */
+    public List<JsonNode> emprestimosAtivos(String bearer) {
+        String url = resolve("estoque-service");
+        if (url == null) {
+            return List.of();
+        }
+        return arrayOrEmpty(get(url + "/emprestimos?status=ativos", bearer));
+    }
+
+    /** Máquinas cadastradas na Produção (lista vazia se o serviço estiver fora). */
+    public List<JsonNode> maquinas(String bearer) {
+        String url = resolve("producao-service");
+        if (url == null) {
+            return List.of();
+        }
+        return arrayOrEmpty(get(url + "/maquinas", bearer));
+    }
+
     /** Quantidade de notificações não lidas do usuário (0 se o serviço estiver fora). */
-    public int unreadCount(String bearer) {
-        String url = resolve("notification-service");
+    public int unreadCount(String bearer) {        String url = resolve("notification-service");
         if (url == null) {
             return 0;
         }

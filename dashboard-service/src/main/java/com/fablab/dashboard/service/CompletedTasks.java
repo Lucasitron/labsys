@@ -7,9 +7,10 @@ import org.springframework.stereotype.Component;
 /**
  * Estado em memória das tarefas concluídas no App Shell (MVP, instância única).
  *
- * <p>O dono real das tarefas é o serviço de domínio (Produção/RH); enquanto o
- * {@code producao-service} não existir, o dashboard mantém apenas o conjunto
- * de ids concluídos para ocultá-los do resumo.</p>
+ * <p>O dono real das tarefas de produção é o {@code producao-service}
+ * ({@code PUT /tarefas/{id}/status}); enquanto o repoint da rota no gateway
+ * for incompatível com este contrato (follow-up), o dashboard mantém apenas
+ * o conjunto de ids concluídos para ocultá-los do resumo.</p>
  */
 @Component
 public class CompletedTasks {

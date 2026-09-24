@@ -30,10 +30,18 @@ class DashboardIntegrationTest {
     private String jwtSecret;
 
     private HttpHeaders bearerAdmin() {
+        return bearer("admin", 1L, "ADMIN");
+    }
+
+    private HttpHeaders bearerVoluntario() {
+        return bearer("joao", 7L, "VOLUNTARIO");
+    }
+
+    private HttpHeaders bearer(String subject, Long idUser, String role) {
         long agora = System.currentTimeMillis();
         String token = Jwts.builder()
-                .subject("admin")
-                .claims(Map.of("id_user", 1L, "role", "ADMIN", "setor", ""))
+                .subject(subject)
+                .claims(Map.of("id_user", idUser, "role", role, "setor", ""))
                 .issuer("fablab-test")
                 .issuedAt(new java.util.Date(agora))
                 .expiration(new java.util.Date(agora + 3600_000))
@@ -75,6 +83,35 @@ class DashboardIntegrationTest {
                 new HttpEntity<>("{\"done\":false}", headersJson(bearerAdmin())), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void patchTaskSemVinculoRetorna403() {
+        ResponseEntity<String> response = restTemplate.exchange("/tasks/rh-cert-42", HttpMethod.PATCH,
+                new HttpEntity<>("{\"done\":true}", headersJson(bearerVoluntario())), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getBody()).contains("sem vínculo");
+    }
+
+    @Test
+    void summaryAdminIncluiCamposRestritos() {
+        ResponseEntity<String> response = restTemplate.exchange("/dashboard/summary", HttpMethod.GET,
+                new HttpEntity<>(null, bearerAdmin()), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).contains("\"loansOpen\"", "\"machinesActive\"");
+    }
+
+    @Test
+    void summaryNaoAdminOmiteCamposRestritos() {
+        ResponseEntity<String> response = restTemplate.exchange("/dashboard/summary", HttpMethod.GET,
+                new HttpEntity<>(null, bearerVoluntario()), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).doesNotContain("\"loansOpen\"");
+        assertThat(response.getBody()).doesNotContain("\"machinesActive\"");
+        assertThat(response.getBody()).contains("\"machinesByStatus\":[]");
     }
 
     private HttpHeaders headersJson(HttpHeaders headers) {
