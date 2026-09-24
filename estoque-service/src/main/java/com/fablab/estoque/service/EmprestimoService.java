@@ -121,13 +121,28 @@ public class EmprestimoService {
     }
 
     /**
-     * Lista global de empréstimos (E-1/R-9).
+     * Atrasados visíveis ao principal (E-7: Admin vê todos; demais só os
+     * próprios).
+     */
+    @Transactional(readOnly = true)
+    public List<EmprestimoResponse> listarAtrasados(EstoquePrincipal principal) {
+        return filtrarPorResponsavel(
+                emprestimoRepository.findByStatusInAndDataDevolucaoPrevistaBefore(
+                        List.of(StatusEmprestimo.ATIVO, StatusEmprestimo.ATRASADO), LocalDate.now()),
+                principal).stream()
+                .map(EmprestimoMapper::toResponse)
+                .toList();
+    }
+
+    /**
+     * Lista global de empréstimos (E-1/R-9) com escopo do principal (E-7:
+     * Admin vê todos; demais só os próprios).
      *
      * @param status nulo/vazio = todos; {@code ativos} = ATIVO+ATRASADO;
      *               {@code atrasados} = vencidos; {@code historico} = DEVOLVIDO
      */
     @Transactional(readOnly = true)
-    public List<EmprestimoResponse> listar(String status) {
+    public List<EmprestimoResponse> listar(String status, EstoquePrincipal principal) {
         List<Emprestimo> emprestimos;
         if (status == null || status.isBlank()) {
             emprestimos = emprestimoRepository.findAll();
@@ -144,7 +159,8 @@ public class EmprestimoService {
             throw new IllegalArgumentException(
                     "Status inválido. Use ativos, atrasados ou historico");
         }
-        return emprestimos.stream().map(EmprestimoMapper::toResponse).toList();
+        return filtrarPorResponsavel(emprestimos, principal).stream()
+                .map(EmprestimoMapper::toResponse).toList();
     }
 
     /** Busca um empréstimo pelo id (detalhe da tela {@code /emprestimos/[id]}). */
@@ -152,6 +168,20 @@ public class EmprestimoService {
     public EmprestimoResponse buscar(Long id) {
         return EmprestimoMapper.toResponse(emprestimoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Empréstimo não encontrado: " + id)));
+    }
+
+    /**
+     * Detalhe com escopo do principal (E-7: Admin ou responsável pelo
+     * empréstimo; demais recebem 403).
+     */
+    @Transactional(readOnly = true)
+    public EmprestimoResponse buscar(Long id, EstoquePrincipal principal) {
+        Emprestimo emprestimo = emprestimoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Empréstimo não encontrado: " + id));
+        if (!principal.isAdmin() && !emprestimo.getIdPessoa().equals(principal.idPessoa())) {
+            throw new ForbiddenException("Apenas o Admin ou o responsável pelo empréstimo pode consultar este empréstimo");
+        }
+        return EmprestimoMapper.toResponse(emprestimo);
     }
 
     /**
@@ -175,5 +205,18 @@ public class EmprestimoService {
         if (item.getQuantidadeAtual().compareTo(item.getEstoqueMinimo()) <= 0) {
             eventPublisher.publishEstoqueBaixo(item);
         }
+    }
+
+    /**
+     * Escopo de leitura (E-7): Admin enxerga todos; demais só os próprios
+     * ({@code idPessoa} igual ao do JWT).
+     */
+    private List<Emprestimo> filtrarPorResponsavel(List<Emprestimo> emprestimos, EstoquePrincipal principal) {
+        if (principal.isAdmin()) {
+            return emprestimos;
+        }
+        return emprestimos.stream()
+                .filter(e -> e.getIdPessoa().equals(principal.idPessoa()))
+                .toList();
     }
 }

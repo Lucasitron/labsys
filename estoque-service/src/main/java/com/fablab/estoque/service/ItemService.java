@@ -226,7 +226,23 @@ public class ItemService {
         return saida;
     }
 
+    /**
+     * Escapa um valor para o CSV exportado (E-5/CWE-1236): troca o separador
+     * {@code ;} por {@code ,}, neutraliza fórmulas de planilha (prefixos
+     * {@code = + - @} com apóstrofo) e cita campos com vírgula, aspas ou
+     * quebra de linha.
+     */
     private String csv(String valor) {
-        return valor == null ? "" : valor.replace(";", ",");
+        if (valor == null) {
+            return "";
+        }
+        String v = valor.replace(";", ",");
+        if (!v.isEmpty() && "=+-@".indexOf(v.charAt(0)) >= 0) {
+            v = "'" + v;
+        }
+        if (v.contains(",") || v.contains("\"") || v.contains("\n") || v.contains("\r")) {
+            v = "\"" + v.replace("\"", "\"\"") + "\"";
+        }
+        return v;
     }
 }
