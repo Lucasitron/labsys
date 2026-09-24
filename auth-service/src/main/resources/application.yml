@@ -28,19 +28,12 @@ eureka:
   instance:
     prefer-ip-address: true
 
-# Configuração do token JWT (chave compartilhada com os demais serviços).
+# Configuração do token JWT.
 jwt:
   secret: ${JWT_SECRET}
-  expiration-seconds: ${JWT_EXPIRATION_SECONDS:28800}
+  expiration-seconds: ${JWT_EXPIRATION_SECONDS:900}
+  refresh-expiration-seconds: ${JWT_REFRESH_EXPIRATION_SECONDS:604800}
   issuer: ${JWT_ISSUER:fablab}
-
-# Usuário raiz criado automaticamente quando o banco está vazio (MVP).
-auth:
-  seed:
-    username: ${AUTH_ROOT_USERNAME:admin}
-    password: ${AUTH_ROOT_PASSWORD:admin123}
-    name: Admin FabLab
-    email: ${AUTH_ROOT_EMAIL:admin@fablab.org}
 
 management:
   endpoints:
