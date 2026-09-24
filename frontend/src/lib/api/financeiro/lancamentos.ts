@@ -34,7 +34,7 @@ export async function listLancamentos(
 }
 
 export async function getLancamento(id: string, fetchFn: typeof fetch = fetch): Promise<Lancamento> {
-	return await apiFetch<Lancamento>(`${BASE}/${id}`, { headers: bearer() }, fetchFn);
+	return await apiFetch<Lancamento>(`${BASE}/${encodeURIComponent(id)}`, { headers: bearer() }, fetchFn);
 }
 
 export async function createLancamento(
@@ -54,7 +54,7 @@ export async function registrarPagamento(
 	fetchFn: typeof fetch = fetch
 ): Promise<Lancamento> {
 	return await apiFetch<Lancamento>(
-		`${BASE}/${id}/pagamento`,
+		`${BASE}/${encodeURIComponent(id)}/pagamento`,
 		{ method: 'PUT', headers: bearer(), body: JSON.stringify(payload) },
 		fetchFn
 	);

@@ -1,12 +1,8 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
-	import type {
-		CategoriaFinanceira,
-		Lancamento,
-		TipoLancamento
-	} from '$lib/types/financeiro';
-	import { createLancamento, registrarPagamento } from '$lib/api/financeiro/lancamentos';
+	import type { CategoriaFinanceira, Lancamento } from '$lib/types/financeiro';
+	import { registrarPagamento } from '$lib/api/financeiro/lancamentos';
 	import { lancamentoStatusMeta, tipoMeta } from '$lib/utils/financeiro-status';
 	import { formatSignedBRL } from '$lib/utils/financeiro-format';
 	import { formatDateBR, formatMoneyBRL } from '$lib/utils/vendas-format';
@@ -25,8 +21,7 @@
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
 	import RowActions from '$lib/components/ui/RowActions.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
-	import MoneyInput from '$lib/components/ui/MoneyInput.svelte';
+	import NovoLancamentoModal from '../components/NovoLancamentoModal.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -54,7 +49,13 @@
 		{ id: 'mes', label: 'Vencem este mês' },
 		{ id: 'proximos-30d', label: 'Próximos 30 dias' }
 	];
-	const CATEGORIA_OPCOES = $derived(categorias.map((c) => ({ id: c.id, label: c.nome })));
+	// ---- Modal: nova conta (lançamento com tipo fixo Saída) ----
+
+	let modalNovo = $state(false);
+
+	function abrirNovo(): void {
+		modalNovo = true;
+	}
 
 	function dataLocal(iso: string): Date {
 		const [a, m, d] = iso.slice(0, 10).split('-').map(Number);
@@ -131,62 +132,9 @@
 		return l.idReferenciaExterna ? `${l.codigo} • REF ${l.idReferenciaExterna}` : l.codigo;
 	}
 
-	// ---- Modal: nova conta (lançamento pré-selecionado Saída) ----
+	// ---- Modal: nova conta via componente compartilhado (tipo fixo Saída) ----
 
-	let modalNovo = $state(false);
-	let novoCategoria = $state('');
-	let novoTipo = $state<TipoLancamento>('Saída');
-	let novoValor = $state<number | null>(null);
-	let novoVencimento = $state('');
-	let novoPagamento = $state('');
-	let novoReferencia = $state('');
-	let novoObservacao = $state('');
 	let ocupado = $state(false);
-
-	function abrirNovo(): void {
-		novoCategoria = '';
-		novoTipo = 'Saída';
-		novoValor = null;
-		novoVencimento = '';
-		novoPagamento = '';
-		novoReferencia = '';
-		novoObservacao = '';
-		modalNovo = true;
-	}
-
-	async function confirmarNovo(): Promise<void> {
-		if (!novoCategoria) {
-			toasts.warn('Selecione a categoria da conta.');
-			return;
-		}
-		if (novoValor === null || novoValor <= 0) {
-			toasts.warn('Informe um valor maior que zero.');
-			return;
-		}
-		if (!novoVencimento) {
-			toasts.warn('Informe a data de vencimento.');
-			return;
-		}
-		ocupado = true;
-		try {
-			await createLancamento({
-				idCategoria: novoCategoria,
-				tipo: novoTipo,
-				valor: novoValor,
-				dataVencimento: novoVencimento,
-				dataPagamento: novoPagamento || null,
-				idReferenciaExterna: novoReferencia.trim() || undefined,
-				observacao: novoObservacao.trim() || undefined
-			});
-			toasts.success('Conta a pagar criada com sucesso.');
-			modalNovo = false;
-			await invalidateAll();
-		} catch (err) {
-			toasts.danger(toUserMessage(err).message);
-		} finally {
-			ocupado = false;
-		}
-	}
 
 	// ---- Modal: detalhe + pagamento ----
 
@@ -582,117 +530,22 @@
 	{/if}
 </div>
 
-<Modal
+<NovoLancamentoModal
 	open={modalNovo}
+	categorias={categorias}
+	idPrefix="cp-novo"
+	tipoFixo="Saída"
 	title="Nova conta a pagar"
 	subtitle="Registre uma saída com vencimento"
+	confirmLabel="Criar conta a pagar"
+	categoriaWarn="Selecione a categoria da conta."
+	sucessoMsg="Conta a pagar criada com sucesso."
+	observacaoLabel="Conta / fornecedor"
+	observacaoPlaceholder="Ex.: Aluguel do laboratório"
+	referenciaPlaceholder="Ex.: ABR-2026"
 	onClose={() => (modalNovo = false)}
-	width="sm"
->
-	{#snippet children()}
-		<div class="space-y-3">
-			<Select
-				id="cp-nova-categoria"
-				label="Categoria"
-				options={CATEGORIA_OPCOES}
-				value={novoCategoria}
-				onChange={(v) => (novoCategoria = v)}
-				required
-				placeholder={categorias.length === 0 ? 'Nenhuma categoria cadastrada' : 'Selecione…'}
-				hint={categorias.length === 0 ? 'Crie uma categoria em Lançamentos antes de lançar.' : ''}
-			/>
-			<fieldset>
-				<legend class="mb-1 block text-xs font-medium text-muted">Tipo</legend>
-				<div class="flex gap-2">
-					{#each [{ id: 'Entrada', label: 'Entrada' }, { id: 'Saída', label: 'Saída' }] as opt (opt.id)}
-						<label
-							class="flex flex-1 cursor-pointer items-center gap-2 rounded-md border px-3 py-2.5 text-sm transition {novoTipo === opt.id
-								? 'border-brand/60 bg-brand/10 text-ink'
-								: 'border-border bg-elevated text-muted'}"
-						>
-							<input
-								type="radio"
-								name="cp-novo-tipo"
-								value={opt.id}
-								checked={novoTipo === opt.id}
-								onchange={() => (novoTipo = opt.id as TipoLancamento)}
-								class="h-4 w-4 accent-brand"
-							/>
-							{opt.label}
-						</label>
-					{/each}
-				</div>
-			</fieldset>
-			<MoneyInput bind:value={novoValor} label="Valor" />
-			<div class="grid grid-cols-2 gap-3">
-				<div>
-					<label for="cp-novo-vencimento" class="mb-1 block text-xs font-medium text-muted">
-						Vencimento <span class="text-danger">*</span>
-					</label>
-					<input
-						id="cp-novo-vencimento"
-						type="date"
-						bind:value={novoVencimento}
-						class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-					/>
-				</div>
-				<div>
-					<label for="cp-novo-pagamento" class="mb-1 block text-xs font-medium text-muted">
-						Pagamento
-					</label>
-					<input
-						id="cp-novo-pagamento"
-						type="date"
-						bind:value={novoPagamento}
-						class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-					/>
-				</div>
-			</div>
-			<div>
-				<label for="cp-novo-referencia" class="mb-1 block text-xs font-medium text-muted">
-					Referência
-				</label>
-				<input
-					id="cp-novo-referencia"
-					type="text"
-					bind:value={novoReferencia}
-					placeholder="Ex.: ABR-2026"
-					class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 font-mono text-sm text-ink placeholder:text-muted/60 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-				/>
-			</div>
-			<div>
-				<label for="cp-novo-observacao" class="mb-1 block text-xs font-medium text-muted">
-					Conta / fornecedor
-				</label>
-				<textarea
-					id="cp-novo-observacao"
-					bind:value={novoObservacao}
-					rows={2}
-					placeholder="Ex.: Aluguel do laboratório"
-					class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 text-sm text-ink placeholder:text-muted/60 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-				></textarea>
-			</div>
-		</div>
-	{/snippet}
-	{#snippet footer()}
-		<button
-			type="button"
-			onclick={() => (modalNovo = false)}
-			disabled={ocupado}
-			class="rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:bg-elevated disabled:opacity-50"
-		>
-			Cancelar
-		</button>
-		<button
-			type="button"
-			onclick={() => void confirmarNovo()}
-			disabled={ocupado}
-			class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white shadow-lg shadow-brand/20 transition hover:bg-brandhi disabled:opacity-50"
-		>
-			{ocupado ? 'Salvando…' : 'Criar conta a pagar'}
-		</button>
-	{/snippet}
-</Modal>
+	onCreated={() => invalidateAll()}
+/>
 
 <Modal
 	open={detalhe !== null}

@@ -38,7 +38,7 @@ export async function concluirCompra(
 	fetchFn: typeof fetch = fetch
 ): Promise<ConcluirCompraResult> {
 	return await apiFetch<ConcluirCompraResult>(
-		`${BASE}/${id}/concluir`,
+		`${BASE}/${encodeURIComponent(id)}/concluir`,
 		{ method: 'PUT', headers: bearer(), body: JSON.stringify(payload) },
 		fetchFn
 	);

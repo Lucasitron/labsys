@@ -26,6 +26,7 @@ export const prerender = false;
 const STATUS_VALIDOS: LancamentoStatus[] = ['Pendente', 'Pago', 'Atrasado', 'Cancelado'];
 const TIPOS_VALIDOS: TipoLancamento[] = ['Entrada', 'Saída'];
 const ORDENAR_VALIDAS = ['recentes', 'vencimento', 'valor-maior', 'valor-menor'];
+const PERIODOS_VALIDOS = ['7d', '30d', 'mes', 'ano'];
 
 function statusValido(valor: string): string {
 	return (STATUS_VALIDOS as string[]).includes(valor) ? valor : '';
@@ -43,7 +44,7 @@ export const load: PageLoad = async ({ url, fetch }) => {
 		status: statusValido(strParam(searchParams, 'status')),
 		tipo: tipoValido(strParam(searchParams, 'tipo')),
 		categoria: strParam(searchParams, 'categoria'),
-		periodo: strParam(searchParams, 'periodo'),
+		periodo: sanitizeSort(strParam(searchParams, 'periodo'), PERIODOS_VALIDOS),
 		ordenar: sanitizeSort(strParam(searchParams, 'ordenar'), ORDENAR_VALIDAS),
 		page: intParam(searchParams, 'page', 1),
 		pageSize: intParam(searchParams, 'pageSize', 10, 10, 100)

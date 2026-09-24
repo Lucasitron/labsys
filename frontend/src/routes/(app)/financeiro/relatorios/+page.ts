@@ -39,12 +39,15 @@ export type RelatorioDados =
 
 export const PERIODO_PADRAO = '2026-09';
 
+const PERIODOS_VALIDOS = ['2026-09', '2026-08', '2026-07', '2026-06', '2026-2tri', '2026'];
+
 export const load: PageLoad = async ({ url, fetch }) => {
 	const bruto = (url.searchParams.get('relatorio') ?? '').trim();
 	const relatorio: RelatorioId = (RELATORIOS_VALIDOS as string[]).includes(bruto)
 		? (bruto as RelatorioId)
 		: 'fluxo';
-	const periodo = (url.searchParams.get('periodo') ?? '').trim() || PERIODO_PADRAO;
+	const brutoPeriodo = (url.searchParams.get('periodo') ?? '').trim();
+	const periodo = PERIODOS_VALIDOS.includes(brutoPeriodo) ? brutoPeriodo : PERIODO_PADRAO;
 
 	let dados: RelatorioDados | null = null;
 	let error: string | null = null;

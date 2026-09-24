@@ -1,6 +1,6 @@
 import type { PageLoad } from './$types';
 import { listDoacoes } from '$lib/api/financeiro/doacoes';
-import { intParam, strParam } from '$lib/utils/stock-url';
+import { intParam, sanitizeSort, strParam } from '$lib/utils/stock-url';
 import type { DoacoesResult, TipoDoacao } from '$lib/types/financeiro';
 
 export interface DoacoesFilterState {
@@ -14,6 +14,7 @@ export const ssr = false;
 export const prerender = false;
 
 const TIPOS_VALIDOS: TipoDoacao[] = ['Doação', 'Projeto'];
+const PERIODOS_VALIDOS = ['mes', 'ano', '2026', '2025'];
 
 function tipoValido(valor: string): string {
 	return (TIPOS_VALIDOS as string[]).includes(valor) ? valor : '';
@@ -25,7 +26,7 @@ export const load: PageLoad = async ({ url, fetch }) => {
 	const params: DoacoesFilterState = {
 		search: strParam(searchParams, 'search'),
 		tipo: tipoValido(strParam(searchParams, 'tipo')),
-		periodo: strParam(searchParams, 'periodo'),
+		periodo: sanitizeSort(strParam(searchParams, 'periodo'), PERIODOS_VALIDOS),
 		page: intParam(searchParams, 'page', 1)
 	};
 

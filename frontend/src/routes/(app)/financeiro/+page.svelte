@@ -1,20 +1,15 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import type { PageProps } from './$types';
-	import type { CategoriaFinanceira, TipoLancamento } from '$lib/types/financeiro';
-	import { createLancamento } from '$lib/api/financeiro/lancamentos';
+	import type { CategoriaFinanceira } from '$lib/types/financeiro';
 	import { lancamentoStatusMeta } from '$lib/utils/financeiro-status';
 	import { formatSignedBRL } from '$lib/utils/financeiro-format';
 	import { formatDateBR, formatMoneyBRL } from '$lib/utils/vendas-format';
-	import { toUserMessage } from '$lib/utils/errors';
-	import { toasts } from '$lib/stores/toast';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
-	import Modal from '$lib/components/ui/Modal.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
-	import MoneyInput from '$lib/components/ui/MoneyInput.svelte';
+	import NovoLancamentoModal from './components/NovoLancamentoModal.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -68,63 +63,12 @@
 	});
 	const maxCategoria = $derived(Math.max(...categoriasTop.map((c) => c.quantidade), 1));
 
-	const CATEGORIA_OPCOES = $derived(categorias.map((c) => ({ id: c.id, label: c.nome })));
-
-	// ---- Modal local: novo lançamento (duplicado de lancamentos — sem componente próprio) ----
+	// ---- Modal: novo lançamento (componente compartilhado) ----
 
 	let modalNovo = $state(false);
-	let novoCategoria = $state('');
-	let novoTipo = $state<TipoLancamento>('Entrada');
-	let novoValor = $state<number | null>(null);
-	let novoVencimento = $state('');
-	let novoPagamento = $state('');
-	let novoReferencia = $state('');
-	let novoObservacao = $state('');
-	let ocupado = $state(false);
 
 	function abrirNovo(): void {
-		novoCategoria = '';
-		novoTipo = 'Entrada';
-		novoValor = null;
-		novoVencimento = '';
-		novoPagamento = '';
-		novoReferencia = '';
-		novoObservacao = '';
 		modalNovo = true;
-	}
-
-	async function confirmarNovo(): Promise<void> {
-		if (!novoCategoria) {
-			toasts.warn('Selecione a categoria do lançamento.');
-			return;
-		}
-		if (novoValor === null || novoValor <= 0) {
-			toasts.warn('Informe um valor maior que zero.');
-			return;
-		}
-		if (!novoVencimento) {
-			toasts.warn('Informe a data de vencimento.');
-			return;
-		}
-		ocupado = true;
-		try {
-			await createLancamento({
-				idCategoria: novoCategoria,
-				tipo: novoTipo,
-				valor: novoValor,
-				dataVencimento: novoVencimento,
-				dataPagamento: novoPagamento || null,
-				idReferenciaExterna: novoReferencia.trim() || undefined,
-				observacao: novoObservacao.trim() || undefined
-			});
-			toasts.success('Lançamento criado com sucesso.');
-			modalNovo = false;
-			await invalidateAll();
-		} catch (err) {
-			toasts.danger(toUserMessage(err).message);
-		} finally {
-			ocupado = false;
-		}
 	}
 </script>
 
@@ -362,8 +306,8 @@
 					</div>
 				</section>
 
-				<section aria-label="Categorias" class="rounded-xl border border-border bg-surface p-5">
-					<h2 class="text-sm font-semibold text-ink">Categorias em uso</h2>
+			<section aria-label="Categorias" class="rounded-xl border border-border bg-surface p-5">
+				<h2 class="text-sm font-semibold text-ink">Categorias mais frequentes</h2>
 					{#if categoriasTop.length === 0}
 						<p class="mt-3 text-xs text-muted">Nenhuma categoria com movimento.</p>
 					{:else}
@@ -394,114 +338,10 @@
 	{/if}
 </div>
 
-<Modal
+<NovoLancamentoModal
 	open={modalNovo}
-	title="Novo lançamento"
-	subtitle="Registre uma entrada ou saída"
+	categorias={categorias}
+	idPrefix="fin-novo"
 	onClose={() => (modalNovo = false)}
-	width="sm"
->
-	{#snippet children()}
-		<div class="space-y-3">
-			<Select
-				id="fin-novo-categoria"
-				label="Categoria"
-				options={CATEGORIA_OPCOES}
-				value={novoCategoria}
-				onChange={(v) => (novoCategoria = v)}
-				required
-				placeholder={categorias.length === 0 ? 'Nenhuma categoria cadastrada' : 'Selecione…'}
-				hint={categorias.length === 0 ? 'Crie uma categoria em Lançamentos antes de lançar.' : ''}
-			/>
-			<fieldset>
-				<legend class="mb-1 block text-xs font-medium text-muted">Tipo</legend>
-				<div class="flex gap-2">
-					{#each [{ id: 'Entrada', label: 'Entrada' }, { id: 'Saída', label: 'Saída' }] as opt (opt.id)}
-						<label
-							class="flex flex-1 cursor-pointer items-center gap-2 rounded-md border px-3 py-2.5 text-sm transition {novoTipo === opt.id
-								? 'border-brand/60 bg-brand/10 text-ink'
-								: 'border-border bg-elevated text-muted'}"
-						>
-							<input
-								type="radio"
-								name="fin-novo-tipo"
-								value={opt.id}
-								checked={novoTipo === opt.id}
-								onchange={() => (novoTipo = opt.id as TipoLancamento)}
-								class="h-4 w-4 accent-brand"
-							/>
-							{opt.label}
-						</label>
-					{/each}
-				</div>
-			</fieldset>
-			<MoneyInput bind:value={novoValor} label="Valor" />
-			<div class="grid grid-cols-2 gap-3">
-				<div>
-					<label for="fin-novo-vencimento" class="mb-1 block text-xs font-medium text-muted">
-						Vencimento <span class="text-danger">*</span>
-					</label>
-					<input
-						id="fin-novo-vencimento"
-						type="date"
-						bind:value={novoVencimento}
-						class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-					/>
-				</div>
-				<div>
-					<label for="fin-novo-pagamento" class="mb-1 block text-xs font-medium text-muted">
-						Pagamento
-					</label>
-					<input
-						id="fin-novo-pagamento"
-						type="date"
-						bind:value={novoPagamento}
-						class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-					/>
-				</div>
-			</div>
-			<div>
-				<label for="fin-novo-referencia" class="mb-1 block text-xs font-medium text-muted">
-					Referência
-				</label>
-				<input
-					id="fin-novo-referencia"
-					type="text"
-					bind:value={novoReferencia}
-					placeholder="Ex.: EN-2051"
-					class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 font-mono text-sm text-ink placeholder:text-muted/60 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-				/>
-			</div>
-			<div>
-				<label for="fin-novo-observacao" class="mb-1 block text-xs font-medium text-muted">
-					Observação
-				</label>
-				<textarea
-					id="fin-novo-observacao"
-					bind:value={novoObservacao}
-					rows={2}
-					placeholder="Opcional"
-					class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 text-sm text-ink placeholder:text-muted/60 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-				></textarea>
-			</div>
-		</div>
-	{/snippet}
-	{#snippet footer()}
-		<button
-			type="button"
-			onclick={() => (modalNovo = false)}
-			disabled={ocupado}
-			class="rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:bg-elevated disabled:opacity-50"
-		>
-			Cancelar
-		</button>
-		<button
-			type="button"
-			onclick={() => void confirmarNovo()}
-			disabled={ocupado}
-			class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white shadow-lg shadow-brand/20 transition hover:bg-brandhi disabled:opacity-50"
-		>
-			{ocupado ? 'Salvando…' : 'Criar lançamento'}
-		</button>
-	{/snippet}
-</Modal>
+	onCreated={() => goto('/financeiro', { invalidateAll: true })}
+/>

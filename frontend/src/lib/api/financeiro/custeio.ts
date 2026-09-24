@@ -37,7 +37,7 @@ export async function createFechamento(
 }
 
 export async function getCusto(idEncomenda: string, fetchFn: typeof fetch = fetch): Promise<CustoEncomenda> {
-	return await apiFetch<CustoEncomenda>(`${CUSTOS}/${idEncomenda}`, { headers: bearer() }, fetchFn);
+	return await apiFetch<CustoEncomenda>(`${CUSTOS}/${encodeURIComponent(idEncomenda)}`, { headers: bearer() }, fetchFn);
 }
 
 export async function listValoresHora(fetchFn: typeof fetch = fetch): Promise<ValorHoraNivel[]> {

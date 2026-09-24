@@ -4,10 +4,9 @@
 	import type {
 		CategoriaFinanceira,
 		CategoriaTipo,
-		Lancamento,
-		TipoLancamento
+		Lancamento
 	} from '$lib/types/financeiro';
-	import { createLancamento, registrarPagamento } from '$lib/api/financeiro/lancamentos';
+	import { registrarPagamento } from '$lib/api/financeiro/lancamentos';
 	import { createCategoria } from '$lib/api/financeiro/categorias';
 	import { lancamentoStatusMeta, tipoMeta } from '$lib/utils/financeiro-status';
 	import { formatSignedBRL } from '$lib/utils/financeiro-format';
@@ -28,8 +27,7 @@
 	import RowActions from '$lib/components/ui/RowActions.svelte';
 	import BulkActionsBar from '$lib/components/ui/BulkActionsBar.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
-	import MoneyInput from '$lib/components/ui/MoneyInput.svelte';
+	import NovoLancamentoModal from '../components/NovoLancamentoModal.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -224,60 +222,12 @@
 		}
 	}
 
-	// ---- Modal: novo lançamento ----
+	// ---- Modal: novo lançamento (componente compartilhado) ----
 
 	let modalNovo = $state(false);
-	let novoCategoria = $state('');
-	let novoTipo = $state<TipoLancamento>('Entrada');
-	let novoValor = $state<number | null>(null);
-	let novoVencimento = $state('');
-	let novoPagamento = $state('');
-	let novoReferencia = $state('');
-	let novoObservacao = $state('');
 
 	function abrirNovo(): void {
-		novoCategoria = '';
-		novoTipo = 'Entrada';
-		novoValor = null;
-		novoVencimento = '';
-		novoPagamento = '';
-		novoReferencia = '';
-		novoObservacao = '';
 		modalNovo = true;
-	}
-
-	async function confirmarNovo(): Promise<void> {
-		if (!novoCategoria) {
-			toasts.warn('Selecione a categoria do lançamento.');
-			return;
-		}
-		if (novoValor === null || novoValor <= 0) {
-			toasts.warn('Informe um valor maior que zero.');
-			return;
-		}
-		if (!novoVencimento) {
-			toasts.warn('Informe a data de vencimento.');
-			return;
-		}
-		ocupado = true;
-		try {
-			await createLancamento({
-				idCategoria: novoCategoria,
-				tipo: novoTipo,
-				valor: novoValor,
-				dataVencimento: novoVencimento,
-				dataPagamento: novoPagamento || null,
-				idReferenciaExterna: novoReferencia.trim() || undefined,
-				observacao: novoObservacao.trim() || undefined
-			});
-			toasts.success('Lançamento criado com sucesso.');
-			modalNovo = false;
-			await invalidateAll();
-		} catch (err) {
-			toasts.danger(toUserMessage(err).message);
-		} finally {
-			ocupado = false;
-		}
 	}
 
 	// ---- Modal: detalhe + pagamento ----
@@ -312,7 +262,7 @@
 		}
 		ocupado = true;
 		try {
-			await Promise.all(
+			const resultados = await Promise.allSettled(
 				pagamentoAlvos.map((id) =>
 					registrarPagamento(id, {
 						dataPagamento: pagamentoData,
@@ -320,11 +270,17 @@
 					})
 				)
 			);
-			toasts.success(
-				pagamentoAlvos.length === 1
-					? 'Pagamento registrado com sucesso.'
-					: `${pagamentoAlvos.length} pagamentos registrados com sucesso.`
-			);
+			const ok = resultados.filter((r) => r.status === 'fulfilled').length;
+			const fal = resultados.length - ok;
+			if (fal > 0) {
+				toasts.warn(`${ok} registrados; ${fal} falharam — confira a lista.`);
+			} else {
+				toasts.success(
+					pagamentoAlvos.length === 1
+						? 'Pagamento registrado com sucesso.'
+						: `${pagamentoAlvos.length} pagamentos registrados com sucesso.`
+				);
+			}
 			modalPagamento = false;
 			pagamentoAlvos = [];
 			selecionados = [];
@@ -828,117 +784,14 @@
 	{/snippet}
 </Modal>
 
-<Modal
+<NovoLancamentoModal
 	open={modalNovo}
-	title="Novo lançamento"
-	subtitle="Registre uma entrada ou saída"
+	categorias={categorias}
+	idPrefix="novo"
+	semCategoriaHint="Crie uma categoria antes de lançar."
 	onClose={() => (modalNovo = false)}
-	width="sm"
->
-	{#snippet children()}
-		<div class="space-y-3">
-			<Select
-				id="novo-categoria"
-				label="Categoria"
-				options={CATEGORIA_OPCOES}
-				value={novoCategoria}
-				onChange={(v) => (novoCategoria = v)}
-				required
-				placeholder={categorias.length === 0 ? 'Nenhuma categoria cadastrada' : 'Selecione…'}
-				hint={categorias.length === 0 ? 'Crie uma categoria antes de lançar.' : ''}
-			/>
-			<fieldset>
-				<legend class="mb-1 block text-xs font-medium text-muted">Tipo</legend>
-				<div class="flex gap-2">
-					{#each [{ id: 'Entrada', label: 'Entrada' }, { id: 'Saída', label: 'Saída' }] as opt (opt.id)}
-						<label
-							class="flex flex-1 cursor-pointer items-center gap-2 rounded-md border px-3 py-2.5 text-sm transition {novoTipo === opt.id
-								? 'border-brand/60 bg-brand/10 text-ink'
-								: 'border-border bg-elevated text-muted'}"
-						>
-							<input
-								type="radio"
-								name="novo-tipo"
-								value={opt.id}
-								checked={novoTipo === opt.id}
-								onchange={() => (novoTipo = opt.id as TipoLancamento)}
-								class="h-4 w-4 accent-brand"
-							/>
-							{opt.label}
-						</label>
-					{/each}
-				</div>
-			</fieldset>
-			<MoneyInput bind:value={novoValor} label="Valor" />
-			<div class="grid grid-cols-2 gap-3">
-				<div>
-					<label for="novo-vencimento" class="mb-1 block text-xs font-medium text-muted">
-						Vencimento <span class="text-danger">*</span>
-					</label>
-					<input
-						id="novo-vencimento"
-						type="date"
-						bind:value={novoVencimento}
-						class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-					/>
-				</div>
-				<div>
-					<label for="novo-pagamento" class="mb-1 block text-xs font-medium text-muted">
-						Pagamento
-					</label>
-					<input
-						id="novo-pagamento"
-						type="date"
-						bind:value={novoPagamento}
-						class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-					/>
-				</div>
-			</div>
-			<div>
-				<label for="novo-referencia" class="mb-1 block text-xs font-medium text-muted">
-					Referência
-				</label>
-				<input
-					id="novo-referencia"
-					type="text"
-					bind:value={novoReferencia}
-					placeholder="Ex.: EN-2051"
-					class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 font-mono text-sm text-ink placeholder:text-muted/60 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-				/>
-			</div>
-			<div>
-				<label for="novo-observacao" class="mb-1 block text-xs font-medium text-muted">
-					Observação
-				</label>
-				<textarea
-					id="novo-observacao"
-					bind:value={novoObservacao}
-					rows={2}
-					placeholder="Opcional"
-					class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 text-sm text-ink placeholder:text-muted/60 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-				></textarea>
-			</div>
-		</div>
-	{/snippet}
-	{#snippet footer()}
-		<button
-			type="button"
-			onclick={() => (modalNovo = false)}
-			disabled={ocupado}
-			class="rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:bg-elevated disabled:opacity-50"
-		>
-			Cancelar
-		</button>
-		<button
-			type="button"
-			onclick={() => void confirmarNovo()}
-			disabled={ocupado}
-			class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white shadow-lg shadow-brand/20 transition hover:bg-brandhi disabled:opacity-50"
-		>
-			{ocupado ? 'Salvando…' : 'Criar lançamento'}
-		</button>
-	{/snippet}
-</Modal>
+	onCreated={() => invalidateAll()}
+/>
 
 <Modal
 	open={detalhe !== null}
