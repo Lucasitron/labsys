@@ -20,6 +20,7 @@ public final class SaidaMapper {
                 saida.getTipoSaida(),
                 saida.getIdReferencia(),
                 saida.getDataSaida().withNano(0),
-                saida.getObservacao());
+                saida.getObservacao(),
+                saida.getResponsavel());
     }
 }

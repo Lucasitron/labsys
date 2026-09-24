@@ -69,7 +69,7 @@ class EmprestimoServiceTest {
 
     @Test
     void naoAdminNaoPodeEmprestarParaOutro() {
-        EmprestimoRequest req = new EmprestimoRequest(1L, 99L, BigDecimal.ONE, LocalDate.now().plusDays(7), null);
+        EmprestimoRequest req = new EmprestimoRequest(1L, 99L, BigDecimal.ONE, LocalDate.now().plusDays(7), null, null);
         EmprestimoService service = new EmprestimoService(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher);
         assertThrows(ForbiddenException.class,
                 () -> service.criar(req, bolsistaPrincipal(1L)));
@@ -77,7 +77,7 @@ class EmprestimoServiceTest {
 
     @Test
     void dataDevolucaoAnteriorAHojeLancaExcecao() {
-        EmprestimoRequest req = new EmprestimoRequest(1L, 1L, BigDecimal.ONE, LocalDate.now().minusDays(1), null);
+        EmprestimoRequest req = new EmprestimoRequest(1L, 1L, BigDecimal.ONE, LocalDate.now().minusDays(1), null, null);
         EmprestimoService service = new EmprestimoService(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher);
         assertThrows(IllegalArgumentException.class,
                 () -> service.criar(req, adminPrincipal()));
@@ -87,7 +87,7 @@ class EmprestimoServiceTest {
     void estoqueInsuficienteLancaSaldoInsuficiente() {
         Item item = buildItem(1L, BigDecimal.ONE);
         when(itemRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(item));
-        EmprestimoRequest req = new EmprestimoRequest(1L, 1L, BigDecimal.TEN, LocalDate.now().plusDays(7), null);
+        EmprestimoRequest req = new EmprestimoRequest(1L, 1L, BigDecimal.TEN, LocalDate.now().plusDays(7), null, null);
         EmprestimoService service = new EmprestimoService(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher);
         assertThrows(SaldoInsuficienteException.class,
                 () -> service.criar(req, adminPrincipal()));
@@ -103,12 +103,14 @@ class EmprestimoServiceTest {
             return e;
         });
 
-        EmprestimoRequest req = new EmprestimoRequest(1L, 1L, BigDecimal.valueOf(3), LocalDate.now().plusDays(7), null);
+        EmprestimoRequest req = new EmprestimoRequest(1L, 1L, BigDecimal.valueOf(3), LocalDate.now().plusDays(7), null, "Ana");
         EmprestimoService service = new EmprestimoService(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher);
         EmprestimoResponse resp = service.criar(req, adminPrincipal());
 
         assertNotNull(resp);
         assertEquals(StatusEmprestimo.ATIVO, resp.status());
+        assertEquals("Pessoa #1", resp.pessoa());
+        assertEquals("Ana", resp.responsavel());
         assertEquals(0, new BigDecimal("7.00").compareTo(item.getQuantidadeAtual()));
     }
 

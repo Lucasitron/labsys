@@ -74,6 +74,7 @@ public class EmprestimoService {
         emprestimo.setDataDevolucaoPrevista(request.dataDevolucaoPrevista());
         emprestimo.setStatus(StatusEmprestimo.ATIVO);
         emprestimo.setObservacao(request.observacao());
+        emprestimo.setResponsavel(request.responsavel());
         emprestimo = emprestimoRepository.save(emprestimo);
 
         SaidaEstoque saida = new SaidaEstoque();

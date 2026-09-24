@@ -23,6 +23,7 @@ public final class EntradaMapper {
                 entrada.getValorTotal(),
                 entrada.getDataEntrada(),
                 entrada.getNotaFiscal(),
-                entrada.getObservacao());
+                entrada.getObservacao(),
+                entrada.getResponsavel());
     }
 }

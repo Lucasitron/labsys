@@ -53,6 +53,7 @@ public class SaidaService {
         saida.setIdReferencia(request.idReferencia());
         saida.setDataSaida(LocalDateTime.now());
         saida.setObservacao(request.observacao());
+        saida.setResponsavel(request.responsavel());
         saida = saidaEstoqueRepository.save(saida);
 
         itemService.verificarEstoqueBaixo(item);

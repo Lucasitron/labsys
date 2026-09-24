@@ -65,10 +65,11 @@ class SaidaServiceTest {
             return s;
         });
 
-        SaidaRequest req = new SaidaRequest(1L, BigDecimal.valueOf(3), TipoSaida.CONSUMO, null, null);
+        SaidaRequest req = new SaidaRequest(1L, BigDecimal.valueOf(3), TipoSaida.CONSUMO, null, null, "João Souza");
         SaidaResponse resp = saidaService.registrar(req);
 
         assertNotNull(resp);
+        assertEquals("João Souza", resp.responsavel());
         assertEquals(0, new BigDecimal("7.00").compareTo(item.getQuantidadeAtual()));
         verify(itemService).verificarEstoqueBaixo(item);
     }
@@ -78,7 +79,7 @@ class SaidaServiceTest {
         Item item = buildItem(1L, BigDecimal.valueOf(5), BigDecimal.ONE);
         when(itemRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(item));
 
-        SaidaRequest req = new SaidaRequest(1L, BigDecimal.valueOf(20), TipoSaida.CONSUMO, null, null);
+        SaidaRequest req = new SaidaRequest(1L, BigDecimal.valueOf(20), TipoSaida.CONSUMO, null, null, null);
         assertThrows(SaldoInsuficienteException.class, () -> saidaService.registrar(req));
     }
 
@@ -87,7 +88,7 @@ class SaidaServiceTest {
         Item item = buildItem(1L, BigDecimal.valueOf(2), BigDecimal.ONE);
         when(itemRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(item));
 
-        SaidaRequest req = new SaidaRequest(1L, BigDecimal.valueOf(3), TipoSaida.PERDA, null, null);
+        SaidaRequest req = new SaidaRequest(1L, BigDecimal.valueOf(3), TipoSaida.PERDA, null, null, null);
         assertThrows(SaldoInsuficienteException.class, () -> saidaService.registrar(req));
     }
 

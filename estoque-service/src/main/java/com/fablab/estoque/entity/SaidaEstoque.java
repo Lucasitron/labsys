@@ -49,6 +49,9 @@ public class SaidaEstoque {
     @Column(name = "observacao")
     private String observacao;
 
+    @Column(name = "responsavel")
+    private String responsavel;
+
     public SaidaEstoque() {
     }
 
@@ -106,6 +109,14 @@ public class SaidaEstoque {
 
     public void setObservacao(String observacao) {
         this.observacao = observacao;
+    }
+
+    public String getResponsavel() {
+        return responsavel;
+    }
+
+    public void setResponsavel(String responsavel) {
+        this.responsavel = responsavel;
     }
 
     @Override

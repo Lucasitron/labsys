@@ -17,5 +17,6 @@ public record EntradaResponse(
         BigDecimal valorTotal,
         LocalDate dataEntrada,
         String notaFiscal,
-        String observacao) {
+        String observacao,
+        String responsavel) {
 }

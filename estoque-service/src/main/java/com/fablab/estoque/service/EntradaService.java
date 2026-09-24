@@ -55,6 +55,7 @@ public class EntradaService {
         entrada.setDataEntrada(request.dataEntrada() != null ? request.dataEntrada() : LocalDate.now());
         entrada.setNotaFiscal(request.notaFiscal());
         entrada.setObservacao(request.observacao());
+        entrada.setResponsavel(request.responsavel());
         entrada = entradaEstoqueRepository.save(entrada);
 
         item.setQuantidadeAtual(item.getQuantidadeAtual().add(request.quantidade()));
