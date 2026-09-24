@@ -1,6 +1,7 @@
 package com.fablab.auth.service;
 
 import com.fablab.auth.dto.LoginPrincipal;
+import com.fablab.auth.dto.AlterarSenhaRequest;
 import com.fablab.auth.dto.LoginRequest;
 import com.fablab.auth.dto.LoginResponse;
 import com.fablab.auth.dto.MeResponse;
@@ -184,6 +185,26 @@ public class AuthService {
      */
     public RbacResponse permissions(Role role) {
         return rbacService.getMatrix(role);
+    }
+
+    /**
+     * Altera a senha do próprio usuário autenticado (qualquer nível).
+     */
+    @Transactional
+    public void alterarSenha(LoginPrincipal principal, AlterarSenhaRequest request) {
+        Login login = loginRepository.findById(principal.loginId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        if (!passwordEncoder.matches(request.senhaAtual(), login.getSenhaHash())) {
+            throw new InvalidCredentialsException("Senha atual incorreta");
+        }
+        if (request.novaSenha() == null || request.novaSenha().length() < 8) {
+            throw new IllegalArgumentException("Nova senha deve ter ao menos 8 caracteres");
+        }
+        if (!request.novaSenha().equals(request.confirmacaoSenha())) {
+            throw new IllegalArgumentException("Nova senha e confirmação não conferem");
+        }
+        login.setSenhaHash(passwordEncoder.encode(request.novaSenha()));
+        loginRepository.save(login);
     }
 
     private Role activeRole(Login login) {

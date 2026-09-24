@@ -1,6 +1,7 @@
 package com.fablab.auth.controller;
 
 import com.fablab.auth.dto.LoginPrincipal;
+import com.fablab.auth.dto.AlterarSenhaRequest;
 import com.fablab.auth.dto.LoginRequest;
 import com.fablab.auth.dto.LoginResponse;
 import com.fablab.auth.dto.LogoutRequest;
@@ -17,8 +18,10 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -74,6 +77,14 @@ public class AuthController {
     public ResponseEntity<RbacResponse> permissions(
             @RequestParam(defaultValue = "ADMIN") Role role) {
         return ResponseEntity.ok(authService.permissions(role));
+    }
+
+    @PutMapping("/senha")
+    public ResponseEntity<java.util.Map<String, String>> alterarSenha(
+            @AuthenticationPrincipal LoginPrincipal principal,
+            @Valid @RequestBody AlterarSenhaRequest request) {
+        authService.alterarSenha(principal, request);
+        return ResponseEntity.ok(java.util.Map.of("mensagem", "Senha alterada com sucesso"));
     }
 
     private String extractBearer(String header) {

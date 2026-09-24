@@ -2,6 +2,8 @@ package com.fablab.auth.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -52,4 +54,8 @@ public class Login {
 
     @Column(name = "setor")
     private String setor;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "situacao", nullable = false, length = 20)
+    private SituacaoUsuario situacao = SituacaoUsuario.ATIVO;
 }
