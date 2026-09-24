@@ -42,6 +42,15 @@ public class Notificacao {
     @Column(name = "mensagem")
     private String mensagem;
 
+    @Column(name = "tipo", length = 40)
+    private String tipo;
+
+    @Column(name = "canal", length = 20)
+    private String canal;
+
+    @Column(name = "link", length = 2000)
+    private String link;
+
     @Column(name = "lida", nullable = false)
     private Boolean lida = false;
 

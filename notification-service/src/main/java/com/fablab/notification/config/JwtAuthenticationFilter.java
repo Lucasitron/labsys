@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -47,14 +49,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             Claims claims = jwtService.parseClaims(header.substring(7));
+            String role = claims.get("role", String.class);
+            List<GrantedAuthority> authorities = (role == null || role.isBlank()) ? List.of()
+                    : List.of(new SimpleGrantedAuthority("ROLE_" + role));
             AuthPrincipal principal = new AuthPrincipal(
                     ((Number) claims.get(JwtService.CLAIM_ID_USER)).longValue(),
                     claims.getSubject(),
-                    claims.get("role", String.class),
+                    role,
                     claims.get("setor", String.class));
 
             UsernamePasswordAuthenticationToken authentication =
-                    UsernamePasswordAuthenticationToken.authenticated(principal, null, List.of());
+                    UsernamePasswordAuthenticationToken.authenticated(principal, null, authorities);
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (JwtException | IllegalArgumentException ex) {
