@@ -35,6 +35,18 @@ jwt:
   refresh-expiration-seconds: ${JWT_REFRESH_EXPIRATION_SECONDS:604800}
   issuer: ${JWT_ISSUER:fablab}
 
+# Seed de acesso admin — dev-only (§6.0). Desligado por padrão: nunca semeia
+# em produção salvo AUTH_SEED_ENABLED=true explícito (não fazer).
+auth:
+  seed:
+    enabled: ${AUTH_SEED_ENABLED:false}
+    email: ${AUTH_ROOT_EMAIL:admin@fablab.org}
+    nome-usuario: ${AUTH_ROOT_USERNAME:admin}
+    senha: ${AUTH_ROOT_PASSWORD:admin123}
+    id-user: ${AUTH_ROOT_ID_USER:1}
+    uuid: ${AUTH_ROOT_UUID:admin-root-rfid}
+    setor: ${AUTH_ROOT_SETOR:geral}
+
 management:
   endpoints:
     web:
