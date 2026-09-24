@@ -74,6 +74,20 @@ public class EntradaService {
                 .toList();
     }
 
+    /**
+     * Lista global de entradas (E-1/R-9). Sem {@code idItem} retorna todas;
+     * com {@code idItem} restringe ao histórico do item (compatível).
+     */
+    @Transactional(readOnly = true)
+    public List<EntradaResponse> listar(Long idItem) {
+        if (idItem == null) {
+            return entradaEstoqueRepository.findAll().stream()
+                    .map(EntradaMapper::toResponse)
+                    .toList();
+        }
+        return listarPorItem(idItem);
+    }
+
     /** Detalhe de uma entrada (tela {@code /entradas/[id]}). */
     @Transactional(readOnly = true)
     public EntradaResponse buscar(Long id) {

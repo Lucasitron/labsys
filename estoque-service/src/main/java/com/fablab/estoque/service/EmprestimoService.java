@@ -119,6 +119,33 @@ public class EmprestimoService {
                 .toList();
     }
 
+    /**
+     * Lista global de empréstimos (E-1/R-9).
+     *
+     * @param status nulo/vazio = todos; {@code ativos} = ATIVO+ATRASADO;
+     *               {@code atrasados} = vencidos; {@code historico} = DEVOLVIDO
+     */
+    @Transactional(readOnly = true)
+    public List<EmprestimoResponse> listar(String status) {
+        List<Emprestimo> emprestimos;
+        if (status == null || status.isBlank()) {
+            emprestimos = emprestimoRepository.findAll();
+        } else if (status.equalsIgnoreCase("ativos")) {
+            emprestimos = emprestimoRepository
+                    .findByStatusIn(List.of(StatusEmprestimo.ATIVO, StatusEmprestimo.ATRASADO));
+        } else if (status.equalsIgnoreCase("atrasados")) {
+            emprestimos = emprestimoRepository
+                    .findByStatusInAndDataDevolucaoPrevistaBefore(
+                            List.of(StatusEmprestimo.ATIVO, StatusEmprestimo.ATRASADO), LocalDate.now());
+        } else if (status.equalsIgnoreCase("historico")) {
+            emprestimos = emprestimoRepository.findByStatusIn(List.of(StatusEmprestimo.DEVOLVIDO));
+        } else {
+            throw new IllegalArgumentException(
+                    "Status inválido. Use ativos, atrasados ou historico");
+        }
+        return emprestimos.stream().map(EmprestimoMapper::toResponse).toList();
+    }
+
     /** Busca um empréstimo pelo id (detalhe da tela {@code /emprestimos/[id]}). */
     @Transactional(readOnly = true)
     public EmprestimoResponse buscar(Long id) {

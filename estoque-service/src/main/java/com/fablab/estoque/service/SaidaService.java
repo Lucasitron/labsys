@@ -67,6 +67,20 @@ public class SaidaService {
                 .toList();
     }
 
+    /**
+     * Lista global de saídas (E-1/R-9). Sem {@code idItem} retorna todas;
+     * com {@code idItem} restringe ao histórico do item (compatível).
+     */
+    @Transactional(readOnly = true)
+    public List<SaidaResponse> listar(Long idItem) {
+        if (idItem == null) {
+            return saidaEstoqueRepository.findAll().stream()
+                    .map(SaidaMapper::toResponse)
+                    .toList();
+        }
+        return listarPorItem(idItem);
+    }
+
     /** Detalhe de uma saída (tela {@code /saidas/[id]}). */
     @Transactional(readOnly = true)
     public SaidaResponse buscar(Long id) {

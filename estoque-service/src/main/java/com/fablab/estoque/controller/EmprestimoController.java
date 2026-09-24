@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -48,6 +49,18 @@ public class EmprestimoController {
     public ResponseEntity<EmprestimoResponse> devolver(@PathVariable Long id,
                                                        @AuthenticationPrincipal EstoquePrincipal principal) {
         return ResponseEntity.ok(emprestimoService.devolver(id, principal));
+    }
+
+    /**
+     * Lista global de empréstimos (E-1/R-9).
+     *
+     * @param status opcional: {@code ativos}, {@code atrasados} ou {@code historico}
+     */
+    @GetMapping
+    @PreAuthorize(VISUALIZACAO)
+    public ResponseEntity<List<EmprestimoResponse>> listar(
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(emprestimoService.listar(status));
     }
 
     @GetMapping("/atrasados")
