@@ -77,7 +77,17 @@ export const menuItems: MenuItem[] = [
 			{ label: '5S: Mesas', path: '/producao/5s/mesas', canSee: canSee5S }
 		]
 	},
-	{ label: 'Financeiro', path: '/financeiro', module: 'financeiro', icon: 'financeiro' },
+	{ label: 'Financeiro', path: '/financeiro', module: 'financeiro', icon: 'financeiro',
+		children: [
+			{ label: 'Resumo', path: '/financeiro' },
+			{ label: 'Lançamentos', path: '/financeiro/lancamentos' },
+			{ label: 'Contas a pagar', path: '/financeiro/contas-pagar' },
+			{ label: 'Contas a receber', path: '/financeiro/contas-receber' },
+			{ label: 'Doações & recursos', path: '/financeiro/doacoes' },
+			{ label: 'Custeio', path: '/financeiro/custeio' },
+			{ label: 'Relatórios', path: '/financeiro/relatorios' }
+		]
+	},
 	{
 		label: 'Notificações',
 		path: '/notificacoes',
