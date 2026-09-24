@@ -78,7 +78,7 @@ class ApontamentoHorasServiceTest {
         });
 
         var response = apontamentoService.registrar(
-                new ApontamentoHorasRequest(7L, TipoApontamento.PROJETO, 3L, data, new BigDecimal("2.00"), null),
+                new ApontamentoHorasRequest(7L, TipoApontamento.PROJETO, 3L, data, new BigDecimal("2.00"), null, null, null),
                 new RhPrincipal(7L, 7L, NivelAcesso.BOLSISTA, "FabLab"));
 
         assertThat(response.id()).isEqualTo(11L);
@@ -92,7 +92,7 @@ class ApontamentoHorasServiceTest {
         when(apontamentoRepository.save(any(ApontamentoHoras.class))).thenAnswer(inv -> inv.getArgument(0));
 
         var response = apontamentoService.registrar(
-                new ApontamentoHorasRequest(7L, TipoApontamento.ENCOMENDA, 3L, data, new BigDecimal("2.00"), null),
+                new ApontamentoHorasRequest(7L, TipoApontamento.ENCOMENDA, 3L, data, new BigDecimal("2.00"), null, null, null),
                 principalAdmin());
 
         assertThat(response.idFuncionario()).isEqualTo(7L);
@@ -106,7 +106,7 @@ class ApontamentoHorasServiceTest {
         RhPrincipal principal = new RhPrincipal(999L, 999L, NivelAcesso.VOLUNTARIO, "FabLab");
 
         assertThatThrownBy(() -> apontamentoService.registrar(
-                new ApontamentoHorasRequest(7L, TipoApontamento.PROJETO, 3L, data, new BigDecimal("1.00"), null),
+                new ApontamentoHorasRequest(7L, TipoApontamento.PROJETO, 3L, data, new BigDecimal("1.00"), null, null, null),
                 principal))
                 .isInstanceOf(ForbiddenException.class);
     }
@@ -125,7 +125,7 @@ class ApontamentoHorasServiceTest {
         when(apontamentoRepository.save(any(ApontamentoHoras.class))).thenAnswer(inv -> inv.getArgument(0));
 
         var response = apontamentoService.validar(
-                11L, new ValidacaoApontamentoRequest(StatusApontamento.VALIDADO), principalAdmin());
+                11L, new ValidacaoApontamentoRequest(StatusApontamento.VALIDADO, null), principalAdmin());
 
         assertThat(response.status()).isEqualTo(StatusApontamento.VALIDADO);
         ArgumentCaptor<com.fablab.rh.dto.HorasValidadasEvent> captor =
@@ -144,7 +144,7 @@ class ApontamentoHorasServiceTest {
         when(apontamentoRepository.save(any(ApontamentoHoras.class))).thenAnswer(inv -> inv.getArgument(0));
 
         var response = apontamentoService.validar(
-                11L, new ValidacaoApontamentoRequest(StatusApontamento.REJEITADO), principalAdmin());
+                11L, new ValidacaoApontamentoRequest(StatusApontamento.REJEITADO, null), principalAdmin());
 
         assertThat(response.status()).isEqualTo(StatusApontamento.REJEITADO);
         verify(eventPublisher, never()).publishHorasValidadas(any());
@@ -160,7 +160,7 @@ class ApontamentoHorasServiceTest {
         when(apontamentoRepository.sumHorasApontadasPorDia(eq(7L), eq(data))).thenReturn(new BigDecimal("2.00"));
 
         assertThatThrownBy(() -> apontamentoService.validar(
-                11L, new ValidacaoApontamentoRequest(StatusApontamento.VALIDADO), principalAdmin()))
+                11L, new ValidacaoApontamentoRequest(StatusApontamento.VALIDADO, null), principalAdmin()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("presença");
     }
@@ -178,7 +178,7 @@ class ApontamentoHorasServiceTest {
         when(apontamentoRepository.sumHorasApontadasPorDia(eq(7L), eq(data))).thenReturn(new BigDecimal("9.00"));
 
         assertThatThrownBy(() -> apontamentoService.validar(
-                11L, new ValidacaoApontamentoRequest(StatusApontamento.VALIDADO), principalAdmin()))
+                11L, new ValidacaoApontamentoRequest(StatusApontamento.VALIDADO, null), principalAdmin()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("excedem");
     }
@@ -191,7 +191,7 @@ class ApontamentoHorasServiceTest {
         when(apontamentoRepository.findById(11L)).thenReturn(Optional.of(apontamento));
 
         assertThatThrownBy(() -> apontamentoService.validar(
-                11L, new ValidacaoApontamentoRequest(StatusApontamento.VALIDADO), principalAdmin()))
+                11L, new ValidacaoApontamentoRequest(StatusApontamento.VALIDADO, null), principalAdmin()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("já validado");
     }
@@ -201,7 +201,7 @@ class ApontamentoHorasServiceTest {
         when(apontamentoRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> apontamentoService.validar(
-                999L, new ValidacaoApontamentoRequest(StatusApontamento.VALIDADO), principalAdmin()))
+                999L, new ValidacaoApontamentoRequest(StatusApontamento.VALIDADO, null), principalAdmin()))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 

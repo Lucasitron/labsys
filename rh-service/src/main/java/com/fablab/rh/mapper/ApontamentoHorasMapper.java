@@ -15,13 +15,16 @@ public final class ApontamentoHorasMapper {
     private ApontamentoHorasMapper() {
     }
 
-    public static ApontamentoHoras toEntity(Funcionario funcionario, ApontamentoHorasRequest request) {
+    public static ApontamentoHoras toEntity(Funcionario funcionario, ApontamentoHorasRequest request,
+                                            java.math.BigDecimal horasCalculadas) {
         ApontamentoHoras apontamento = new ApontamentoHoras();
         apontamento.setFuncionario(funcionario);
         apontamento.setTipo(request.tipo());
         apontamento.setIdReferencia(request.idReferencia());
         apontamento.setData(request.data());
-        apontamento.setHorasTrabalhadas(request.horasTrabalhadas());
+        apontamento.setHorasTrabalhadas(horasCalculadas);
+        apontamento.setHoraInicio(request.horaInicio());
+        apontamento.setHoraFim(request.horaFim());
         apontamento.setDescricaoAtividade(request.descricaoAtividade());
         apontamento.setStatus(StatusApontamento.PENDENTE);
         return apontamento;
@@ -36,8 +39,11 @@ public final class ApontamentoHorasMapper {
                 apontamento.getIdReferencia(),
                 apontamento.getData(),
                 apontamento.getHorasTrabalhadas(),
+                apontamento.getHoraInicio(),
+                apontamento.getHoraFim(),
                 apontamento.getDescricaoAtividade(),
                 apontamento.getStatus(),
+                apontamento.getMotivoRejeicao(),
                 validador == null ? null : validador.getId(),
                 apontamento.getDataValidacao());
     }

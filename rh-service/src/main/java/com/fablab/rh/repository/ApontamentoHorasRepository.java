@@ -22,6 +22,19 @@ public interface ApontamentoHorasRepository extends JpaRepository<ApontamentoHor
 
     long countByFuncionarioIdAndStatus(Long funcionarioId, StatusApontamento status);
 
+    /** Lista com filtros opcionais de funcionário, status e período. */
+    @Query("""
+            select a from ApontamentoHoras a
+            where (:funcionarioId is null or a.funcionario.id = :funcionarioId)
+              and (:status is null or a.status = :status)
+              and (:inicio is null or a.data between :inicio and :fim)
+            order by a.data desc, a.id desc
+            """)
+    List<ApontamentoHoras> buscarComFiltros(@Param("funcionarioId") Long funcionarioId,
+                                            @Param("status") StatusApontamento status,
+                                            @Param("inicio") LocalDate inicio,
+                                            @Param("fim") LocalDate fim);
+
     @Query("""
             select coalesce(sum(a.horasTrabalhadas), 0)
             from ApontamentoHoras a

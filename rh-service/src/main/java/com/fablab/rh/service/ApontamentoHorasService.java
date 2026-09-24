@@ -14,7 +14,13 @@ import com.fablab.rh.repository.ApontamentoHorasRepository;
 import com.fablab.rh.repository.FuncionarioRepository;
 import com.fablab.rh.repository.RegistroPontoDiarioRepository;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.YearMonth;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,8 +57,53 @@ public class ApontamentoHorasService {
             throw new ForbiddenException("Apenas o próprio funcionário pode registrar suas horas");
         }
 
-        ApontamentoHoras apontamento = ApontamentoHorasMapper.toEntity(funcionario, request);
+        BigDecimal horas = resolverHoras(request);
+        ApontamentoHoras apontamento = ApontamentoHorasMapper.toEntity(funcionario, request, horas);
         return ApontamentoHorasMapper.toResponse(apontamentoRepository.save(apontamento));
+    }
+
+    /**
+     * Lista apontamentos com filtros. Admin vê todos; demais veem apenas os
+     * próprios (exige vínculo com funcionário).
+     */
+    @Transactional(readOnly = true)
+    public List<ApontamentoHorasResponse> listar(StatusApontamento status, YearMonth periodo,
+                                                 RhPrincipal principal) {
+        if (principal == null || principal.idFuncionario() == null) {
+            throw new ForbiddenException("Operação restrita a usuários vinculados a um funcionário");
+        }
+        Long funcionarioId = principal.isAdmin() ? null : principal.idFuncionario();
+        LocalDate inicio = periodo == null ? null : periodo.atDay(1);
+        LocalDate fim = periodo == null ? null : periodo.atEndOfMonth();
+        return apontamentoRepository.buscarComFiltros(funcionarioId, status, inicio, fim).stream()
+                .map(ApontamentoHorasMapper::toResponse)
+                .toList();
+    }
+
+    /**
+     * Resolve as horas do apontamento: com início+fim, recalcula no servidor
+     * (ignora o valor enviado); sem eles, exige {@code horasTrabalhadas}.
+     */
+    static BigDecimal resolverHoras(ApontamentoHorasRequest request) {
+        LocalTime inicio = request.horaInicio();
+        LocalTime fim = request.horaFim();
+        if (inicio != null && fim != null) {
+            if (!fim.isAfter(inicio)) {
+                throw new IllegalArgumentException("Hora fim deve ser posterior à hora início");
+            }
+            return BigDecimal.valueOf(Duration.between(inicio, fim).toMinutes())
+                    .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
+        }
+        if (inicio != null || fim != null) {
+            throw new IllegalArgumentException("Informe hora início e hora fim juntos");
+        }
+        if (request.horasTrabalhadas() == null) {
+            throw new IllegalArgumentException("Informe horasTrabalhadas ou hora início e hora fim");
+        }
+        if (request.horasTrabalhadas().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("horasTrabalhadas deve ser maior que zero");
+        }
+        return request.horasTrabalhadas();
     }
 
     @Transactional
@@ -78,6 +129,8 @@ public class ApontamentoHorasService {
         }
 
         apontamento.setStatus(request.status());
+        apontamento.setMotivoRejeicao(request.status() == StatusApontamento.REJEITADO
+                ? request.motivo() : null);
         apontamento.setIdAdminValidador(admin);
         apontamento.setDataValidacao(Instant.now());
         return ApontamentoHorasMapper.toResponse(apontamentoRepository.save(apontamento));

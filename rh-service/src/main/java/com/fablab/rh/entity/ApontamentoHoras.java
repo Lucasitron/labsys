@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,6 +54,15 @@ public class ApontamentoHoras {
 
     @Column(name = "horas_trabalhadas", nullable = false, precision = 5, scale = 2)
     private BigDecimal horasTrabalhadas;
+
+    @Column(name = "hora_inicio")
+    private LocalTime horaInicio;
+
+    @Column(name = "hora_fim")
+    private LocalTime horaFim;
+
+    @Column(name = "motivo_rejeicao")
+    private String motivoRejeicao;
 
     @Column(name = "descricao_atividade")
     private String descricaoAtividade;
