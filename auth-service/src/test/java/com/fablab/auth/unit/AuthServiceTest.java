@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fablab.auth.dto.AlterarSenhaRequest;
 import com.fablab.auth.dto.LoginPrincipal;
 import com.fablab.auth.dto.LoginRequest;
 import com.fablab.auth.dto.LoginResponse;
@@ -307,8 +308,38 @@ class AuthServiceTest {
     }
 
     @Test
-    void permissionsDelegatesToRbacService() {
-        when(rbacService.getMatrix(Role.BOLSISTA))
+    void alterarSenhaComTokenValidoRevogaTokenAtual() {
+        LoginPrincipal principal = new LoginPrincipal(1L, 7L, Role.BOLSISTA, "Direção");
+        when(loginRepository.findById(1L)).thenReturn(Optional.of(admin));
+        when(passwordEncoder.matches("Senha@123", admin.getSenhaHash())).thenReturn(true);
+        when(passwordEncoder.encode("NovaSenha@456")).thenReturn("$2a$10$novo");
+        Claims claims = TestLogin.claims("1", Date.from(Instant.now().plusSeconds(900)));
+        when(jwtService.parseClaims("token-atual")).thenReturn(claims);
+
+        authService.alterarSenha(principal,
+                new AlterarSenhaRequest("Senha@123", "NovaSenha@456", "NovaSenha@456"), "token-atual");
+
+        assertThat(admin.getSenhaHash()).isEqualTo("$2a$10$novo");
+        verify(loginRepository).save(admin);
+        verify(blacklistService).blacklist("token-atual", claims);
+    }
+
+    @Test
+    void alterarSenhaSemTokenNaoRevogaNada() {
+        LoginPrincipal principal = new LoginPrincipal(1L, 7L, Role.BOLSISTA, "Direção");
+        when(loginRepository.findById(1L)).thenReturn(Optional.of(admin));
+        when(passwordEncoder.matches("Senha@123", admin.getSenhaHash())).thenReturn(true);
+        when(passwordEncoder.encode("NovaSenha@456")).thenReturn("$2a$10$novo");
+
+        authService.alterarSenha(principal,
+                new AlterarSenhaRequest("Senha@123", "NovaSenha@456", "NovaSenha@456"));
+
+        verify(loginRepository).save(admin);
+        verify(blacklistService, never()).blacklist(any(), any());
+    }
+
+    @Test
+    void permissionsDelegatesToRbacService() {        when(rbacService.getMatrix(Role.BOLSISTA))
                 .thenReturn(new RbacResponse("BOLSISTA", 1, "Bolsista", List.of("catalogo:read")));
 
         RbacResponse response = authService.permissions(Role.BOLSISTA);

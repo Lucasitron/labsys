@@ -3,19 +3,25 @@ package com.fablab.auth.service;
 import com.fablab.auth.dto.Permissoes;
 import com.fablab.auth.dto.RbacResponse;
 import com.fablab.auth.entity.Modulo;
+import com.fablab.auth.entity.PermissaoMatriz;
+import com.fablab.auth.entity.PermissaoMatrizId;
 import com.fablab.auth.entity.PermissaoNivel;
 import com.fablab.auth.entity.Role;
 import com.fablab.auth.exception.PermissaoInvalidaException;
+import com.fablab.auth.repository.PermissaoMatrizRepository;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Matriz de permissões RBAC do sistema.
+ *
+ * <p>Células (módulo × nível) persistidas na tabela {@code permissao_matriz}:
+ * {@code PUT /api/permissoes} sobrevive ao restart (ressalva §6.1).</p>
  */
 @Service
 public class RbacService {
@@ -32,6 +38,12 @@ public class RbacService {
             Role.RECRUTANDO, List.of("catalogo:read")
     );
 
+    private final PermissaoMatrizRepository repository;
+
+    public RbacService(PermissaoMatrizRepository repository) {
+        this.repository = repository;
+    }
+
     /**
      * Retorna a matriz de permissões de um papel.
      */
@@ -44,28 +56,58 @@ public class RbacService {
     }
 
     /**
-     * Células editáveis (módulo × nível) da tela Permissões. Padrão: Admin
-     * edita tudo; demais níveis veem; Recrutando sem acesso.
+     * Nível padrão de uma célula: Admin edita tudo; demais níveis veem;
+     * Recrutando sem acesso.
      */
-    private final Map<Modulo, Map<Role, PermissaoNivel>> cells = new ConcurrentHashMap<>();
+    public static PermissaoNivel defaultNivel(Role role) {
+        return switch (role) {
+            case ADMIN -> PermissaoNivel.EDITAR;
+            case RECRUTANDO -> PermissaoNivel.NENHUM;
+            default -> PermissaoNivel.VER;
+        };
+    }
 
-    public RbacService() {
+    /**
+     * Semeia as células padrão quando a tabela está vazia (primeira leitura;
+     * cobre bancos criados sem Flyway, ex. testes com {@code ddl-auto=create-drop}).
+     */
+    private void ensureSeeded() {
+        if (repository.count() > 0) {
+            return;
+        }
+        List<PermissaoMatriz> defaults = new ArrayList<>();
+        for (Modulo modulo : Modulo.values()) {
+            for (Role role : Role.values()) {
+                defaults.add(new PermissaoMatriz(modulo.getCode(), role, defaultNivel(role)));
+            }
+        }
+        repository.saveAll(defaults);
+    }
+
+    private Map<Modulo, Map<Role, PermissaoNivel>> loadCells() {
+        ensureSeeded();
+        Map<Modulo, Map<Role, PermissaoNivel>> cells = new EnumMap<>(Modulo.class);
         for (Modulo modulo : Modulo.values()) {
             Map<Role, PermissaoNivel> column = new EnumMap<>(Role.class);
-            column.put(Role.ADMIN, PermissaoNivel.EDITAR);
-            column.put(Role.BOLSISTA, PermissaoNivel.VER);
-            column.put(Role.VOLUNTARIO, PermissaoNivel.VER);
-            column.put(Role.ESTAGIARIO, PermissaoNivel.VER);
-            column.put(Role.RECRUTANDO, PermissaoNivel.NENHUM);
+            for (Role role : Role.values()) {
+                column.put(role, defaultNivel(role));
+            }
             cells.put(modulo, column);
         }
+        for (PermissaoMatriz row : repository.findAll()) {
+            Modulo modulo = Modulo.parse(row.getModulo());
+            cells.get(modulo).put(row.getRole(), row.getNivel());
+        }
+        return cells;
     }
 
     /**
      * Matriz completa: papéis (reaproveitada, sem recalcular) + células
      * (módulo × nível) + enums válidos.
      */
+    @Transactional
     public Permissoes.MatrizPermissoesResponse getFullMatrix() {
+        Map<Modulo, Map<Role, PermissaoNivel>> cells = loadCells();
         List<RbacResponse> roles = Arrays.stream(Role.values()).map(this::getMatrix).toList();
         List<Permissoes.CelulaPermissao> matriz = new ArrayList<>();
         for (Modulo modulo : Modulo.values()) {
@@ -86,6 +128,7 @@ public class RbacService {
      * Atualiza uma célula (módulo × nível), validando módulo/nível/valor
      * contra os enums (C-3: 422 PT se inválido).
      */
+    @Transactional
     public Permissoes.CelulaPermissao updateCell(String moduloRaw, String nivelRaw, String valorRaw) {
         final Modulo modulo;
         try {
@@ -100,7 +143,11 @@ public class RbacService {
         } catch (IllegalArgumentException ex) {
             throw new PermissaoInvalidaException(ex.getMessage());
         }
-        cells.get(modulo).put(role, valor);
+        ensureSeeded();
+        PermissaoMatriz cell = repository.findById(new PermissaoMatrizId(modulo.getCode(), role))
+                .orElseGet(() -> new PermissaoMatriz(modulo.getCode(), role, defaultNivel(role)));
+        cell.setNivel(valor);
+        repository.save(cell);
         return new Permissoes.CelulaPermissao(modulo.getCode(), role.name(), role.getCode(), valor.getLabel());
     }
 

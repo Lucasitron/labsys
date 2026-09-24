@@ -192,6 +192,18 @@ public class AuthService {
      */
     @Transactional
     public void alterarSenha(LoginPrincipal principal, AlterarSenhaRequest request) {
+        alterarSenha(principal, request, null);
+    }
+
+    /**
+     * Altera a senha do próprio usuário autenticado (qualquer nível),
+     * revogando o token atual (força re-login; ressalva §6.1).
+     *
+     * @param tokenAtual Bearer usado na requisição; quando informado e válido,
+     *                   é adicionado à blacklist
+     */
+    @Transactional
+    public void alterarSenha(LoginPrincipal principal, AlterarSenhaRequest request, String tokenAtual) {
         Login login = loginRepository.findById(principal.loginId())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
         if (!passwordEncoder.matches(request.senhaAtual(), login.getSenhaHash())) {
@@ -205,6 +217,19 @@ public class AuthService {
         }
         login.setSenhaHash(passwordEncoder.encode(request.novaSenha()));
         loginRepository.save(login);
+        revogarTokenAtual(tokenAtual);
+    }
+
+    private void revogarTokenAtual(String tokenAtual) {
+        if (isBlank(tokenAtual)) {
+            return;
+        }
+        try {
+            Claims claims = parse(tokenAtual);
+            blacklistService.blacklist(tokenAtual, claims);
+        } catch (TokenInvalidException ignored) {
+            // token já inválido ou expirado: nada a revogar
+        }
     }
 
     private Role activeRole(Login login) {

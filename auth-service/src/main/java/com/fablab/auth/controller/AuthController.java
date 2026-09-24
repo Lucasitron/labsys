@@ -82,8 +82,9 @@ public class AuthController {
     @PutMapping("/senha")
     public ResponseEntity<java.util.Map<String, String>> alterarSenha(
             @AuthenticationPrincipal LoginPrincipal principal,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
             @Valid @RequestBody AlterarSenhaRequest request) {
-        authService.alterarSenha(principal, request);
+        authService.alterarSenha(principal, request, extractBearer(authorization));
         return ResponseEntity.ok(java.util.Map.of("mensagem", "Senha alterada com sucesso"));
     }
 

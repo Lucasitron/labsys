@@ -1,0 +1,51 @@
+-- Matriz de permissões RBAC (módulo × papel), persistente.
+-- Ressalva §6.1 (1): PUT /api/permissoes perdia o dado no restart (mapa em memória).
+-- Padrão: Admin edita tudo; demais níveis veem; Recrutando sem acesso.
+CREATE TABLE IF NOT EXISTS permissao_matriz (
+    modulo  VARCHAR(64) NOT NULL,
+    role    INTEGER     NOT NULL CHECK (role BETWEEN 0 AND 4),
+    nivel   VARCHAR(16) NOT NULL CHECK (nivel IN ('VER', 'EDITAR', 'NENHUM')),
+    CONSTRAINT pk_permissao_matriz PRIMARY KEY (modulo, role)
+);
+
+INSERT INTO permissao_matriz (modulo, role, nivel) VALUES
+    ('dashboard', 0, 'EDITAR'),
+    ('dashboard', 1, 'VER'),
+    ('dashboard', 2, 'VER'),
+    ('dashboard', 3, 'VER'),
+    ('dashboard', 4, 'NENHUM'),
+    ('rh', 0, 'EDITAR'),
+    ('rh', 1, 'VER'),
+    ('rh', 2, 'VER'),
+    ('rh', 3, 'VER'),
+    ('rh', 4, 'NENHUM'),
+    ('estoque', 0, 'EDITAR'),
+    ('estoque', 1, 'VER'),
+    ('estoque', 2, 'VER'),
+    ('estoque', 3, 'VER'),
+    ('estoque', 4, 'NENHUM'),
+    ('vendas', 0, 'EDITAR'),
+    ('vendas', 1, 'VER'),
+    ('vendas', 2, 'VER'),
+    ('vendas', 3, 'VER'),
+    ('vendas', 4, 'NENHUM'),
+    ('financeiro', 0, 'EDITAR'),
+    ('financeiro', 1, 'VER'),
+    ('financeiro', 2, 'VER'),
+    ('financeiro', 3, 'VER'),
+    ('financeiro', 4, 'NENHUM'),
+    ('producao', 0, 'EDITAR'),
+    ('producao', 1, 'VER'),
+    ('producao', 2, 'VER'),
+    ('producao', 3, 'VER'),
+    ('producao', 4, 'NENHUM'),
+    ('notificacoes', 0, 'EDITAR'),
+    ('notificacoes', 1, 'VER'),
+    ('notificacoes', 2, 'VER'),
+    ('notificacoes', 3, 'VER'),
+    ('notificacoes', 4, 'NENHUM'),
+    ('configuracoes', 0, 'EDITAR'),
+    ('configuracoes', 1, 'VER'),
+    ('configuracoes', 2, 'VER'),
+    ('configuracoes', 3, 'VER'),
+    ('configuracoes', 4, 'NENHUM');
