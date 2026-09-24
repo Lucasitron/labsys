@@ -12,8 +12,8 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 /**
- * Resposta JSON padronizada quando o usuário autenticado não possui o nível
- * necessário (HTTP 403).
+ * Resposta JSON padronizada quando o usuário autenticado não possui a role
+ * necessária (HTTP 403).
  */
 @Component
 public class RestAccessDeniedHandler implements AccessDeniedHandler {

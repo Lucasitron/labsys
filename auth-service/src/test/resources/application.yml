@@ -19,15 +19,9 @@ eureka:
 
 jwt:
   secret: fablab-auth-test-secret-key-min-32-bytes-1234567890
-  expiration-seconds: 3600
+  expiration-seconds: 900
+  refresh-expiration-seconds: 604800
   issuer: fablab-test
-
-auth:
-  seed:
-    username: admin
-    password: admin123
-    name: Admin FabLab
-    email: admin@fablab.org
 
 logging:
   level:

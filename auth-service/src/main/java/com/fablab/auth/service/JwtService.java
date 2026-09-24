@@ -1,22 +1,23 @@
 package com.fablab.auth.service;
 
 import com.fablab.auth.config.JwtProperties;
-import com.fablab.auth.dto.AuthPrincipal;
-import com.fablab.auth.entity.Usuario;
+import com.fablab.auth.entity.Login;
+import com.fablab.auth.entity.Role;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import javax.crypto.SecretKey;
 import org.springframework.stereotype.Service;
 
 /**
- * Emissão e validação de tokens JWT. A chave HMAC e o emissor são
- * compartilhados com os demais serviços (variáveis {@code JWT_SECRET} e
- * {@code JWT_ISSUER}), mantendo a malha interoperável.
+ * Geração, assinatura e extração de claims de tokens JWT (HMAC SHA-256).
+ *
+ * <p>O payload contém {@code id_user}, {@code role} e {@code setor}. Os tokens de
+ * acesso duram 15 minutos; os refresh tokens, 7 dias.</p>
  */
 @Service
 public class JwtService {
@@ -24,10 +25,10 @@ public class JwtService {
     public static final String CLAIM_ID_USER = "id_user";
     public static final String CLAIM_ROLE = "role";
     public static final String CLAIM_SETOR = "setor";
+    public static final String CLAIM_TYPE = "type";
 
-    private static final String[] ROLES = {
-        "ADMIN", "BOLSISTA", "VOLUNTARIO", "ESTAGIARIO", "RECRUTANDO"
-    };
+    public static final String TYPE_ACCESS = "access";
+    public static final String TYPE_REFRESH = "refresh";
 
     private final JwtProperties properties;
     private final SecretKey key;
@@ -41,27 +42,39 @@ public class JwtService {
     }
 
     /**
-     * Gera um token para o usuário com os claims {@code id_user}, {@code role}
-     * (nome do nível) e {@code setor}, válido por {@code jwt.expiration-seconds}.
+     * Gera um token de acesso (15 minutos).
      */
-    public String emitir(Usuario usuario) {
-        Instant agora = Instant.now();
+    public String generateAccessToken(Login login, Role role) {
+        return generate(login, role, TYPE_ACCESS, properties.expirationSeconds());
+    }
+
+    /**
+     * Gera um refresh token (7 dias).
+     */
+    public String generateRefreshToken(Login login, Role role) {
+        return generate(login, role, TYPE_REFRESH, properties.refreshExpirationSeconds());
+    }
+
+    private String generate(Login login, Role role, String type, long seconds) {
+        Instant now = Instant.now();
         return Jwts.builder()
                 .issuer(properties.issuer())
-                .subject(usuario.getUsername())
-                .claim(CLAIM_ID_USER, usuario.getId())
-                .claim(CLAIM_ROLE, roleName(usuario.getRole()))
-                .claim(CLAIM_SETOR, usuario.getSetor())
-                .issuedAt(Date.from(agora))
-                .expiration(Date.from(agora.plus(properties.expirationSeconds(), ChronoUnit.SECONDS)))
+                .subject(String.valueOf(login.getId()))
+                .claim(CLAIM_ID_USER, login.getIdUser())
+                .claim(CLAIM_ROLE, role.name())
+                .claim(CLAIM_SETOR, login.getSetor())
+                .claim(CLAIM_TYPE, type)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusSeconds(seconds)))
                 .signWith(key)
                 .compact();
     }
 
     /**
-     * Valida assinatura, emissor e expiração e retorna as claims do token.
+     * Valida a assinatura, emissor e expiração e retorna as claims do token.
      *
-     * @throws io.jsonwebtoken.JwtException se o token for inválido
+     * @throws JwtException se o token for malformado, com assinatura inválida,
+     *                      pertencer a outro emissor ou estiver expirado
      */
     public Claims parseClaims(String token) {
         return Jwts.parser()
@@ -73,31 +86,39 @@ public class JwtService {
                 .getPayload();
     }
 
+    /**
+     * Verifica se o token é assinável e não expirou.
+     */
+    public boolean isTokenValid(String token) {
+        try {
+            Claims claims = parseClaims(token);
+            return claims.getExpiration().after(new Date());
+        } catch (JwtException | IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
     public Long extractIdUser(Claims claims) {
         return ((Number) claims.get(CLAIM_ID_USER)).longValue();
     }
 
-    public String extractRole(Claims claims) {
-        return claims.get(CLAIM_ROLE, String.class);
+    public Role extractRole(Claims claims) {
+        return Role.valueOf(claims.get(CLAIM_ROLE, String.class));
     }
 
     public String extractSetor(Claims claims) {
         return claims.get(CLAIM_SETOR, String.class);
     }
 
-    public AuthPrincipal principal(Claims claims) {
-        return new AuthPrincipal(
-                extractIdUser(claims),
-                claims.getSubject(),
-                extractRole(claims),
-                extractSetor(claims));
+    public String extractType(Claims claims) {
+        return claims.get(CLAIM_TYPE, String.class);
     }
 
-    /** Nome do nível de acesso usado no claim {@code role} (compatível com o RH). */
-    public static String roleName(Integer role) {
-        if (role == null || role < 0 || role >= ROLES.length) {
-            throw new IllegalArgumentException("Nível de acesso inválido: " + role);
-        }
-        return ROLES[role];
+    public boolean isRefreshToken(Claims claims) {
+        return TYPE_REFRESH.equals(extractType(claims));
+    }
+
+    public long accessExpirationSeconds() {
+        return properties.expirationSeconds();
     }
 }

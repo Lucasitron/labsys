@@ -1,11 +1,15 @@
 package com.fablab.auth.dto;
 
 /**
- * Resposta do {@code POST /auth/login}.
- *
- * @param token     JWT a ser enviado como {@code Authorization: Bearer <token>}
- * @param expiresIn validade do token em segundos
- * @param user      perfil do usuário autenticado
+ * Resposta do login com o par de tokens JWT (acesso + refresh).
  */
-public record LoginResponse(String token, int expiresIn, UserResponse user) {
+public record LoginResponse(
+        String accessToken,
+        String refreshToken,
+        String tokenType,
+        long expiresIn,
+        Long idUser,
+        String role,
+        String setor,
+        String nomeUsuario) {
 }

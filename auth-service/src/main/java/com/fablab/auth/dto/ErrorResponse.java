@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.Map;
 
 /**
- * Corpo padrão de erro retornado pelo {@code GlobalExceptionHandler} da malha.
+ * Corpo padrão de erro retornado pelo {@code GlobalExceptionHandler}.
  */
 public record ErrorResponse(
         Instant timestamp,
