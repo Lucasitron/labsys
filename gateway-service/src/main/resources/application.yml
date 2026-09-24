@@ -28,6 +28,10 @@ spring:
           uri: lb://rh-service
           predicates:
             - Path=/api/rh/**
+        - id: dashboard-service
+          uri: lb://dashboard-service
+          predicates:
+            - Path=/api/dashboard/**, /api/tasks/**
         - id: estoque-service
           uri: lb://estoque-service
           predicates:
@@ -47,7 +51,7 @@ spring:
         - id: notification-service
           uri: lb://notification-service
           predicates:
-            - Path=/api/notification/**
+            - Path=/api/notification/**, /api/notifications/**
 
 eureka:
   client:
