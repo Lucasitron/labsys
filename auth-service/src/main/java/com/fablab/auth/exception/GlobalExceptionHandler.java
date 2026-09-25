@@ -49,6 +49,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(ConfiguracaoInvalidaException.class)
+    public ResponseEntity<ErrorResponse> handleConfiguracaoInvalida(ConfiguracaoInvalidaException ex,
+                                                                    HttpServletRequest request) {
+        return build(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolation(
             jakarta.validation.ConstraintViolationException ex, HttpServletRequest request) {

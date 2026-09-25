@@ -32,6 +32,10 @@ spring:
           uri: lb://auth-service
           predicates:
             - Path=/api/permissoes/**
+        - id: auth-configuracoes
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/configuracoes/**
         - id: rh-service
           uri: lb://rh-service
           predicates:
