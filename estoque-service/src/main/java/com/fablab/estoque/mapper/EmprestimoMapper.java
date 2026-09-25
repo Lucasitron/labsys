@@ -12,12 +12,20 @@ public final class EmprestimoMapper {
     }
 
     public static EmprestimoResponse toResponse(Emprestimo emprestimo) {
+        return toResponse(emprestimo, rotuloPessoa(emprestimo.getIdPessoa()));
+    }
+
+    /**
+     * Mapeia com o nome do tomador já resolvido (E-4: nome oficial do RH;
+     * fallback {@code Pessoa #id} quando o RH não responde).
+     */
+    public static EmprestimoResponse toResponse(Emprestimo emprestimo, String pessoa) {
         return new EmprestimoResponse(
                 emprestimo.getId(),
                 emprestimo.getItem().getId(),
                 emprestimo.getItem().getNome(),
                 emprestimo.getIdPessoa(),
-                rotuloPessoa(emprestimo.getIdPessoa()),
+                pessoa,
                 emprestimo.getQuantidade(),
                 emprestimo.getDataEmprestimo(),
                 emprestimo.getDataDevolucaoPrevista(),

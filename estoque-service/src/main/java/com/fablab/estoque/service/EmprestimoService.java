@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,15 +37,26 @@ public class EmprestimoService {
     private final ItemRepository itemRepository;
     private final SaidaEstoqueRepository saidaEstoqueRepository;
     private final EstoqueEventPublisher eventPublisher;
+    private final RhPessoaClient rhPessoaClient;
 
     public EmprestimoService(EmprestimoRepository emprestimoRepository,
                              ItemRepository itemRepository,
                              SaidaEstoqueRepository saidaEstoqueRepository,
                              EstoqueEventPublisher eventPublisher) {
+        this(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher, null);
+    }
+
+    @Autowired
+    public EmprestimoService(EmprestimoRepository emprestimoRepository,
+                             ItemRepository itemRepository,
+                             SaidaEstoqueRepository saidaEstoqueRepository,
+                             EstoqueEventPublisher eventPublisher,
+                             RhPessoaClient rhPessoaClient) {
         this.emprestimoRepository = emprestimoRepository;
         this.itemRepository = itemRepository;
         this.saidaEstoqueRepository = saidaEstoqueRepository;
         this.eventPublisher = eventPublisher;
+        this.rhPessoaClient = rhPessoaClient;
     }
 
     @Transactional
@@ -87,7 +99,7 @@ public class EmprestimoService {
         saidaEstoqueRepository.save(saida);
 
         verificarEstoqueBaixo(item);
-        return EmprestimoMapper.toResponse(emprestimo);
+        return toResponse(emprestimo);
     }
 
     @Transactional
@@ -107,7 +119,7 @@ public class EmprestimoService {
 
         emprestimo.setDataDevolucaoReal(LocalDate.now());
         emprestimo.setStatus(StatusEmprestimo.DEVOLVIDO);
-        return EmprestimoMapper.toResponse(emprestimo);
+        return toResponse(emprestimo);
     }
 
     @Transactional(readOnly = true)
@@ -116,7 +128,7 @@ public class EmprestimoService {
                 .findByStatusInAndDataDevolucaoPrevistaBefore(
                         List.of(StatusEmprestimo.ATIVO, StatusEmprestimo.ATRASADO), LocalDate.now())
                 .stream()
-                .map(EmprestimoMapper::toResponse)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -130,7 +142,7 @@ public class EmprestimoService {
                 emprestimoRepository.findByStatusInAndDataDevolucaoPrevistaBefore(
                         List.of(StatusEmprestimo.ATIVO, StatusEmprestimo.ATRASADO), LocalDate.now()),
                 principal).stream()
-                .map(EmprestimoMapper::toResponse)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -160,13 +172,13 @@ public class EmprestimoService {
                     "Status inválido. Use ativos, atrasados ou historico");
         }
         return filtrarPorResponsavel(emprestimos, principal).stream()
-                .map(EmprestimoMapper::toResponse).toList();
+                .map(this::toResponse).toList();
     }
 
     /** Busca um empréstimo pelo id (detalhe da tela {@code /emprestimos/[id]}). */
     @Transactional(readOnly = true)
     public EmprestimoResponse buscar(Long id) {
-        return EmprestimoMapper.toResponse(emprestimoRepository.findById(id)
+        return toResponse(emprestimoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Empréstimo não encontrado: " + id)));
     }
 
@@ -181,7 +193,7 @@ public class EmprestimoService {
         if (!principal.isAdmin() && !emprestimo.getIdPessoa().equals(principal.idPessoa())) {
             throw new ForbiddenException("Apenas o Admin ou o responsável pelo empréstimo pode consultar este empréstimo");
         }
-        return EmprestimoMapper.toResponse(emprestimo);
+        return toResponse(emprestimo);
     }
 
     /**
@@ -205,6 +217,22 @@ public class EmprestimoService {
         if (item.getQuantidadeAtual().compareTo(item.getEstoqueMinimo()) <= 0) {
             eventPublisher.publishEstoqueBaixo(item);
         }
+    }
+
+    /**
+     * Monta a resposta enriquecendo o tomador com o nome oficial do RH (E-4).
+     * RH indisponível ou cliente ausente → rótulo estável {@code Pessoa #id}
+     * (fail-soft: nunca falha por causa do nome).
+     */
+    private EmprestimoResponse toResponse(Emprestimo emprestimo) {
+        String pessoa = null;
+        if (rhPessoaClient != null) {
+            pessoa = rhPessoaClient.buscarNome(emprestimo.getIdPessoa()).orElse(null);
+        }
+        if (pessoa == null) {
+            pessoa = EmprestimoMapper.rotuloPessoa(emprestimo.getIdPessoa());
+        }
+        return EmprestimoMapper.toResponse(emprestimo, pessoa);
     }
 
     /**
