@@ -1,0 +1,9 @@
+logging:
+  level:
+    com.fablab.auth: DEBUG
+    org.springframework.security: INFO
+
+# Seed admin ligado apenas no perfil dev (§6.0, nunca produção).
+auth:
+  seed:
+    enabled: true

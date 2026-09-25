@@ -1,0 +1,55 @@
+name: fablab-infra
+
+networks:
+  fablab-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  rabbitmq-data:
+
+# Infraestrutura base do FabLab.
+# Serviços Spring Boot (discovery, gateway e microsserviços) sobem via
+# `docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up --build`.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fablab-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fablab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fablab}
+      POSTGRES_DB: ${POSTGRES_DB:-fablab_auth}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init-scripts:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fablab}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks:
+      - fablab-net
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: fablab-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-fablab}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-fablab}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+    networks:
+      - fablab-net

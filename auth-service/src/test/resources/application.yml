@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:fablabauth;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+  flyway:
+    enabled: false
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+eureka:
+  client:
+    enabled: false
+
+jwt:
+  secret: fablab-auth-test-secret-key-min-32-bytes-1234567890
+  expiration-seconds: 900
+  refresh-expiration-seconds: 604800
+  issuer: fablab-test
+
+logging:
+  level:
+    com.fablab.auth: WARN
