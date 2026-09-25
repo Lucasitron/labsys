@@ -70,6 +70,20 @@ class ItemServiceTest {
     }
 
     @Test
+    void exportarCsvEscapaFormulasCwe1236() {
+        Item item = buildItem(1L, BigDecimal.TEN, BigDecimal.ONE);
+        item.setId(1L);
+        item.setNome("=1+1");
+        item.setDescricao("@arroba");
+        when(itemRepository.findAll()).thenReturn(List.of(item));
+
+        String csv = itemService.exportarCsv();
+
+        assertTrue(csv.contains("'=1+1"));
+        assertTrue(csv.contains("'@arroba"));
+    }
+
+    @Test
     void criarItemPublicaEstoqueBaixoQuandoIgualAoMinimo() {
         ItemRequest req = new ItemRequest("Resistor 10k", null, Categoria.INSUMO, "un", BigDecimal.TEN, BigDecimal.TEN, null);
         when(itemRepository.save(any(Item.class))).thenAnswer(inv -> {

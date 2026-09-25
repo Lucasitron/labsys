@@ -3,6 +3,7 @@ package com.fablab.estoque.dto;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -16,5 +17,6 @@ public record EmprestimoRequest(
         @DecimalMin(value = "0.01", message = "A quantidade deve ser maior que zero") BigDecimal quantidade,
         @NotNull(message = "A data de devolução prevista é obrigatória")
         @FutureOrPresent(message = "A data de devolução prevista deve ser hoje ou futura") LocalDate dataDevolucaoPrevista,
-        String observacao) {
+        String observacao,
+        @Size(max = 255, message = "O responsável deve ter no máximo 255 caracteres") String responsavel) {
 }

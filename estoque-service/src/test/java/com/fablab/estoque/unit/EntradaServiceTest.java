@@ -71,10 +71,11 @@ class EntradaServiceTest {
         });
 
         EntradaRequest req = new EntradaRequest(1L, 1L, BigDecimal.valueOf(30), new BigDecimal("2.50"),
-                LocalDate.now(), "NF-001", null);
+                LocalDate.now(), "NF-001", null, "Maria Silva");
         EntradaResponse resp = entradaService.registrar(req);
 
         assertNotNull(resp);
+        assertEquals("Maria Silva", resp.responsavel());
         assertEquals(0, new BigDecimal("40.00").compareTo(item.getQuantidadeAtual()));
         assertEquals(0, new BigDecimal("75.00").compareTo(resp.valorTotal()));
         verify(eventPublisher).publishCompraSolicitada(any(EntradaEstoque.class));
@@ -87,7 +88,7 @@ class EntradaServiceTest {
         when(itemRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(item));
         when(fornecedorRepository.findById(1L)).thenReturn(Optional.empty());
 
-        EntradaRequest req = new EntradaRequest(1L, 1L, BigDecimal.ONE, BigDecimal.ONE, null, null, null);
+        EntradaRequest req = new EntradaRequest(1L, 1L, BigDecimal.ONE, BigDecimal.ONE, null, null, null, null);
         assertThrows(ResourceNotFoundException.class, () -> entradaService.registrar(req));
     }
 }

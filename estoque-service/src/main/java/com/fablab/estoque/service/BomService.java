@@ -51,6 +51,18 @@ public class BomService {
         return BomMapper.toResponse(obter(id));
     }
 
+    /**
+     * Lista BOMs de um produto/serviço (E-2/R-8). Sem {@code idProdutoServico}
+     * retorna todas.
+     */
+    @Transactional(readOnly = true)
+    public List<BomResponse> listar(Long idProdutoServico) {
+        List<ListaMateriais> boms = idProdutoServico == null
+                ? bomRepository.findAll()
+                : bomRepository.findByIdProdutoServico(idProdutoServico);
+        return boms.stream().map(BomMapper::toResponse).toList();
+    }
+
     @Transactional
     public BomResponse atualizar(Long id, BomRequest request) {
         ListaMateriais bom = obter(id);

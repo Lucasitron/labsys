@@ -15,5 +15,6 @@ public record SaidaResponse(
         TipoSaida tipoSaida,
         Long idReferencia,
         LocalDateTime dataSaida,
-        String observacao) {
+        String observacao,
+        String responsavel) {
 }

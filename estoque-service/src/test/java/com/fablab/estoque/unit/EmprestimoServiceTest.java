@@ -69,7 +69,7 @@ class EmprestimoServiceTest {
 
     @Test
     void naoAdminNaoPodeEmprestarParaOutro() {
-        EmprestimoRequest req = new EmprestimoRequest(1L, 99L, BigDecimal.ONE, LocalDate.now().plusDays(7), null);
+        EmprestimoRequest req = new EmprestimoRequest(1L, 99L, BigDecimal.ONE, LocalDate.now().plusDays(7), null, null);
         EmprestimoService service = new EmprestimoService(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher);
         assertThrows(ForbiddenException.class,
                 () -> service.criar(req, bolsistaPrincipal(1L)));
@@ -77,7 +77,7 @@ class EmprestimoServiceTest {
 
     @Test
     void dataDevolucaoAnteriorAHojeLancaExcecao() {
-        EmprestimoRequest req = new EmprestimoRequest(1L, 1L, BigDecimal.ONE, LocalDate.now().minusDays(1), null);
+        EmprestimoRequest req = new EmprestimoRequest(1L, 1L, BigDecimal.ONE, LocalDate.now().minusDays(1), null, null);
         EmprestimoService service = new EmprestimoService(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher);
         assertThrows(IllegalArgumentException.class,
                 () -> service.criar(req, adminPrincipal()));
@@ -87,7 +87,7 @@ class EmprestimoServiceTest {
     void estoqueInsuficienteLancaSaldoInsuficiente() {
         Item item = buildItem(1L, BigDecimal.ONE);
         when(itemRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(item));
-        EmprestimoRequest req = new EmprestimoRequest(1L, 1L, BigDecimal.TEN, LocalDate.now().plusDays(7), null);
+        EmprestimoRequest req = new EmprestimoRequest(1L, 1L, BigDecimal.TEN, LocalDate.now().plusDays(7), null, null);
         EmprestimoService service = new EmprestimoService(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher);
         assertThrows(SaldoInsuficienteException.class,
                 () -> service.criar(req, adminPrincipal()));
@@ -103,12 +103,14 @@ class EmprestimoServiceTest {
             return e;
         });
 
-        EmprestimoRequest req = new EmprestimoRequest(1L, 1L, BigDecimal.valueOf(3), LocalDate.now().plusDays(7), null);
+        EmprestimoRequest req = new EmprestimoRequest(1L, 1L, BigDecimal.valueOf(3), LocalDate.now().plusDays(7), null, "Ana");
         EmprestimoService service = new EmprestimoService(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher);
         EmprestimoResponse resp = service.criar(req, adminPrincipal());
 
         assertNotNull(resp);
         assertEquals(StatusEmprestimo.ATIVO, resp.status());
+        assertEquals("Pessoa #1", resp.pessoa());
+        assertEquals("Ana", resp.responsavel());
         assertEquals(0, new BigDecimal("7.00").compareTo(item.getQuantidadeAtual()));
     }
 
@@ -195,5 +197,74 @@ class EmprestimoServiceTest {
 
         assertEquals(1L, resp.id());
         assertEquals(StatusEmprestimo.ATIVO, resp.status());
+    }
+
+    @Test
+    void buscarPorNaoResponsavelLancaForbidden() {
+        Emprestimo emp = new Emprestimo();
+        emp.setId(1L);
+        emp.setIdPessoa(10L);
+        emp.setStatus(StatusEmprestimo.ATIVO);
+        when(emprestimoRepository.findById(1L)).thenReturn(Optional.of(emp));
+
+        EmprestimoService service = new EmprestimoService(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher);
+        assertThrows(ForbiddenException.class,
+                () -> service.buscar(1L, bolsistaPrincipal(2L)));
+    }
+
+    @Test
+    void buscarPorResponsavelRetornaDetalhe() {
+        Emprestimo emp = new Emprestimo();
+        emp.setId(1L);
+        emp.setIdPessoa(10L);
+        emp.setStatus(StatusEmprestimo.ATIVO);
+        Item item = buildItem(1L, BigDecimal.valueOf(7));
+        emp.setItem(item);
+        emp.setQuantidade(BigDecimal.ONE);
+        emp.setDataEmprestimo(LocalDate.now());
+        emp.setDataDevolucaoPrevista(LocalDate.now().plusDays(7));
+        when(emprestimoRepository.findById(1L)).thenReturn(Optional.of(emp));
+
+        EmprestimoService service = new EmprestimoService(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher);
+        EmprestimoResponse resp = service.buscar(1L, bolsistaPrincipal(10L));
+
+        assertEquals(1L, resp.id());
+        assertEquals("Pessoa #10", resp.pessoa());
+    }
+
+    @Test
+    void listarGlobalFiltraPorResponsavelParaNaoAdmin() {
+        Emprestimo proprio = new Emprestimo();
+        proprio.setId(1L);
+        proprio.setIdPessoa(10L);
+        proprio.setStatus(StatusEmprestimo.ATIVO);
+        proprio.setItem(buildItem(1L, BigDecimal.TEN));
+        Emprestimo outro = new Emprestimo();
+        outro.setId(2L);
+        outro.setIdPessoa(20L);
+        outro.setStatus(StatusEmprestimo.ATIVO);
+        outro.setItem(buildItem(1L, BigDecimal.TEN));
+        when(emprestimoRepository.findAll()).thenReturn(List.of(proprio, outro));
+
+        EmprestimoService service = new EmprestimoService(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher);
+        List<EmprestimoResponse> resp = service.listar(null, bolsistaPrincipal(10L));
+
+        assertEquals(1, resp.size());
+        assertEquals(1L, resp.get(0).id());
+    }
+
+    @Test
+    void listarGlobalAdminVeTodosEStatusInvalidoLancaExcecao() {
+        Emprestimo emp = new Emprestimo();
+        emp.setId(1L);
+        emp.setIdPessoa(10L);
+        emp.setStatus(StatusEmprestimo.ATIVO);
+        emp.setItem(buildItem(1L, BigDecimal.TEN));
+        when(emprestimoRepository.findAll()).thenReturn(List.of(emp));
+
+        EmprestimoService service = new EmprestimoService(emprestimoRepository, itemRepository, saidaEstoqueRepository, eventPublisher);
+        assertEquals(1, service.listar(null, adminPrincipal()).size());
+        assertThrows(IllegalArgumentException.class,
+                () -> service.listar("invalido", adminPrincipal()));
     }
 }

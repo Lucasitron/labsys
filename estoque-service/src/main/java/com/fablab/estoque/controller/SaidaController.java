@@ -41,11 +41,15 @@ public class SaidaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saidaService.registrar(request));
     }
 
-    /** Histórico de saídas de um item. */
+    /**
+     * Lista global de saídas (E-1/R-9). Sem {@code idItem} retorna todas;
+     * com {@code idItem} restringe ao histórico do item.
+     */
     @GetMapping
     @PreAuthorize(VISUALIZACAO)
-    public ResponseEntity<List<SaidaResponse>> listarPorItem(@RequestParam Long idItem) {
-        return ResponseEntity.ok(saidaService.listarPorItem(idItem));
+    public ResponseEntity<List<SaidaResponse>> listar(
+            @RequestParam(required = false) Long idItem) {
+        return ResponseEntity.ok(saidaService.listar(idItem));
     }
 
     /** Detalhe de uma saída (tela {@code /saidas/[id]}). */

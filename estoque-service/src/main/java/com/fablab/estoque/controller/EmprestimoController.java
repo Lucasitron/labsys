@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -50,16 +51,32 @@ public class EmprestimoController {
         return ResponseEntity.ok(emprestimoService.devolver(id, principal));
     }
 
+    /**
+     * Lista global de empréstimos (E-1/R-9) com escopo do principal
+     * (E-7: Admin vê todos; demais só os próprios).
+     *
+     * @param status opcional: {@code ativos}, {@code atrasados} ou {@code historico}
+     */
+    @GetMapping
+    @PreAuthorize(VISUALIZACAO)
+    public ResponseEntity<List<EmprestimoResponse>> listar(
+            @RequestParam(required = false) String status,
+            @AuthenticationPrincipal EstoquePrincipal principal) {
+        return ResponseEntity.ok(emprestimoService.listar(status, principal));
+    }
+
     @GetMapping("/atrasados")
     @PreAuthorize(VISUALIZACAO)
-    public ResponseEntity<List<EmprestimoResponse>> atrasados() {
-        return ResponseEntity.ok(emprestimoService.listarAtrasados());
+    public ResponseEntity<List<EmprestimoResponse>> atrasados(
+            @AuthenticationPrincipal EstoquePrincipal principal) {
+        return ResponseEntity.ok(emprestimoService.listarAtrasados(principal));
     }
 
     /** Detalhe de um empréstimo (tela {@code /emprestimos/[id]}). */
     @GetMapping("/{id}")
     @PreAuthorize(VISUALIZACAO)
-    public ResponseEntity<EmprestimoResponse> buscar(@PathVariable Long id) {
-        return ResponseEntity.ok(emprestimoService.buscar(id));
+    public ResponseEntity<EmprestimoResponse> buscar(@PathVariable Long id,
+                                                     @AuthenticationPrincipal EstoquePrincipal principal) {
+        return ResponseEntity.ok(emprestimoService.buscar(id, principal));
     }
 }

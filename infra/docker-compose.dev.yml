@@ -172,3 +172,18 @@ services:
         condition: service_healthy
     networks:
       - fablab-net
+
+  dashboard:
+    build:
+      context: ../dashboard-service
+    container_name: fablab-dashboard
+    ports:
+      - "8088:8088"
+    environment:
+      EUREKA_URI: http://discovery:8761/eureka
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      discovery:
+        condition: service_started
+    networks:
+      - fablab-net

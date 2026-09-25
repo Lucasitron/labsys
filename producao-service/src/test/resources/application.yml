@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:fablabproducao;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+  flyway:
+    enabled: false
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+eureka:
+  client:
+    enabled: false
+
+jwt:
+  secret: fablab-producao-test-secret-key-min-32-bytes-123456
+  issuer: fablab-test
+
+producao:
+  auditoria:
+    scheduler:
+      enabled: false
+
+logging:
+  level:
+    com.fablab.producao: WARN

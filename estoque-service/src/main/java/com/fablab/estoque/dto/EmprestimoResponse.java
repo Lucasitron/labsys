@@ -12,10 +12,12 @@ public record EmprestimoResponse(
         Long idItem,
         String nomeItem,
         Long idPessoa,
+        String pessoa,
         BigDecimal quantidade,
         LocalDate dataEmprestimo,
         LocalDate dataDevolucaoPrevista,
         LocalDate dataDevolucaoReal,
         StatusEmprestimo status,
-        String observacao) {
+        String observacao,
+        String responsavel) {
 }

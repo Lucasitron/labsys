@@ -41,11 +41,15 @@ public class EntradaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(entradaService.registrar(request));
     }
 
-    /** Histórico de entradas de um item. */
+    /**
+     * Lista global de entradas (E-1/R-9). Sem {@code idItem} retorna todas;
+     * com {@code idItem} restringe ao histórico do item.
+     */
     @GetMapping
     @PreAuthorize(VISUALIZACAO)
-    public ResponseEntity<List<EntradaResponse>> listarPorItem(@RequestParam Long idItem) {
-        return ResponseEntity.ok(entradaService.listarPorItem(idItem));
+    public ResponseEntity<List<EntradaResponse>> listar(
+            @RequestParam(required = false) Long idItem) {
+        return ResponseEntity.ok(entradaService.listar(idItem));
     }
 
     /** Detalhe de uma entrada (tela {@code /entradas/[id]}). */

@@ -55,6 +55,7 @@ public class EntradaService {
         entrada.setDataEntrada(request.dataEntrada() != null ? request.dataEntrada() : LocalDate.now());
         entrada.setNotaFiscal(request.notaFiscal());
         entrada.setObservacao(request.observacao());
+        entrada.setResponsavel(request.responsavel());
         entrada = entradaEstoqueRepository.save(entrada);
 
         item.setQuantidadeAtual(item.getQuantidadeAtual().add(request.quantidade()));
@@ -72,6 +73,20 @@ public class EntradaService {
         return entradaEstoqueRepository.findByItemId(idItem).stream()
                 .map(EntradaMapper::toResponse)
                 .toList();
+    }
+
+    /**
+     * Lista global de entradas (E-1/R-9). Sem {@code idItem} retorna todas;
+     * com {@code idItem} restringe ao histórico do item (compatível).
+     */
+    @Transactional(readOnly = true)
+    public List<EntradaResponse> listar(Long idItem) {
+        if (idItem == null) {
+            return entradaEstoqueRepository.findAll().stream()
+                    .map(EntradaMapper::toResponse)
+                    .toList();
+        }
+        return listarPorItem(idItem);
     }
 
     /** Detalhe de uma entrada (tela {@code /entradas/[id]}). */
