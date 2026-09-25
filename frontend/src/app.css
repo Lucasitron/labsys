@@ -2,10 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-	color-scheme: light dark;
+@layer base {
+	:root {
+		color-scheme: dark;
+
+		--color-base: #0a0e17;
+		--color-surface: #111725;
+		--color-elevated: #1a2235;
+		--color-border: #252d42;
+		--color-ink: #e6edf3;
+		--color-muted: #8b95a7;
+		--color-brand: #1c80de;
+		--color-brandhi: #3a95e8;
+		--color-success: #0ea641;
+		--color-danger: #f2060a;
+		--color-warn: #f59e0b;
+	}
+
+	html,
+	body {
+		height: 100%;
+	}
+
+	body {
+		background: var(--color-base);
+		color: var(--color-ink);
+	}
 }
 
-body {
-	@apply min-h-screen bg-slate-100 text-slate-900 antialiased;
+.glow {
+	background: radial-gradient(circle at 50% 40%, rgba(28, 128, 222, 0.18) 0%, rgba(10, 14, 23, 0) 60%);
+}
+
+.glow-success {
+	background: radial-gradient(circle at 50% 40%, rgba(14, 166, 65, 0.15) 0%, rgba(10, 14, 23, 0) 60%);
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.fade-in {
+	animation: fadeIn 0.25s ease-out;
 }

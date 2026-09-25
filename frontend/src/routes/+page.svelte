@@ -7,6 +7,6 @@
 		Plataforma de gestão do laboratório: pessoas, estoque, vendas, produção e financeiro.
 	</p>
 	<div class="mt-4 flex gap-3">
-		<a class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" href="/login">Acessar</a>
+		<a class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" href="/auth/login">Acessar</a>
 	</div>
 </main>
