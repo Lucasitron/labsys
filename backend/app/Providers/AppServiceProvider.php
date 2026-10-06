@@ -15,6 +15,10 @@ use App\Modules\Estoque\Listeners\ConsumoProducaoListener;
 use App\Modules\Rh\Contracts\DefaultRhContract;
 use App\Modules\Rh\Contracts\RhContract;
 use App\Modules\Rh\Listeners\ProcessarPontoRfid;
+use App\Modules\Vendas\Contracts\DefaultVendasContract;
+use App\Modules\Vendas\Contracts\VendasContract;
+use App\Modules\Vendas\Events\ProducaoStatusAlteradoEvent;
+use App\Modules\Vendas\Listeners\ProducaoStatusListener;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -35,6 +39,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Fronteira in-process do Estoque (Vendas/M4 e Produção/M6 consomem só o Contract).
         $this->app->singleton(EstoqueContract::class, DefaultEstoqueContract::class);
+
+        // Fronteira in-process do Vendas (Produção/M6 e Financeiro/M5 consomem só o Contract).
+        $this->app->singleton(VendasContract::class, DefaultVendasContract::class);
     }
 
     /**
@@ -71,5 +78,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Estoque consome a produção concluída (fila `database`, sem broker).
         Event::listen(ProducaoConcluidaEvent::class, ConsumoProducaoListener::class);
+
+        // Vendas consome o status da produção (fila `database`, sem broker; produtor em M6).
+        Event::listen(ProducaoStatusAlteradoEvent::class, ProducaoStatusListener::class);
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Modules\Auth\Http\Middleware\CheckBlacklist;
 use App\Shared\Exceptions\ConfiguracaoInvalidaException;
+use App\Shared\Exceptions\ConflitoException;
 use App\Shared\Exceptions\ErrorResponse;
 use App\Shared\Exceptions\ForbiddenException;
 use App\Shared\Exceptions\InvalidCredentialsException;
@@ -44,6 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
             NotFoundHttpException::class => 404,
             InvalidArgumentException::class => 400,
             SaldoInsuficienteException::class => 409,
+            ConflitoException::class => 409,
             ConfiguracaoInvalidaException::class => 422,
             PermissaoInvalidaException::class => 422,
         ];
