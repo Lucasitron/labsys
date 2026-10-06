@@ -6,6 +6,7 @@ use App\Modules\Rh\Enums\StatusApontamento;
 use App\Modules\Rh\Enums\TipoApontamento;
 use App\Modules\Rh\Models\ApontamentoHoras;
 use App\Modules\Rh\Models\Funcionario;
+use App\Modules\Rh\Models\Pessoa;
 use App\Modules\Rh\Models\RegistroPontoDiario;
 
 class DefaultRhContract implements RhContract
@@ -52,5 +53,12 @@ class DefaultRhContract implements RhContract
         }
 
         return $saida;
+    }
+
+    public function nomePessoa(int $idPessoa): ?string
+    {
+        $nome = Pessoa::whereKey($idPessoa)->value('nome_completo');
+
+        return $nome === null ? null : (string) $nome;
     }
 }

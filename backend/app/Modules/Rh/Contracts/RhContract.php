@@ -15,4 +15,10 @@ interface RhContract
 
     /** Dias em que encomenda+projeto excedeu a presença. */
     public function incoerencias(int $idFuncionario): array;
+
+    /**
+     * Nome completo da pessoa (E-4/Estoque, rótulo `tomador` fail-soft).
+     * Null quando ausente — o chamador usa `Pessoa #id`.
+     */
+    public function nomePessoa(int $idPessoa): ?string;
 }

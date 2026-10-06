@@ -8,6 +8,10 @@ use App\Modules\Auth\Enums\Role;
 use App\Modules\Auth\Events\RfidAccessEvent;
 use App\Modules\Auth\Models\Login;
 use App\Modules\Auth\Models\UserPermission;
+use App\Modules\Estoque\Contracts\DefaultEstoqueContract;
+use App\Modules\Estoque\Contracts\EstoqueContract;
+use App\Modules\Estoque\Events\ProducaoConcluidaEvent;
+use App\Modules\Estoque\Listeners\ConsumoProducaoListener;
 use App\Modules\Rh\Contracts\DefaultRhContract;
 use App\Modules\Rh\Contracts\RhContract;
 use App\Modules\Rh\Listeners\ProcessarPontoRfid;
@@ -28,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Fronteira in-process do RH (Financeiro/Produção consomem só o Contract).
         $this->app->singleton(RhContract::class, DefaultRhContract::class);
+
+        // Fronteira in-process do Estoque (Vendas/M4 e Produção/M6 consomem só o Contract).
+        $this->app->singleton(EstoqueContract::class, DefaultEstoqueContract::class);
     }
 
     /**
@@ -61,5 +68,8 @@ class AppServiceProvider extends ServiceProvider
 
         // RH consome o RFID do Auth (fila `database`, sem broker).
         Event::listen(RfidAccessEvent::class, ProcessarPontoRfid::class);
+
+        // Estoque consome a produção concluída (fila `database`, sem broker).
+        Event::listen(ProducaoConcluidaEvent::class, ConsumoProducaoListener::class);
     }
 }

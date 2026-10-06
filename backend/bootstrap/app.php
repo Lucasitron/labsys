@@ -7,6 +7,7 @@ use App\Shared\Exceptions\ForbiddenException;
 use App\Shared\Exceptions\InvalidCredentialsException;
 use App\Shared\Exceptions\PermissaoInvalidaException;
 use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Shared\Exceptions\SaldoInsuficienteException;
 use App\Shared\Exceptions\TokenBlacklistedException;
 use App\Shared\Exceptions\TokenInvalidException;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -42,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ResourceNotFoundException::class => 404,
             NotFoundHttpException::class => 404,
             InvalidArgumentException::class => 400,
+            SaldoInsuficienteException::class => 409,
             ConfiguracaoInvalidaException::class => 422,
             PermissaoInvalidaException::class => 422,
         ];

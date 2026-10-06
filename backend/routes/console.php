@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Auth\Services\TokenBlacklistService;
+use App\Modules\Estoque\Services\EmprestimoService;
 use App\Modules\Rh\Services\ExtratoService;
 use Illuminate\Support\Facades\Schedule;
 
@@ -16,4 +17,13 @@ if (config('rh.extrato_scheduler_enabled', true)) {
     Schedule::call(
         fn () => app(ExtratoService::class)->gerarExtratoMensal()
     )->cron('0 6 1 * *')->name('rh:extrato-mensal');
+}
+
+// Estoque: empréstimos vencidos → emprestimo.atrasado.event, diário 03:00
+// (conversão do Spring "0 0 3 * * *" — 6 campos — p/ o dailyAt do Laravel).
+// Flag ESTOQUE_EMPRESTIMO_SCHEDULER_ENABLED (default on).
+if (config('estoque.emprestimo_scheduler_enabled', true)) {
+    Schedule::call(
+        fn () => app(EmprestimoService::class)->verificarAtrasados()
+    )->dailyAt('03:00')->name('estoque:emprestimos-atrasados');
 }
