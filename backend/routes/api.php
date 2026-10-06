@@ -4,3 +4,4 @@
 // montado aqui sob o prefixo /api/<modulo>.
 
 require __DIR__.'/../app/Modules/Auth/routes.php';
+require __DIR__.'/../app/Modules/Rh/routes.php';

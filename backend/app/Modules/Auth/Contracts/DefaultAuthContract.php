@@ -37,9 +37,15 @@ class DefaultAuthContract implements AuthContract
 
     public function isAdmin(int $idUser): bool
     {
-        return UserPermission::where('id_user', $idUser)
+        return $this->roleOf($idUser) === Role::ADMIN;
+    }
+
+    public function roleOf(int $idUser): ?Role
+    {
+        $permission = UserPermission::where('id_user', $idUser)
             ->where('active', true)
-            ->where('role', Role::ADMIN->value)
-            ->exists();
+            ->first();
+
+        return $permission?->role;
     }
 }

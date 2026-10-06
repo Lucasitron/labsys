@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Auth\Services\TokenBlacklistService;
+use App\Modules\Rh\Services\ExtratoService;
 use Illuminate\Support\Facades\Schedule;
 
 // Auth: purge diário 03:00 — remove só tokens expirados da blacklist
@@ -8,3 +9,11 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::call(
     fn () => app(TokenBlacklistService::class)->cleanupExpired()
 )->dailyAt('03:00')->name('auth:purge-blacklist');
+
+// RH: extrato mensal dia 1 às 06:00 (conversão do Spring "0 0 6 1 * *" — 6 campos —
+// p/ o cron Laravel de 5 campos). Flag RH_EXTRATO_SCHEDULER_ENABLED (default on).
+if (config('rh.extrato_scheduler_enabled', true)) {
+    Schedule::call(
+        fn () => app(ExtratoService::class)->gerarExtratoMensal()
+    )->cron('0 6 1 * *')->name('rh:extrato-mensal');
+}
