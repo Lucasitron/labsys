@@ -15,9 +15,14 @@ use App\Modules\Estoque\Listeners\ConsumoProducaoListener;
 use App\Modules\Financeiro\Listeners\EncomendaCriadaListener;
 use App\Modules\Financeiro\Listeners\HorasValidadasListener;
 use App\Modules\Financeiro\Listeners\ProducaoConcluidaListener;
+use App\Modules\Producao\Contracts\DefaultProducaoContract;
+use App\Modules\Producao\Contracts\ProducaoContract;
+use App\Modules\Producao\Listeners\EncomendaCriadaListener as ProducaoEncomendaCriadaListener;
+use App\Modules\Producao\Listeners\NivelAlteradoListener;
 use App\Modules\Rh\Contracts\DefaultRhContract;
 use App\Modules\Rh\Contracts\RhContract;
 use App\Modules\Rh\Events\HorasValidadasEvent;
+use App\Modules\Rh\Events\NivelAlteradoEvent;
 use App\Modules\Rh\Listeners\ProcessarPontoRfid;
 use App\Modules\Vendas\Contracts\DefaultVendasContract;
 use App\Modules\Vendas\Contracts\VendasContract;
@@ -47,6 +52,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Fronteira in-process do Vendas (Produção/M6 e Financeiro/M5 consomem só o Contract).
         $this->app->singleton(VendasContract::class, DefaultVendasContract::class);
+
+        // Fronteira in-process do Producao (Dashboard/M8 consome só o Contract).
+        $this->app->singleton(ProducaoContract::class, DefaultProducaoContract::class);
     }
 
     /**
@@ -93,5 +101,10 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(EncomendaCriadaEvent::class, EncomendaCriadaListener::class);
         Event::listen(HorasValidadasEvent::class, HorasValidadasListener::class);
         Event::listen(ProducaoConcluidaEvent::class, ProducaoConcluidaListener::class);
+
+        // Producao consome encomenda criada (Vendas → auto-insert FILA) e nível
+        // alterado (RH → trilha de auditoria). Fila `database`, sem broker.
+        Event::listen(EncomendaCriadaEvent::class, ProducaoEncomendaCriadaListener::class);
+        Event::listen(NivelAlteradoEvent::class, NivelAlteradoListener::class);
     }
 }

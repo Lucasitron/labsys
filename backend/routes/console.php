@@ -3,7 +3,10 @@
 use App\Modules\Auth\Services\TokenBlacklistService;
 use App\Modules\Estoque\Services\EmprestimoService;
 use App\Modules\Financeiro\Services\LancamentoService;
+use App\Modules\Producao\Models\Parametro5S;
+use App\Modules\Producao\Services\ProjetoMesaService;
 use App\Modules\Rh\Services\ExtratoService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 
 // Auth: purge diário 03:00 — remove só tokens expirados da blacklist
@@ -36,4 +39,21 @@ if (config('financeiro.vencidos_scheduler_enabled', true)) {
     Schedule::call(
         fn () => app(LancamentoService::class)->emitirVencidos()
     )->dailyAt('03:00')->name('financeiro:vencidos');
+}
+
+// Producao: mesas ativas sem evolução → warn p/ auditoria manual do Admin,
+// diário 06:00 (horário preservado do Java `0 0 6 * * *`, não o padrão 03:00).
+// Flag PRODUCAO_AUDITORIA_SCHEDULER_ENABLED (default on).
+if (config('producao.auditoria_scheduler_enabled', true)) {
+    Schedule::call(function (): void {
+        $dias = Parametro5S::inteiroDe('diasParaAuditoriaProjeto', 15);
+        $pendentes = array_map(
+            fn ($mesa) => (int) $mesa->getKey(),
+            app(ProjetoMesaService::class)->projetosSemEvolucao(today()->subDays($dias)),
+        );
+
+        if ($pendentes !== []) {
+            Log::warning('Projetos de mesa sem evolução há mais de '.$dias.' dias (revisar auditoria): '.implode(',', $pendentes));
+        }
+    })->dailyAt('06:00')->name('producao:auditoria-mesas');
 }
