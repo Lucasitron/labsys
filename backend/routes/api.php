@@ -7,3 +7,4 @@ require __DIR__.'/../app/Modules/Auth/routes.php';
 require __DIR__.'/../app/Modules/Rh/routes.php';
 require __DIR__.'/../app/Modules/Estoque/routes.php';
 require __DIR__.'/../app/Modules/Vendas/routes.php';
+require __DIR__.'/../app/Modules/Financeiro/routes.php';

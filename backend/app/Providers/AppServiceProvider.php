@@ -12,11 +12,16 @@ use App\Modules\Estoque\Contracts\DefaultEstoqueContract;
 use App\Modules\Estoque\Contracts\EstoqueContract;
 use App\Modules\Estoque\Events\ProducaoConcluidaEvent;
 use App\Modules\Estoque\Listeners\ConsumoProducaoListener;
+use App\Modules\Financeiro\Listeners\EncomendaCriadaListener;
+use App\Modules\Financeiro\Listeners\HorasValidadasListener;
+use App\Modules\Financeiro\Listeners\ProducaoConcluidaListener;
 use App\Modules\Rh\Contracts\DefaultRhContract;
 use App\Modules\Rh\Contracts\RhContract;
+use App\Modules\Rh\Events\HorasValidadasEvent;
 use App\Modules\Rh\Listeners\ProcessarPontoRfid;
 use App\Modules\Vendas\Contracts\DefaultVendasContract;
 use App\Modules\Vendas\Contracts\VendasContract;
+use App\Modules\Vendas\Events\EncomendaCriadaEvent;
 use App\Modules\Vendas\Events\ProducaoStatusAlteradoEvent;
 use App\Modules\Vendas\Listeners\ProducaoStatusListener;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -81,5 +86,12 @@ class AppServiceProvider extends ServiceProvider
 
         // Vendas consome o status da produção (fila `database`, sem broker; produtor em M6).
         Event::listen(ProducaoStatusAlteradoEvent::class, ProducaoStatusListener::class);
+
+        // Financeiro consome encomenda criada (Vendas) + horas validadas (RH)
+        // + produção concluída (produtor real em M6). Listeners nunca propagam
+        // falha (warn/ignore), para não quebrar os produtores em fila sync.
+        Event::listen(EncomendaCriadaEvent::class, EncomendaCriadaListener::class);
+        Event::listen(HorasValidadasEvent::class, HorasValidadasListener::class);
+        Event::listen(ProducaoConcluidaEvent::class, ProducaoConcluidaListener::class);
     }
 }

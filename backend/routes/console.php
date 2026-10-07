@@ -2,6 +2,7 @@
 
 use App\Modules\Auth\Services\TokenBlacklistService;
 use App\Modules\Estoque\Services\EmprestimoService;
+use App\Modules\Financeiro\Services\LancamentoService;
 use App\Modules\Rh\Services\ExtratoService;
 use Illuminate\Support\Facades\Schedule;
 
@@ -26,4 +27,13 @@ if (config('estoque.emprestimo_scheduler_enabled', true)) {
     Schedule::call(
         fn () => app(EmprestimoService::class)->verificarAtrasados()
     )->dailyAt('03:00')->name('estoque:emprestimos-atrasados');
+}
+
+// Financeiro: lançamentos vencidos → lancamento.vencido.event, diário 03:00
+// (delta consciente: o default Java era 08:00; o monólito padroniza 03:00).
+// Flag FINANCEIRO_VENCIDOS_SCHEDULER_ENABLED (default on).
+if (config('financeiro.vencidos_scheduler_enabled', true)) {
+    Schedule::call(
+        fn () => app(LancamentoService::class)->emitirVencidos()
+    )->dailyAt('03:00')->name('financeiro:vencidos');
 }
