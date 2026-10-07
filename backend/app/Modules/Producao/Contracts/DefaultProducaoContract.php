@@ -3,8 +3,10 @@
 namespace App\Modules\Producao\Contracts;
 
 use App\Modules\Producao\Enums\KanbanStatus;
+use App\Modules\Producao\Enums\MaquinaStatus;
 use App\Modules\Producao\Enums\TarefaStatus;
 use App\Modules\Producao\Models\EncomendaKanban;
+use App\Modules\Producao\Models\Maquina;
 use App\Modules\Producao\Models\Tarefa;
 
 class DefaultProducaoContract implements ProducaoContract
@@ -31,7 +33,18 @@ class DefaultProducaoContract implements ProducaoContract
                 'titulo' => $tarefa->titulo,
                 'status' => $tarefa->status->value,
                 'prioridade' => $tarefa->prioridade->value,
+                'due' => $tarefa->data_fim_prevista?->toDateString(),
             ])
             ->all();
+    }
+
+    public function resumoMaquinas(): array
+    {
+        $resumo = [];
+        foreach (MaquinaStatus::cases() as $status) {
+            $resumo[$status->value] = Maquina::where('status', $status)->count();
+        }
+
+        return $resumo;
     }
 }

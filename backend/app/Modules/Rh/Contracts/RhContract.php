@@ -32,4 +32,19 @@ interface RhContract
      * @return array{idUsuario:int,nome:string,email:?string}|null
      */
     public function dadosDestinatario(int $idFuncionario): ?array;
+
+    /**
+     * Solicitações de certificado (M8/Dashboard activity): filtro server-side
+     * por status e/ou dono (`funcionario.id_pessoa = idUsuario`, null = todos).
+     *
+     * @return list<array{idSolicitacao:int,nomeFuncionario:string,tipoCertificado:string,horasSolicitadas:string,dataSolicitacao:string,status:string}>
+     */
+    public function solicitacoesCertificado(?string $status = null, ?int $idUsuario = null): array;
+
+    /**
+     * Certificados emitidos (M8/Dashboard activity — o chamador só invoca se Admin).
+     *
+     * @return list<array{idCertificado:int,nomeFuncionario:string,dataEmissao:string}>
+     */
+    public function certificadosEmitidos(): array;
 }

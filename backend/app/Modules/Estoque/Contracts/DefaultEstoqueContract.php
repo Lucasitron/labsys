@@ -2,6 +2,8 @@
 
 namespace App\Modules\Estoque\Contracts;
 
+use App\Modules\Estoque\Enums\StatusEmprestimo;
+use App\Modules\Estoque\Models\Emprestimo;
 use App\Modules\Estoque\Models\Item;
 use App\Modules\Estoque\Services\ItemService;
 
@@ -26,5 +28,10 @@ class DefaultEstoqueContract implements EstoqueContract
         $saidas = $this->itens->baixarPorConsumo($itens, $idReferencia);
 
         return array_map(fn ($saida) => (int) $saida->getKey(), $saidas);
+    }
+
+    public function emprestimosAbertos(): int
+    {
+        return Emprestimo::whereIn('status', [StatusEmprestimo::ATIVO, StatusEmprestimo::ATRASADO])->count();
     }
 }

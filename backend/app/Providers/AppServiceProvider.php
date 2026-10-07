@@ -8,6 +8,7 @@ use App\Modules\Auth\Enums\Role;
 use App\Modules\Auth\Events\RfidAccessEvent;
 use App\Modules\Auth\Models\Login;
 use App\Modules\Auth\Models\UserPermission;
+use App\Modules\Dashboard\Policies\DashboardPolicy;
 use App\Modules\Estoque\Contracts\DefaultEstoqueContract;
 use App\Modules\Estoque\Contracts\EstoqueContract;
 use App\Modules\Estoque\Events\CompraSolicitadaEvent as EstoqueCompraSolicitadaEvent;
@@ -112,6 +113,14 @@ class AppServiceProvider extends ServiceProvider
             ->where('active', true)
             ->where('role', Role::ADMIN->value)
             ->exists());
+
+        // Dashboard (rbac-matrix.md linha Dashboard): resumo p/ roles 0–3;
+        // Recrutando (4) ou sem papel ativo → 403 (regra única em DashboardPolicy).
+        Gate::define('ver-resumo', function (Login $login): bool {
+            $role = app(AuthContract::class)->roleOf((int) $login->id_user);
+
+            return DashboardPolicy::podeVerResumo($role);
+        });
 
         // RH consome o RFID do Auth (fila `database`, sem broker).
         Event::listen(RfidAccessEvent::class, ProcessarPontoRfid::class);

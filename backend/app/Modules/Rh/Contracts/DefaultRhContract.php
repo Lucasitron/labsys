@@ -5,9 +5,11 @@ namespace App\Modules\Rh\Contracts;
 use App\Modules\Rh\Enums\StatusApontamento;
 use App\Modules\Rh\Enums\TipoApontamento;
 use App\Modules\Rh\Models\ApontamentoHoras;
+use App\Modules\Rh\Models\CertificadoEmitido;
 use App\Modules\Rh\Models\Funcionario;
 use App\Modules\Rh\Models\Pessoa;
 use App\Modules\Rh\Models\RegistroPontoDiario;
+use App\Modules\Rh\Models\SolicitacaoCertificado;
 
 class DefaultRhContract implements RhContract
 {
@@ -84,5 +86,39 @@ class DefaultRhContract implements RhContract
             'nome' => (string) $pessoa->nome_completo,
             'email' => $contato !== null && filter_var($contato, FILTER_VALIDATE_EMAIL) !== false ? $contato : null,
         ];
+    }
+
+    public function solicitacoesCertificado(?string $status = null, ?int $idUsuario = null): array
+    {
+        return SolicitacaoCertificado::query()
+            ->with('funcionario.pessoa')
+            ->when($status !== null, fn ($q) => $q->where('status', $status))
+            ->when($idUsuario !== null,
+                fn ($q) => $q->whereHas('funcionario', fn ($f) => $f->where('id_pessoa', $idUsuario)))
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (SolicitacaoCertificado $s) => [
+                'idSolicitacao' => (int) $s->getKey(),
+                'nomeFuncionario' => (string) $s->funcionario->pessoa->nome_completo,
+                'tipoCertificado' => $s->tipo_certificado->value,
+                'horasSolicitadas' => number_format((float) $s->horas_solicitadas, 2, '.', ''),
+                'dataSolicitacao' => $s->data_solicitacao->toIso8601String(),
+                'status' => $s->status->value,
+            ])
+            ->all();
+    }
+
+    public function certificadosEmitidos(): array
+    {
+        return CertificadoEmitido::query()
+            ->with('funcionario.pessoa')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (CertificadoEmitido $c) => [
+                'idCertificado' => (int) $c->getKey(),
+                'nomeFuncionario' => (string) $c->funcionario->pessoa->nome_completo,
+                'dataEmissao' => $c->data_emissao->toIso8601String(),
+            ])
+            ->all();
     }
 }

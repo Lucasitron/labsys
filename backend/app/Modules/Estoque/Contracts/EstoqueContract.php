@@ -16,8 +16,14 @@ interface EstoqueContract
     /**
      * Baixa idempotente por referência (BOM/produção, retry seguro).
      *
-     * @param list<array{idItem:int,quantidadeConsumida:string|float|int}> $itens
+     * @param  list<array{idItem:int,quantidadeConsumida:string|float|int}>  $itens
      * @return list<int> ids das saídas CONSUMO criadas ([] se idempotente/vazio)
      */
     public function baixarConsumo(array $itens, int $idReferencia): array;
+
+    /**
+     * Empréstimos em aberto = ATIVO+ATRASADO (≡ `?status=ativos` E-7;
+     * M8/Dashboard só invoca se Admin).
+     */
+    public function emprestimosAbertos(): int;
 }
