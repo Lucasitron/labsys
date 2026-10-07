@@ -1,183 +1,87 @@
-# Overlay de homologação (ambiente de QA/Testes).
+# Overlay de homologação (QA/Testes) — monólito Laravel.
 # Uso:
-#   docker compose -f infra/docker-compose.yml -f infra/docker-compose.testing.yml up --build
-# Imagens instanciadas localmente e marcadas com a TAG informada.
-services:
-  discovery:
-    build:
-      context: ../discovery-service
-    image: ghcr.io/fablab/discovery-service:${TAG:-testing}
-    container_name: fablab-discovery-testing
-    ports:
-      - "8761:8761"
-    networks:
-      - fablab-net
+#   APP_KEY=... JWT_SECRET=... POSTGRES_PASSWORD=... \
+#     docker compose -f infra/docker-compose.yml -f infra/docker-compose.testing.yml up -d --build
+# Imagem local marcada com a TAG informada (`TAG` default: `testing`).
+# Segredos via ambiente ou `infra/.env` — nada codificado aqui.
 
-  gateway:
+x-app-env: &app-env
+  APP_NAME: FabLab
+  APP_ENV: testing
+  APP_DEBUG: "${APP_DEBUG:-false}"
+  APP_URL: "${APP_URL:-http://localhost:8080}"
+  APP_KEY: "${APP_KEY:?APP_KEY é obrigatório — gerar com `php artisan key:generate --show`}"
+  LOG_LEVEL: "${LOG_LEVEL:-debug}"
+  DB_CONNECTION: pgsql
+  DB_HOST: postgres
+  DB_PORT: 5432
+  DB_DATABASE: "${POSTGRES_DB:-fablab}"
+  DB_USERNAME: "${POSTGRES_USER:-fablab}"
+  DB_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD é obrigatório (ver infra/.env.example)}"
+  QUEUE_CONNECTION: database
+  CACHE_STORE: database
+  JWT_SECRET: "${JWT_SECRET:?JWT_SECRET é obrigatório — gerar com `php artisan jwt:secret --show`}"
+  JWT_TTL: "${JWT_TTL:-15}"
+  JWT_REFRESH_TTL: "${JWT_REFRESH_TTL:-10080}"
+  # Seed desligado por padrão em testing (ligar só p/ teste de login).
+  AUTH_SEED_ENABLED: "${AUTH_SEED_ENABLED:-false}"
+  AUTH_SEED_EMAIL: "${AUTH_SEED_EMAIL:-admin@fablab.org}"
+  AUTH_SEED_USERNAME: "${AUTH_SEED_USERNAME:-admin}"
+  AUTH_SEED_PASSWORD: "${AUTH_SEED_PASSWORD:-admin123}"
+
+services:
+  postgres:
+    ports:
+      - "5432:5432" # testing/QA local. Prod NÃO publica 5432.
+
+  app:
     build:
-      context: ../gateway-service
-    image: ghcr.io/fablab/gateway-service:${TAG:-testing}
-    container_name: fablab-gateway-testing
+      context: ../backend
+    image: ghcr.io/fablab/backend:${TAG:-testing}
+    container_name: fablab-app-testing
+    restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
-      EUREKA_URI: http://discovery:8761/eureka
-      SPRING_PROFILES_ACTIVE: testing
-    depends_on:
-      - discovery
-    networks:
-      - fablab-net
-
-  auth:
-    build:
-      context: ../auth-service
-    image: ghcr.io/fablab/auth-service:${TAG:-testing}
-    container_name: fablab-auth-testing
-    ports:
-      - "8081:8081"
-    environment:
-      EUREKA_URI: http://discovery:8761/eureka
-      DB_URL: jdbc:postgresql://postgres:5432/fablab_auth
-      DB_USERNAME: ${POSTGRES_USER:-fablab}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-fablab}
-      RABBITMQ_HOST: rabbitmq
-      SPRING_PROFILES_ACTIVE: testing
+      <<: *app-env
     depends_on:
       postgres:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/up || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     networks:
       - fablab-net
 
-  rh:
-    build:
-      context: ../rh-service
-    image: ghcr.io/fablab/rh-service:${TAG:-testing}
-    container_name: fablab-rh-testing
-    ports:
-      - "8082:8082"
+  worker:
+    image: ghcr.io/fablab/backend:${TAG:-testing}
+    container_name: fablab-worker-testing
+    restart: unless-stopped
+    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--max-time=3600"]
     environment:
-      EUREKA_URI: http://discovery:8761/eureka
-      DB_URL: jdbc:postgresql://postgres:5432/fablab_rh
-      DB_USERNAME: ${POSTGRES_USER:-fablab}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-fablab}
-      RABBITMQ_HOST: rabbitmq
-      SPRING_PROFILES_ACTIVE: testing
+      <<: *app-env
     depends_on:
       postgres:
         condition: service_healthy
-      rabbitmq:
+      app:
         condition: service_healthy
     networks:
       - fablab-net
 
-  estoque:
-    build:
-      context: ../estoque-service
-    image: ghcr.io/fablab/estoque-service:${TAG:-testing}
-    container_name: fablab-estoque-testing
-    ports:
-      - "8083:8083"
+  scheduler:
+    image: ghcr.io/fablab/backend:${TAG:-testing}
+    container_name: fablab-scheduler-testing
+    restart: unless-stopped
+    command: ["sh", "-c", "while true; do php artisan schedule:run --verbose --no-interaction || true; sleep 60; done"]
     environment:
-      EUREKA_URI: http://discovery:8761/eureka
-      DB_URL: jdbc:postgresql://postgres:5432/fablab_estoque
-      DB_USERNAME: ${POSTGRES_USER:-fablab}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-fablab}
-      RABBITMQ_HOST: rabbitmq
-      SPRING_PROFILES_ACTIVE: testing
+      <<: *app-env
     depends_on:
       postgres:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - fablab-net
-
-  vendas:
-    build:
-      context: ../vendas-service
-    image: ghcr.io/fablab/vendas-service:${TAG:-testing}
-    container_name: fablab-vendas-testing
-    ports:
-      - "8084:8084"
-    environment:
-      EUREKA_URI: http://discovery:8761/eureka
-      DB_URL: jdbc:postgresql://postgres:5432/fablab_vendas
-      DB_USERNAME: ${POSTGRES_USER:-fablab}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-fablab}
-      RABBITMQ_HOST: rabbitmq
-      SPRING_PROFILES_ACTIVE: testing
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - fablab-net
-
-  financeiro:
-    build:
-      context: ../financeiro-service
-    image: ghcr.io/fablab/financeiro-service:${TAG:-testing}
-    container_name: fablab-financeiro-testing
-    ports:
-      - "8085:8085"
-    environment:
-      EUREKA_URI: http://discovery:8761/eureka
-      DB_URL: jdbc:postgresql://postgres:5432/fablab_financeiro
-      DB_USERNAME: ${POSTGRES_USER:-fablab}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-fablab}
-      RABBITMQ_HOST: rabbitmq
-      SPRING_PROFILES_ACTIVE: testing
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - fablab-net
-
-  producao:
-    build:
-      context: ../producao-service
-    image: ghcr.io/fablab/producao-service:${TAG:-testing}
-    container_name: fablab-producao-testing
-    ports:
-      - "8086:8086"
-    environment:
-      EUREKA_URI: http://discovery:8761/eureka
-      DB_URL: jdbc:postgresql://postgres:5432/fablab_producao
-      DB_USERNAME: ${POSTGRES_USER:-fablab}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-fablab}
-      RABBITMQ_HOST: rabbitmq
-      SPRING_PROFILES_ACTIVE: testing
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - fablab-net
-
-  notification:
-    build:
-      context: ../notification-service
-    image: ghcr.io/fablab/notification-service:${TAG:-testing}
-    container_name: fablab-notification-testing
-    ports:
-      - "8087:8087"
-    environment:
-      EUREKA_URI: http://discovery:8761/eureka
-      DB_URL: jdbc:postgresql://postgres:5432/fablab_notification
-      DB_USERNAME: ${POSTGRES_USER:-fablab}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-fablab}
-      RABBITMQ_HOST: rabbitmq
-      SPRING_PROFILES_ACTIVE: testing
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
+      app:
         condition: service_healthy
     networks:
       - fablab-net
