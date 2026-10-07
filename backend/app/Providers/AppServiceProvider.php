@@ -10,23 +10,47 @@ use App\Modules\Auth\Models\Login;
 use App\Modules\Auth\Models\UserPermission;
 use App\Modules\Estoque\Contracts\DefaultEstoqueContract;
 use App\Modules\Estoque\Contracts\EstoqueContract;
+use App\Modules\Estoque\Events\CompraSolicitadaEvent as EstoqueCompraSolicitadaEvent;
+use App\Modules\Estoque\Events\EmprestimoAtrasadoEvent;
+use App\Modules\Estoque\Events\EstoqueBaixoEvent;
 use App\Modules\Estoque\Events\ProducaoConcluidaEvent;
 use App\Modules\Estoque\Listeners\ConsumoProducaoListener;
+use App\Modules\Financeiro\Events\CompraSolicitadaEvent as FinanceiroCompraSolicitadaEvent;
+use App\Modules\Financeiro\Events\LancamentoVencidoEvent;
 use App\Modules\Financeiro\Listeners\EncomendaCriadaListener;
 use App\Modules\Financeiro\Listeners\HorasValidadasListener;
 use App\Modules\Financeiro\Listeners\ProducaoConcluidaListener;
+use App\Modules\Notification\Contracts\DefaultNotificationContract;
+use App\Modules\Notification\Contracts\NotificationContract;
+use App\Modules\Notification\Listeners\EstoqueNotificacaoListener;
+use App\Modules\Notification\Listeners\FinanceiroNotificacaoListener;
+use App\Modules\Notification\Listeners\ProducaoNotificacaoListener;
+use App\Modules\Notification\Listeners\RhNotificacaoListener;
+use App\Modules\Notification\Listeners\VendasNotificacaoListener;
 use App\Modules\Producao\Contracts\DefaultProducaoContract;
 use App\Modules\Producao\Contracts\ProducaoContract;
+use App\Modules\Producao\Events\AdvertenciaLimiteAtingidoEvent;
+use App\Modules\Producao\Events\AdvertenciaRegistradaEvent;
+use App\Modules\Producao\Events\KanbanStatusAlteradoEvent;
+use App\Modules\Producao\Events\ProducaoConcluidaEvent as ProducaoConcluidaNotificationEvent;
+use App\Modules\Producao\Events\ProducaoStatusAlteradoEvent as ProducaoStatusEvent;
+use App\Modules\Producao\Events\ProjetoMesaAbandonadoEvent;
 use App\Modules\Producao\Listeners\EncomendaCriadaListener as ProducaoEncomendaCriadaListener;
 use App\Modules\Producao\Listeners\NivelAlteradoListener;
 use App\Modules\Rh\Contracts\DefaultRhContract;
 use App\Modules\Rh\Contracts\RhContract;
+use App\Modules\Rh\Events\CertificadoAprovadoEvent;
+use App\Modules\Rh\Events\CertificadoRejeitadoEvent;
+use App\Modules\Rh\Events\CertificadoSolicitadoEvent;
+use App\Modules\Rh\Events\ExtratoMensalHorasEvent;
 use App\Modules\Rh\Events\HorasValidadasEvent;
 use App\Modules\Rh\Events\NivelAlteradoEvent;
 use App\Modules\Rh\Listeners\ProcessarPontoRfid;
 use App\Modules\Vendas\Contracts\DefaultVendasContract;
 use App\Modules\Vendas\Contracts\VendasContract;
 use App\Modules\Vendas\Events\EncomendaCriadaEvent;
+use App\Modules\Vendas\Events\EncomendaStatusAlteradoEvent;
+use App\Modules\Vendas\Events\OrcamentoAprovadoEvent;
 use App\Modules\Vendas\Events\ProducaoStatusAlteradoEvent;
 use App\Modules\Vendas\Listeners\ProducaoStatusListener;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -55,6 +79,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Fronteira in-process do Producao (Dashboard/M8 consome só o Contract).
         $this->app->singleton(ProducaoContract::class, DefaultProducaoContract::class);
+
+        // Fronteira in-process do Notification (Dashboard/M8 consome só o Contract).
+        $this->app->singleton(NotificationContract::class, DefaultNotificationContract::class);
     }
 
     /**
@@ -106,5 +133,32 @@ class AppServiceProvider extends ServiceProvider
         // alterado (RH → trilha de auditoria). Fila `database`, sem broker.
         Event::listen(EncomendaCriadaEvent::class, ProducaoEncomendaCriadaListener::class);
         Event::listen(NivelAlteradoEvent::class, NivelAlteradoListener::class);
+
+        // Notification consome 18 nomes (19 binds por classe do produtor) dos 6
+        // módulos (fila `database`, sem broker). Listeners nunca propagam falha
+        // (warn/ignore), para não quebrar os produtores em fila sync.
+        // `access.rfid` FORA de escopo (sem destinatário — D10); `custo.calculado`
+        // (Financeiro-interno) e o mirror `Vendas\ProducaoStatusAlteradoEvent`
+        // (consumidor do próprio Vendas) também ficam sem bind.
+        Event::listen(NivelAlteradoEvent::class, [RhNotificacaoListener::class, 'handleNivelAlterado']);
+        Event::listen(HorasValidadasEvent::class, [RhNotificacaoListener::class, 'handleHorasValidadas']);
+        Event::listen(ExtratoMensalHorasEvent::class, [RhNotificacaoListener::class, 'handleExtratoMensal']);
+        Event::listen(CertificadoSolicitadoEvent::class, [RhNotificacaoListener::class, 'handleCertificadoSolicitado']);
+        Event::listen(CertificadoAprovadoEvent::class, [RhNotificacaoListener::class, 'handleCertificadoAprovado']);
+        Event::listen(CertificadoRejeitadoEvent::class, [RhNotificacaoListener::class, 'handleCertificadoRejeitado']);
+        Event::listen(EstoqueBaixoEvent::class, [EstoqueNotificacaoListener::class, 'handleEstoqueBaixo']);
+        Event::listen(EmprestimoAtrasadoEvent::class, [EstoqueNotificacaoListener::class, 'handleEmprestimoAtrasado']);
+        Event::listen(EstoqueCompraSolicitadaEvent::class, [EstoqueNotificacaoListener::class, 'handleCompraSolicitada']);
+        Event::listen(EncomendaCriadaEvent::class, [VendasNotificacaoListener::class, 'handleEncomendaCriada']);
+        Event::listen(EncomendaStatusAlteradoEvent::class, [VendasNotificacaoListener::class, 'handleEncomendaStatusAlterado']);
+        Event::listen(OrcamentoAprovadoEvent::class, [VendasNotificacaoListener::class, 'handleOrcamentoAprovado']);
+        Event::listen(LancamentoVencidoEvent::class, [FinanceiroNotificacaoListener::class, 'handleLancamentoVencido']);
+        Event::listen(FinanceiroCompraSolicitadaEvent::class, [FinanceiroNotificacaoListener::class, 'handleCompraSolicitada']);
+        Event::listen(KanbanStatusAlteradoEvent::class, [ProducaoNotificacaoListener::class, 'handleKanbanStatusAlterado']);
+        Event::listen(ProducaoStatusEvent::class, [ProducaoNotificacaoListener::class, 'handleProducaoStatusAlterado']);
+        Event::listen(ProducaoConcluidaNotificationEvent::class, [ProducaoNotificacaoListener::class, 'handleProducaoConcluida']);
+        Event::listen(AdvertenciaRegistradaEvent::class, [ProducaoNotificacaoListener::class, 'handleAdvertenciaRegistrada']);
+        Event::listen(AdvertenciaLimiteAtingidoEvent::class, [ProducaoNotificacaoListener::class, 'handleAdvertenciaLimiteAtingido']);
+        Event::listen(ProjetoMesaAbandonadoEvent::class, [ProducaoNotificacaoListener::class, 'handleProjetoMesaAbandonado']);
     }
 }

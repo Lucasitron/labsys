@@ -3,6 +3,7 @@
 use App\Modules\Auth\Services\TokenBlacklistService;
 use App\Modules\Estoque\Services\EmprestimoService;
 use App\Modules\Financeiro\Services\LancamentoService;
+use App\Modules\Notification\Services\NotificationDispatchService;
 use App\Modules\Producao\Models\Parametro5S;
 use App\Modules\Producao\Services\ProjetoMesaService;
 use App\Modules\Rh\Services\ExtratoService;
@@ -56,4 +57,20 @@ if (config('producao.auditoria_scheduler_enabled', true)) {
             Log::warning('Projetos de mesa sem evolução há mais de '.$dias.' dias (revisar auditoria): '.implode(',', $pendentes));
         }
     })->dailyAt('06:00')->name('producao:auditoria-mesas');
+}
+
+// Notification: reenvio de e-mails PENDENTE a cada 30 min (equivale ao
+// `*/30 * * * *` do despacho) + expurgo do histórico >90d diário 03:00
+// (padrão 03:00 do monólito; docs/07 §5 pede só "job diário", sem hora).
+// Flags NOTIFICATION_REENVIO/EXPURGO_SCHEDULER_ENABLED (default on).
+if (config('notification.reenvio_scheduler_enabled', true)) {
+    Schedule::call(
+        fn () => app(NotificationDispatchService::class)->reenviarPendentes()
+    )->everyThirtyMinutes()->name('notification:reenvio');
+}
+
+if (config('notification.expurgo_scheduler_enabled', true)) {
+    Schedule::call(
+        fn () => app(NotificationDispatchService::class)->expurgarHistorico()
+    )->dailyAt('03:00')->name('notification:expurgo');
 }

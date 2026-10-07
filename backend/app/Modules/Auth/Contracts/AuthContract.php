@@ -22,4 +22,7 @@ interface AuthContract
 
     /** Papel da permissão ativa do usuário (null sem permissão ativa). */
     public function roleOf(int $idUser): ?Role;
+
+    /** Ids (`id_user`) com permissão ADMIN ativa (broadcasts — ex. Notification). */
+    public function adminIds(): array;
 }

@@ -61,4 +61,28 @@ class DefaultRhContract implements RhContract
 
         return $nome === null ? null : (string) $nome;
     }
+
+    public function dadosDestinatario(int $idFuncionario): ?array
+    {
+        $funcionario = Funcionario::whereKey($idFuncionario)->first()
+            ?? Funcionario::where('id_pessoa', $idFuncionario)->first();
+
+        if ($funcionario === null) {
+            return null;
+        }
+
+        $pessoa = Pessoa::whereKey($funcionario->id_pessoa)->first();
+
+        if ($pessoa === null) {
+            return null;
+        }
+
+        $contato = is_string($pessoa->contato) ? trim($pessoa->contato) : null;
+
+        return [
+            'idUsuario' => (int) $pessoa->getKey(),
+            'nome' => (string) $pessoa->nome_completo,
+            'email' => $contato !== null && filter_var($contato, FILTER_VALIDATE_EMAIL) !== false ? $contato : null,
+        ];
+    }
 }

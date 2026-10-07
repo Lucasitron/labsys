@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Auth\Http\Middleware\CheckBlacklist;
+use App\Modules\Notification\Exceptions\LinkInvalidoException;
 use App\Shared\Exceptions\ConfiguracaoInvalidaException;
 use App\Shared\Exceptions\ConflitoException;
 use App\Shared\Exceptions\ErrorResponse;
@@ -48,6 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ConflitoException::class => 409,
             ConfiguracaoInvalidaException::class => 422,
             PermissaoInvalidaException::class => 422,
+            LinkInvalidoException::class => 422,
         ];
 
         foreach ($map as $class => $status) {

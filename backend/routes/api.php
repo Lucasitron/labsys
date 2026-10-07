@@ -9,3 +9,4 @@ require __DIR__.'/../app/Modules/Estoque/routes.php';
 require __DIR__.'/../app/Modules/Vendas/routes.php';
 require __DIR__.'/../app/Modules/Financeiro/routes.php';
 require __DIR__.'/../app/Modules/Producao/routes.php';
+require __DIR__.'/../app/Modules/Notification/routes.php';

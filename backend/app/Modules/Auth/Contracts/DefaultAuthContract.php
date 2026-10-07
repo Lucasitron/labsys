@@ -48,4 +48,15 @@ class DefaultAuthContract implements AuthContract
 
         return $permission?->role;
     }
+
+    public function adminIds(): array
+    {
+        return UserPermission::where('role', Role::ADMIN)
+            ->where('active', true)
+            ->pluck('id_user')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
 }
