@@ -37,7 +37,22 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
 COPY . ./
-RUN composer dump-autoload --optimize \
+# Build-time precisa bootar o Laravel (post-autoload-dump → package:discover →
+# AppServiceProvider::boot com fail-fast de JWT_SECRET >= 32 chars), mas no
+# build NÃO há .env (correto: .dockerignore exclui) nem segredo real disponível.
+# Forma escolhida: `VAR=...` prefixado inline no RUN (e NÃO `ENV`/`ARG→ENV`).
+# Motivo: env inline vale só p/ esse RUN — não persiste no config da imagem
+# (`docker inspect` limpo); runtime vem 100% do env do container. O manifest
+# gerado aqui (bootstrap/cache/packages.php|services.php) só lista providers,
+# sem segredo. O `rm` abaixo apaga eventual cache de config/rotas com dummies
+# (o build nunca gera, é defesa); o entrypoint regenera config:cache +
+# route:cache no boot com os segredos reais. NENHUM DB_* é injetado: o boot de
+# build não conecta no Postgres (Gates são closures lazy; Event::listen não
+# toca banco; migrate só roda no entrypoint, com rede de serviços).
+RUN JWT_SECRET=dummy-build-only-00000000000000000000 \
+    APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+    composer dump-autoload --optimize \
+    && rm -f bootstrap/cache/config.php bootstrap/cache/routes-*.php \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R ug+rw storage bootstrap/cache
 
