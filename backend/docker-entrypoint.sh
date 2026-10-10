@@ -24,6 +24,12 @@ done
 echo "[entrypoint] php artisan migrate --force"
 php artisan migrate --force
 
+# Seed idempotente do login raiz: AuthSeeder sai cedo se auth.login não está
+# vazia ou se AUTH_SEED_ENABLED!=true (dev default ON, testing/prod default OFF
+# via overlays). Seguro em reboot/redeploy: sem pendência = no-op, sem duplicar admin.
+echo "[entrypoint] php artisan db:seed --force"
+php artisan db:seed --force
+
 echo "[entrypoint] caches de config/rotas"
 php artisan config:cache
 php artisan route:cache
