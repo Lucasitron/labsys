@@ -9,7 +9,8 @@ function bearer(): Record<string, string> {
 	return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-// TODO contrato 🟡: endpoint assumido — PUT /auth/senha
+// Contrato real (Laravel): PUT /auth/senha (Bearer)
+// body { senhaAtual, novaSenha, confirmacaoSenha } → { mensagem }.
 export async function alterarSenha(
 	atual: string,
 	nova: string,
@@ -25,6 +26,6 @@ export async function alterarSenha(
 	await apiFetch<void>('/auth/senha', {
 		method: 'PUT',
 		headers: bearer(),
-		body: JSON.stringify({ senhaAtual: atual, novaSenha: nova })
+		body: JSON.stringify({ senhaAtual: atual, novaSenha: nova, confirmacaoSenha: confirmacao })
 	});
 }
