@@ -80,6 +80,7 @@ export interface PersonDetail extends Person {
 
 export interface CreatePessoaPayload {
 	name: string;
+	matricula?: string;
 	email: string;
 	phone?: string;
 	type: PersonType;

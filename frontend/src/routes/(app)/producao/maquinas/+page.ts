@@ -39,7 +39,7 @@ export const load: PageLoad = async ({ url, fetch }) => {
 
 	try {
 		maquinas = await obterMaquinas(
-			{ page: params.page, pageSize: params.pageSize },
+			{ page: params.page, pageSize: params.pageSize, search: params.search, categoria: params.categoria },
 			fetch
 		);
 	} catch (err) {

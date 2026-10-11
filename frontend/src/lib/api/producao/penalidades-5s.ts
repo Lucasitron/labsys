@@ -1,6 +1,6 @@
 import type { Paginado, Penalidade5S, PenalidadeStatus, PenalidadeTipo } from '$lib/types/producao';
 import { apiFetch } from '../client';
-import { bearer, montarQuery } from './client';
+import { bearer, paraPaginado } from './client';
 
 const BASE = '/producao/penalidades-5s';
 
@@ -21,8 +21,8 @@ export async function obterPenalidades5S(
 	params: PenalidadeFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Penalidade5S>> {
-	const qs = montarQuery(params);
-	return await apiFetch<Paginado<Penalidade5S>>(`${BASE}${qs}`, { headers: bearer() }, fetchFn);
+	const res = await apiFetch<Paginado<Penalidade5S> | Penalidade5S[] | { data: Penalidade5S[] }>(BASE, { headers: bearer() }, fetchFn);
+	return paraPaginado(res, params.page, params.pageSize);
 }
 
 export function criarPenalidade5S(payload: CriarPenalidadePayload): Promise<Penalidade5S> {

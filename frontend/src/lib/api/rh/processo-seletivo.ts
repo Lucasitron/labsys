@@ -22,7 +22,7 @@ export async function listPS(
 	if (params.estagio) query.set('estagio', params.estagio);
 	const qs = query.toString();
 	return await apiFetch<PsListResult>(
-		`/api/rh/processo-seletivo${qs ? `?${qs}` : ''}`,
+		`/rh/processo-seletivo${qs ? `?${qs}` : ''}`,
 		{ headers: bearer() },
 		fetchFn
 	);
@@ -33,7 +33,7 @@ export async function createGrupo(
 	fetchFn: typeof fetch = fetch
 ): Promise<PsGroup> {
 	return await apiFetch<PsGroup>(
-		'/api/rh/processo-seletivo/grupos',
+		'/rh/processo-seletivo/grupos',
 		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
 		fetchFn
 	);
@@ -45,7 +45,7 @@ export async function moverEstagio(
 	fetchFn: typeof fetch = fetch
 ): Promise<PsGroup> {
 	return await apiFetch<PsGroup>(
-		`/api/rh/processo-seletivo/${id}/estagio`,
+		`/rh/processo-seletivo/${id}/estagio`,
 		{ method: 'PATCH', headers: bearer(), body: JSON.stringify({ estagio }) },
 		fetchFn
 	);
@@ -58,7 +58,7 @@ export async function avaliarMembro(
 	fetchFn: typeof fetch = fetch
 ): Promise<PsEvaluation> {
 	return await apiFetch<PsEvaluation>(
-		`/api/rh/processo-seletivo/${id}/membros/${pessoaId}/avaliar`,
+		`/rh/processo-seletivo/${id}/membros/${pessoaId}/avaliar`,
 		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
 		fetchFn
 	);

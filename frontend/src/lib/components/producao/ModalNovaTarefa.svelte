@@ -22,7 +22,7 @@
 
 	let { open, projetos, responsaveis, onClose, onCriada }: Props = $props();
 
-	const prioridades: Prioridade[] = ['Baixa', 'Média', 'Moderada', 'Alta'];
+	const prioridades: Prioridade[] = ['Baixa', 'Média', 'Alta'];
 	const colunas: KanbanColuna[] = ['Fila', 'Produção', 'Acabamento', 'Pronto', 'Entregue'];
 
 	const COLUNA_PARA_STATUS: Record<KanbanColuna, TarefaStatus> = {

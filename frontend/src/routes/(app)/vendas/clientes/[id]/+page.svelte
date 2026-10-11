@@ -158,7 +158,7 @@
 		interacoes.map((i) => ({
 			id: i.id,
 			tone: interacaoTipoMeta(i.tipo).color,
-			title: `${i.tipo} · ${i.responsavel}`,
+			title: i.responsavel ? `${i.tipo} · ${i.responsavel}` : i.tipo,
 			body: i.descricao,
 			meta: dataBR(i.dataInteracao)
 		}))
@@ -196,8 +196,7 @@
 				clienteId: id,
 				tipo: interTipo,
 				descricao: interDescricao.trim(),
-				dataInteracao: new Date(interData).toISOString(),
-				...(usuario?.id ? { responsavelId: usuario.id } : {})
+				dataInteracao: new Date(interData).toISOString()
 			});
 			toasts.success('Interação registrada.');
 			modalInteracao = false;
@@ -356,7 +355,7 @@
 						<h1 class="text-2xl font-semibold tracking-tight text-ink">{cliente.nome}</h1>
 					</div>
 					<p class="mt-1.5 font-mono text-xs text-muted">
-						{cliente.codigo} · {tipoPessoaLabel(cliente.tipoPessoa)} · desde {dataBR(
+						{cliente.codigo || '—'} · {tipoPessoaLabel(cliente.tipoPessoa)} · desde {dataBR(
 							cliente.dataCadastro
 						)}
 					</p>
@@ -462,7 +461,7 @@
 							</div>
 							<div>
 								<dt class="text-xs text-muted">Código</dt>
-								<dd class="mt-0.5 font-mono text-xs text-muted">{cliente.codigo}</dd>
+								<dd class="mt-0.5 font-mono text-xs text-muted">{cliente.codigo || '—'}</dd>
 							</div>
 							<div>
 								<dt class="text-xs text-muted">{cliente.tipoPessoa === 'pf' ? 'CPF' : 'CNPJ'}</dt>
@@ -589,7 +588,7 @@
 									{#each orcamentos as orc (orc.id)}
 										{@const meta = orcamentoStatusMeta(orc.status)}
 										<tr class="border-b border-border transition last:border-0 hover:bg-elevated/40">
-											<td class="px-4 py-3 font-mono text-xs text-muted">{orc.codigo}</td>
+											<td class="px-4 py-3 font-mono text-xs text-muted">{orc.codigo ?? `#${orc.id}`}</td>
 											<td class="px-4 py-3 text-right font-mono text-sm tabnums text-ink">
 												{formatMoneyBRL(orc.valorTotal)}
 											</td>
@@ -636,7 +635,7 @@
 									{#each encomendas as enc (enc.id)}
 										{@const meta = kanbanStatusMeta(enc.statusKanban)}
 										<tr class="border-b border-border transition last:border-0 hover:bg-elevated/40">
-											<td class="px-4 py-3 font-mono text-xs text-muted">{enc.codigo}</td>
+											<td class="px-4 py-3 font-mono text-xs text-muted">{enc.codigo ?? `#${enc.id}`}</td>
 											<td class="px-4 py-3 font-mono text-xs text-muted tabnums">{dataBR(enc.previsao)}</td>
 											<td class="px-4 py-3 text-right font-mono text-sm tabnums text-ink">
 												{formatMoneyBRL(enc.valorFinal)}

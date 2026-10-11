@@ -54,7 +54,8 @@
 	const categoriasTop = $derived.by((): CategoriaContagem[] => {
 		const mapa = new Map<string, number>();
 		for (const l of lancamentos) {
-			mapa.set(l.categoria.nome, (mapa.get(l.categoria.nome) ?? 0) + 1);
+			const nome = l.categoria.nome ?? l.categoria.id;
+			mapa.set(nome, (mapa.get(nome) ?? 0) + 1);
 		}
 		return [...mapa.entries()]
 			.map(([nome, quantidade]) => ({ nome, quantidade }))

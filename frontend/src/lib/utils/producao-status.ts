@@ -46,6 +46,7 @@ export const KANBAN_COLUNA_META: Record<KanbanColuna, Meta> = {
 
 export const MAQUINA_STATUS_META: Record<MaquinaStatus, Meta> = {
 	Disponível: { label: 'Disponível', color: 'success' },
+	'Em uso': { label: 'Em uso', color: 'brand' },
 	'Em manutenção': { label: 'Em manutenção', color: 'warn' },
 	Suspensa: { label: 'Suspensa', color: 'danger' }
 };

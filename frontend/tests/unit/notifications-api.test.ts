@@ -26,7 +26,18 @@ vi.mock('$lib/stores/auth', () => ({
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
 vi.mock('$app/environment', () => ({ browser: true }));
 
-function pagina(items: Notification[] = []): PagedNotifications<Notification> {
+function pagina(items: Notification[] = []) {
+	return {
+		items,
+		total: items.length,
+		page: 1,
+		size: 10,
+		pageSize: 10,
+		totalPages: 1
+	};
+}
+
+function paginaEsperada(items: Notification[] = []): PagedNotifications<Notification> {
 	return { items, total: items.length, page: 1, pageSize: 10, totalPages: 1 };
 }
 
@@ -65,7 +76,7 @@ afterEach(() => {
 });
 
 describe('api/notifications — montagem de rotas e query strings', () => {
-	it('listNotifications monta GET /notifications com page/pageSize/type/read preenchidos', async () => {
+	it('listNotifications monta GET /notificacoes com page/size/type/read preenchidos', async () => {
 		apiFetchMock.mockResolvedValue(pagina([notif()]));
 		const { listNotifications } = await freshApi();
 
@@ -73,9 +84,9 @@ describe('api/notifications — montagem de rotas e query strings', () => {
 
 		expect(apiFetchMock).toHaveBeenCalledTimes(1);
 		const [path, init] = apiFetchMock.mock.calls[0]!;
-		expect(path).toBe('/notifications?page=2&pageSize=10&type=estoque&read=false');
+		expect(path).toBe('/notificacoes?page=2&size=10&type=estoque&read=false');
 		expect(init!.method).toBeUndefined();
-		expect(result).toEqual(pagina([notif()]));
+		expect(result).toEqual(paginaEsperada([notif()]));
 	});
 
 	it('listNotifications omite type/read vazios (status all → omitido)', async () => {
@@ -84,7 +95,7 @@ describe('api/notifications — montagem de rotas e query strings', () => {
 
 		await listNotifications({ page: 1, pageSize: 10 });
 
-		expect(apiFetchMock.mock.calls[0]![0]).toBe('/notifications?page=1&pageSize=10');
+		expect(apiFetchMock.mock.calls[0]![0]).toBe('/notificacoes?page=1&size=10');
 	});
 
 	it('listNotifications com read=true (status read) serializa read=true', async () => {
@@ -93,7 +104,7 @@ describe('api/notifications — montagem de rotas e query strings', () => {
 
 		await listNotifications({ read: true });
 
-		expect(apiFetchMock.mock.calls[0]![0]).toBe('/notifications?read=true');
+		expect(apiFetchMock.mock.calls[0]![0]).toBe('/notificacoes?read=true');
 	});
 
 	it('listNotifications sem nenhum param chama path puro sem query', async () => {
@@ -102,7 +113,7 @@ describe('api/notifications — montagem de rotas e query strings', () => {
 
 		await listNotifications();
 
-		expect(apiFetchMock.mock.calls[0]![0]).toBe('/notifications');
+		expect(apiFetchMock.mock.calls[0]![0]).toBe('/notificacoes');
 	});
 
 	it('envia Authorization Bearer quando há token na store', async () => {
@@ -116,67 +127,67 @@ describe('api/notifications — montagem de rotas e query strings', () => {
 		expect((init!.headers as Record<string, string>).Authorization).toBe('Bearer tk-1');
 	});
 
-	it('markRead chama PATCH /notifications/{id}/read', async () => {
+	it('markRead chama PATCH /notification/notificacoes/{id}/ler', async () => {
 		apiFetchMock.mockResolvedValue(undefined);
 		const { markRead } = await freshApi();
 
 		await markRead('n-7');
 
 		const [path, init] = apiFetchMock.mock.calls[0]!;
-		expect(path).toBe('/notifications/n-7/read');
+		expect(path).toBe('/notification/notificacoes/n-7/ler');
 		expect(init!.method).toBe('PATCH');
 	});
 
-	it('markAllRead chama POST /notifications/read-all', async () => {
+	it('markAllRead chama POST /notification/notificacoes/ler-todas', async () => {
 		apiFetchMock.mockResolvedValue(undefined);
 		const { markAllRead } = await freshApi();
 
 		await markAllRead();
 
 		const [path, init] = apiFetchMock.mock.calls[0]!;
-		expect(path).toBe('/notifications/read-all');
+		expect(path).toBe('/notification/notificacoes/ler-todas');
 		expect(init!.method).toBe('POST');
 	});
 
-	it('getPreferences chama GET /notifications/preferences e retorna a matriz', async () => {
+	it('getPreferences chama GET /notification/preferencias e retorna a matriz', async () => {
 		apiFetchMock.mockResolvedValue(PREFS);
 		const { getPreferences } = await freshApi();
 
 		const result = await getPreferences();
 
-		expect(apiFetchMock.mock.calls[0]![0]).toBe('/notifications/preferences');
+		expect(apiFetchMock.mock.calls[0]![0]).toBe('/notification/preferencias');
 		expect(result).toEqual(PREFS);
 	});
 
-	it('savePreferences faz PUT /notifications/preferences com body JSON da matriz', async () => {
+	it('savePreferences faz PUT /notification/preferencias com body JSON da matriz', async () => {
 		apiFetchMock.mockResolvedValue(undefined);
 		const { savePreferences } = await freshApi();
 
 		await savePreferences(PREFS);
 
 		const [path, init] = apiFetchMock.mock.calls[0]!;
-		expect(path).toBe('/notifications/preferences');
+		expect(path).toBe('/notification/preferencias');
 		expect(init!.method).toBe('PUT');
 		expect(init!.body).toBe(JSON.stringify(PREFS));
 	});
 
 	it('history monta query com search/type/read/channel/period quando presentes', async () => {
-		apiFetchMock.mockResolvedValue({ items: [] });
+		apiFetchMock.mockResolvedValue({ items: [], total: 0 });
 		const { history } = await freshApi();
 
 		await history({ search: 'pedido', type: 'encomenda', read: false, channel: 'email', period: '7d' });
 
 		expect(apiFetchMock.mock.calls[0]![0]).toBe(
-			'/notifications/history?search=pedido&type=encomenda&read=false&channel=email&period=7d'
+			'/notification/historico?search=pedido&type=encomenda&read=false&channel=email&period=7d'
 		);
 	});
 
 	it('history omite filtros ausentes (chama path puro sem query)', async () => {
-		apiFetchMock.mockResolvedValue({ items: [] });
+		apiFetchMock.mockResolvedValue({ items: [], total: 0 });
 		const { history } = await freshApi();
 
 		await history();
 
-		expect(apiFetchMock.mock.calls[0]![0]).toBe('/notifications/history');
+		expect(apiFetchMock.mock.calls[0]![0]).toBe('/notification/historico');
 	});
 });

@@ -8,7 +8,7 @@ import type {
 	ConcluirCompraResult
 } from '$lib/types/financeiro';
 
-const BASE = '/api/financeiro/solicitacoes-compra';
+const BASE = '/financeiro/solicitacoes-compra';
 
 function bearer(): Record<string, string> {
 	const { token } = get(auth);

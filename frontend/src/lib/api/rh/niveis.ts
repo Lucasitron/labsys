@@ -9,7 +9,7 @@ function bearer(): Record<string, string> {
 }
 
 export async function getNiveis(fetchFn: typeof fetch = fetch): Promise<NivelMatrix> {
-	return await apiFetch<NivelMatrix>('/api/rh/niveis', { headers: bearer() }, fetchFn);
+	return await apiFetch<NivelMatrix>('/rh/niveis', { headers: bearer() }, fetchFn);
 }
 
 export async function alterarNivel(
@@ -18,7 +18,7 @@ export async function alterarNivel(
 	fetchFn: typeof fetch = fetch
 ): Promise<NivelMembro> {
 	return await apiFetch<NivelMembro>(
-		`/api/rh/niveis/${membroId}/membros`,
+		`/rh/niveis/${membroId}/membros`,
 		{ method: 'PATCH', headers: bearer(), body: JSON.stringify({ nivel }) },
 		fetchFn
 	);
@@ -29,7 +29,7 @@ export async function convidarUsuario(
 	fetchFn: typeof fetch = fetch
 ): Promise<NivelMembro> {
 	return await apiFetch<NivelMembro>(
-		'/api/rh/niveis/convites',
+		'/rh/niveis/convites',
 		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
 		fetchFn
 	);

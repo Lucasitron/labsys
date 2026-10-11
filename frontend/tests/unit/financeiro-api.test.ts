@@ -81,33 +81,34 @@ function chamada(indice = 0): { path: string; init: Record<string, unknown> } {
 }
 
 describe('financeiro/api — lançamentos (query PT)', () => {
-	it('listLancamentos monta /api/financeiro/lancamentos com status/tipo/categoria/periodo', async () => {
-		apiFetchMock.mockResolvedValue({ lancamentos: [], pagination: {} });
+	it('listLancamentos monta /financeiro/lancamentos com status/tipo/idCategoria/dataInicio/dataFim UPPER', async () => {
+		apiFetchMock.mockResolvedValue({ lancamentos: [] });
 		const { listLancamentos } = await freshLancamentos();
 
 		await listLancamentos({
-			search: 'aluguel',
 			status: 'Pendente',
 			tipo: 'Saída',
-			categoria: 'cat-1',
-			periodo: 'mes',
-			ordenar: 'vencimento',
-			page: 1,
-			pageSize: 10
+			categoria: '3',
+			periodo: '7d'
 		});
 
+		const hoje = new Date();
+		const fim = hoje.toISOString().slice(0, 10);
+		const inicio = new Date(hoje);
+		inicio.setDate(inicio.getDate() - 7);
+		const dataInicio = inicio.toISOString().slice(0, 10);
 		expect(chamada().path).toBe(
-			'/api/financeiro/lancamentos?search=aluguel&status=Pendente&tipo=Sa%C3%ADda&categoria=cat-1&periodo=mes&ordenar=vencimento&page=1&pageSize=10'
+			`/financeiro/lancamentos?status=PENDENTE&tipo=SAIDA&idCategoria=3&dataInicio=${dataInicio}&dataFim=${fim}`
 		);
 	});
 
 	it('listLancamentos omite filtros vazios (path puro sem query)', async () => {
-		apiFetchMock.mockResolvedValue({ lancamentos: [], pagination: {} });
+		apiFetchMock.mockResolvedValue({ lancamentos: [] });
 		const { listLancamentos } = await freshLancamentos();
 
 		await listLancamentos({});
 
-		expect(chamada().path).toBe('/api/financeiro/lancamentos');
+		expect(chamada().path).toBe('/financeiro/lancamentos');
 	});
 
 	it('registrarPagamento faz PUT …/{id}/pagamento com dataPagamento', async () => {
@@ -116,34 +117,39 @@ describe('financeiro/api — lançamentos (query PT)', () => {
 
 		await registrarPagamento('l1', { dataPagamento: '2026-09-20' });
 
-		expect(chamada().path).toBe('/api/financeiro/lancamentos/l1/pagamento');
+		expect(chamada().path).toBe('/financeiro/lancamentos/l1/pagamento');
 		expect(chamada().init['method']).toBe('PUT');
 		expect(chamada().init['body']).toBe(JSON.stringify({ dataPagamento: '2026-09-20' }));
 	});
 });
 
 describe('financeiro/api — categorias e doações', () => {
-	it('listCategorias usa GET /api/financeiro/categorias sem query', async () => {
+	it('listCategorias usa GET /financeiro/categorias sem query', async () => {
 		apiFetchMock.mockResolvedValue([]);
 		const { listCategorias } = await freshCategorias();
 
 		await listCategorias();
 
-		expect(chamada().path).toBe('/api/financeiro/categorias');
+		expect(chamada().path).toBe('/financeiro/categorias');
 		expect(chamada().init['method']).toBeUndefined();
 	});
 
-	it('listDoacoes monta query PT (tipo/periodo) e omite vazios', async () => {
-		apiFetchMock.mockResolvedValue({ registros: [], resumo: {}, cobertura: {} });
+	it('listDoacoes monta query (tipo UPPER + dataInicio/dataFim) e omite vazios', async () => {
+		apiFetchMock.mockResolvedValue([]);
 		const { listDoacoes } = await freshDoacoes();
 
-		await listDoacoes({ search: 'alumni', tipo: 'Doação', periodo: '2026', page: 2 });
+		await listDoacoes({ tipo: 'Doação', periodo: '30d' });
+		const hoje = new Date();
+		const fim = hoje.toISOString().slice(0, 10);
+		const inicio = new Date(hoje);
+		inicio.setDate(inicio.getDate() - 30);
+		const dataInicio = inicio.toISOString().slice(0, 10);
 		expect(chamada(0).path).toBe(
-			'/api/financeiro/doacoes-recursos?search=alumni&tipo=Doa%C3%A7%C3%A3o&periodo=2026&page=2'
+			`/financeiro/doacoes-recursos?tipo=DOACAO&dataInicio=${dataInicio}&dataFim=${fim}`
 		);
 
 		await listDoacoes({});
-		expect(chamada(1).path).toBe('/api/financeiro/doacoes-recursos');
+		expect(chamada(1).path).toBe('/financeiro/doacoes-recursos');
 	});
 });
 
@@ -160,7 +166,7 @@ describe('financeiro/api — custeio (congelamento, sem cálculo)', () => {
 
 		await createFechamento(payload);
 
-		expect(chamada().path).toBe('/api/financeiro/fechamento-encomenda');
+		expect(chamada().path).toBe('/financeiro/fechamento-encomenda');
 		expect(chamada().init['method']).toBe('POST');
 		expect(chamada().init['body']).toBe(JSON.stringify(payload));
 		const enviado = JSON.parse(String(chamada().init['body'])) as Record<string, unknown>;
@@ -169,13 +175,13 @@ describe('financeiro/api — custeio (congelamento, sem cálculo)', () => {
 		);
 	});
 
-	it('getCusto busca o congelado via GET /api/financeiro/custos-encomenda/{id}', async () => {
+	it('getCusto busca o congelado via GET /financeiro/custos-encomenda/{id}', async () => {
 		apiFetchMock.mockResolvedValue({ custoTotal: 900 });
 		const { getCusto } = await freshCusteio();
 
 		await getCusto('EN-2051');
 
-		expect(chamada().path).toBe('/api/financeiro/custos-encomenda/EN-2051');
+		expect(chamada().path).toBe('/financeiro/custos-encomenda/EN-2051');
 		expect(chamada().init['method']).toBeUndefined();
 	});
 
@@ -185,7 +191,7 @@ describe('financeiro/api — custeio (congelamento, sem cálculo)', () => {
 
 		await concluirCompra('c1', { dataConclusao: '2026-09-21', valorReal: 320.5 });
 
-		expect(chamada().path).toBe('/api/financeiro/solicitacoes-compra/c1/concluir');
+		expect(chamada().path).toBe('/financeiro/solicitacoes-compra/c1/concluir');
 		expect(chamada().init['method']).toBe('PUT');
 		expect(chamada().init['body']).toBe(
 			JSON.stringify({ dataConclusao: '2026-09-21', valorReal: 320.5 })
@@ -207,12 +213,12 @@ describe('financeiro/api — relatórios (1 endpoint por pane + ?periodo=)', () 
 
 		const paths = apiFetchMock.mock.calls.map((c) => String(c[0]));
 		expect(paths).toEqual([
-			'/api/financeiro/relatorios/fluxo-caixa?periodo=2026-09',
-			'/api/financeiro/relatorios/dre?periodo=2026-09',
-			'/api/financeiro/relatorios/lucratividade?periodo=2026-09',
-			'/api/financeiro/relatorios/inadimplencia?periodo=2026-09',
-			'/api/financeiro/relatorios/doacoes-despesas?periodo=2026-09',
-			'/api/financeiro/relatorios/custo-maquina?periodo=2026-09'
+			'/financeiro/relatorios/fluxo-caixa?periodo=2026-09',
+			'/financeiro/relatorios/dre?periodo=2026-09',
+			'/financeiro/relatorios/lucratividade?periodo=2026-09',
+			'/financeiro/relatorios/inadimplencia?periodo=2026-09',
+			'/financeiro/relatorios/doacoes-despesas?periodo=2026-09',
+			'/financeiro/relatorios/custo-maquina?periodo=2026-09'
 		]);
 	});
 
@@ -222,7 +228,7 @@ describe('financeiro/api — relatórios (1 endpoint por pane + ?periodo=)', () 
 
 		await getFluxoCaixa({});
 
-		expect(chamada().path).toBe('/api/financeiro/relatorios/fluxo-caixa');
+		expect(chamada().path).toBe('/financeiro/relatorios/fluxo-caixa');
 	});
 });
 
@@ -263,9 +269,14 @@ describe('financeiro/api — erros e bearer', () => {
 	});
 });
 
-describe('financeiro/api — guarda de paths /api/financeiro/**', () => {
-	it('nenhum path fora de /api/financeiro/ nas chamadas', async () => {
-		apiFetchMock.mockResolvedValue({});
+describe('financeiro/api — guarda de paths /financeiro/**', () => {
+	it('nenhum path fora de /financeiro/ nas chamadas', async () => {
+		apiFetchMock.mockImplementation(async (path: string) => {
+			if (String(path).includes('doacoes')) return [];
+			if (String(path).includes('categorias')) return [];
+			if (String(path).includes('lancamentos')) return { lancamentos: [] };
+			return {};
+		});
 		const lanc = await freshLancamentos();
 		const cat = await freshCategorias();
 		const doa = await freshDoacoes();
@@ -285,7 +296,7 @@ describe('financeiro/api — guarda de paths /api/financeiro/**', () => {
 		const paths = apiFetchMock.mock.calls.map((c) => String(c[0]));
 		expect(paths.length).toBeGreaterThan(0);
 		for (const path of paths) {
-			expect(path.startsWith('/api/financeiro/')).toBe(true);
+			expect(path.startsWith('/financeiro/')).toBe(true);
 		}
 	});
 });

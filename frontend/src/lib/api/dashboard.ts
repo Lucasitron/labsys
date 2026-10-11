@@ -14,7 +14,7 @@ export async function fetchSummary(fetchFn: typeof fetch = fetch): Promise<Dashb
 
 export async function fetchUnreadCount(fetchFn: typeof fetch = fetch): Promise<UnreadCount> {
 	return await apiFetch<UnreadCount>(
-		'/notifications/unread/count',
+		'/notificacoes/nao-lidas/contagem',
 		{ headers: bearer() },
 		fetchFn
 	);

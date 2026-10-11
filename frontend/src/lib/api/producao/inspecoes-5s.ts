@@ -1,6 +1,6 @@
 import type { Inspecao5S, InspecaoStatus, ItemInspecao5S, Paginado, SetorRef } from '$lib/types/producao';
 import { apiFetch } from '../client';
-import { bearer, montarQuery } from './client';
+import { bearer, paraPaginado } from './client';
 
 const BASE = '/producao/inspecoes-5s';
 
@@ -30,8 +30,8 @@ export async function obterInspecoes5S(
 	params: InspecaoFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Inspecao5S>> {
-	const qs = montarQuery(params);
-	return await apiFetch<Paginado<Inspecao5S>>(`${BASE}${qs}`, { headers: bearer() }, fetchFn);
+	const res = await apiFetch<Paginado<Inspecao5S> | Inspecao5S[] | { data: Inspecao5S[] }>(BASE, { headers: bearer() }, fetchFn);
+	return paraPaginado(res, params.page, params.pageSize);
 }
 
 export function criarInspecao5S(payload: CriarInspecaoPayload): Promise<Inspecao5S> {

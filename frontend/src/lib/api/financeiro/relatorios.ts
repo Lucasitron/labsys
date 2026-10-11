@@ -11,7 +11,7 @@ import type {
 	RelatorioPeriodoParams
 } from '$lib/types/financeiro';
 
-const BASE = '/api/financeiro/relatorios';
+const BASE = '/financeiro/relatorios';
 
 function bearer(): Record<string, string> {
 	const { token } = get(auth);

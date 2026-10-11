@@ -42,12 +42,12 @@ export interface CreateCategoriaPayload {
 
 export interface CategoriaResumo {
 	id: string;
-	nome: string;
+	nome?: string;
 }
 
 export interface Lancamento {
 	id: string;
-	codigo: string;
+	codigo?: string;
 	categoria: CategoriaResumo;
 	tipo: TipoLancamento;
 	valor: number;
@@ -127,7 +127,7 @@ export interface DoacoesCobertura {
 export interface DoacoesResult {
 	registros: DoacaoRecurso[];
 	resumo: DoacoesResumo;
-	cobertura: DoacoesCobertura;
+	cobertura?: DoacoesCobertura;
 }
 
 export interface ListDoacoesParams {

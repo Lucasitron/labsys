@@ -26,7 +26,7 @@ export async function listTarefas(
 	if (params.pageSize !== undefined) query.set('pageSize', String(params.pageSize));
 	const qs = query.toString();
 	return await apiFetch<TarefasResult>(
-		`/api/vendas/tarefas-marketing${qs ? `?${qs}` : ''}`,
+		`/vendas/tarefas-marketing${qs ? `?${qs}` : ''}`,
 		{ headers: bearer() },
 		fetchFn
 	);
@@ -37,7 +37,7 @@ export async function createTarefa(
 	fetchFn: typeof fetch = fetch
 ): Promise<TarefaMarketing> {
 	return await apiFetch<TarefaMarketing>(
-		'/api/vendas/tarefas-marketing',
+		'/vendas/tarefas-marketing',
 		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
 		fetchFn
 	);
@@ -49,7 +49,7 @@ export async function updateTarefa(
 	fetchFn: typeof fetch = fetch
 ): Promise<TarefaMarketing> {
 	return await apiFetch<TarefaMarketing>(
-		`/api/vendas/tarefas-marketing/${id}`,
+		`/vendas/tarefas-marketing/${id}`,
 		{ method: 'PUT', headers: bearer(), body: JSON.stringify(payload) },
 		fetchFn
 	);

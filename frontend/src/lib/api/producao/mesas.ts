@@ -1,6 +1,6 @@
 import type { Mesa5S, MesaAuditoriaResultado, Paginado, SituacaoMesas } from '$lib/types/producao';
 import { apiFetch } from '../client';
-import { bearer, montarQuery } from './client';
+import { bearer, paraPaginado } from './client';
 
 const BASE = '/producao/mesas';
 
@@ -33,8 +33,8 @@ export async function obterMesas(
 	params: MesaFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Mesa5S>> {
-	const qs = montarQuery(params);
-	return await apiFetch<Paginado<Mesa5S>>(`${BASE}${qs}`, { headers: bearer() }, fetchFn);
+	const res = await apiFetch<Paginado<Mesa5S> | Mesa5S[] | { data: Mesa5S[] }>(BASE, { headers: bearer() }, fetchFn);
+	return paraPaginado(res, params.page, params.pageSize);
 }
 
 export function criarMesa(payload: CriarMesaPayload): Promise<Mesa5S> {

@@ -114,7 +114,7 @@ import { toastError, toasts } from '$lib/stores/toast';
 		Object.entries(TAREFA_STATUS_META).map(([id, meta]) => ({ id, label: meta.label }))
 	);
 	const prioridadeOptions = $derived(
-		(['Baixa', 'Média', 'Moderada', 'Alta'] as const).map((id) => ({ id, label: id }))
+		(['Baixa', 'Média', 'Alta'] as const).map((id) => ({ id, label: id }))
 	);
 	const responsavelOptions = $derived(
 		responsaveis.map((p) => ({ id: p.id, label: p.nome }))

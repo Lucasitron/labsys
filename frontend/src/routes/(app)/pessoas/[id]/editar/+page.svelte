@@ -102,6 +102,7 @@
 			};
 			await updatePessoa(id, {
 				name: nome.trim(),
+				matricula: pessoa?.matricula ?? '',
 				email: email.trim(),
 				...(telefone.trim() ? { phone: telefone.trim() } : {}),
 				nivel,

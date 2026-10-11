@@ -27,7 +27,7 @@ export async function listTreinamentos(
 	if (params.search) query.set('search', params.search);
 	const qs = query.toString();
 	return await apiFetch<TreinamentosResult>(
-		`/api/rh/treinamentos${qs ? `?${qs}` : ''}`,
+		`/rh/treinamentos${qs ? `?${qs}` : ''}`,
 		{ headers: bearer() },
 		fetchFn
 	);
@@ -38,7 +38,7 @@ export async function getTreinamento(
 	fetchFn: typeof fetch = fetch
 ): Promise<TreinamentoDetail> {
 	return await apiFetch<TreinamentoDetail>(
-		`/api/rh/treinamentos/${id}`,
+		`/rh/treinamentos/${id}`,
 		{ headers: bearer() },
 		fetchFn
 	);
@@ -46,7 +46,7 @@ export async function getTreinamento(
 
 export async function getSessao(id: string, fetchFn: typeof fetch = fetch): Promise<TreinamentoSessao> {
 	return await apiFetch<TreinamentoSessao>(
-		`/api/rh/treinamentos/${id}/sessao`,
+		`/rh/treinamentos/${id}/sessao`,
 		{ headers: bearer() },
 		fetchFn
 	);
@@ -58,7 +58,7 @@ export async function avaliarTreinamento(
 	fetchFn: typeof fetch = fetch
 ): Promise<void> {
 	await apiFetch<void>(
-		`/api/rh/treinamentos/${id}/avaliar`,
+		`/rh/treinamentos/${id}/avaliar`,
 		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
 		fetchFn
 	);
@@ -70,7 +70,7 @@ export async function atribuirTarefaFinal(
 	fetchFn: typeof fetch = fetch
 ): Promise<FinalTask> {
 	return await apiFetch<FinalTask>(
-		`/api/rh/treinamentos/${id}/tarefa-final`,
+		`/rh/treinamentos/${id}/tarefa-final`,
 		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
 		fetchFn
 	);
@@ -84,7 +84,7 @@ export async function listAgenda(
 	if (params.tab) query.set('tab', params.tab);
 	const qs = query.toString();
 	return await apiFetch<TreinamentosResult>(
-		`/api/rh/treinamentos/agenda${qs ? `?${qs}` : ''}`,
+		`/rh/treinamentos/agenda${qs ? `?${qs}` : ''}`,
 		{ headers: bearer() },
 		fetchFn
 	);
@@ -94,7 +94,7 @@ export async function getDisponibilidade(
 	fetchFn: typeof fetch = fetch
 ): Promise<InstrutorDisponibilidade[]> {
 	return await apiFetch<InstrutorDisponibilidade[]>(
-		'/api/rh/treinamentos/disponibilidade',
+		'/rh/treinamentos/disponibilidade',
 		{ headers: bearer() },
 		fetchFn
 	);
@@ -108,7 +108,7 @@ export async function listGuias(
 	if (params.maquinaId) query.set('maquinaId', params.maquinaId);
 	const qs = query.toString();
 	return await apiFetch<GuiasResult>(
-		`/api/rh/treinamentos/guias${qs ? `?${qs}` : ''}`,
+		`/rh/treinamentos/guias${qs ? `?${qs}` : ''}`,
 		{ headers: bearer() },
 		fetchFn
 	);

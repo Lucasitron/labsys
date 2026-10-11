@@ -27,6 +27,7 @@
 	});
 
 	let nome = $state('');
+	let matricula = $state('');
 	let email = $state('');
 	let telefone = $state('');
 	let cpf = $state('');
@@ -74,6 +75,7 @@
 	function validar(): boolean {
 		const novos: Record<string, string> = {};
 		if (!nome.trim()) novos['nome'] = 'Informe o nome completo.';
+		if (!matricula.trim()) novos['matricula'] = 'Informe a matrícula.';
 		if (!email.trim()) novos['email'] = 'Informe o e-mail.';
 		else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
 			novos['email'] = 'Informe um e-mail válido.';
@@ -87,6 +89,7 @@
 
 	function limpar(): void {
 		nome = '';
+		matricula = '';
 		email = '';
 		telefone = '';
 		cpf = '';
@@ -126,6 +129,7 @@
 			const nivelSelecionado: Nivel = nivel === '' ? 'voluntario' : nivel;
 			await createPessoa({
 				name: nome.trim(),
+				matricula: matricula.trim(),
 				email: email.trim(),
 				...(telefone.trim() ? { phone: telefone.trim() } : {}),
 				type: tipo,
@@ -195,6 +199,21 @@
 							class="{inputCls} {erros['nome'] ? inputErroCls : ''}"
 						/>
 						{#if erros['nome']}<p class="mt-1 text-xs text-danger">{erros['nome']}</p>{/if}
+					</div>
+					<div>
+						<label for="novo-matricula" class={labelCls}>
+							Matrícula <span class="text-danger" aria-hidden="true">*</span>
+						</label>
+						<input
+							id="novo-matricula"
+							type="text"
+							data-testid="person-matricula"
+							bind:value={matricula}
+							placeholder="Ex.: 2026-001"
+							aria-invalid={!!erros['matricula']}
+							class="{inputCls} {erros['matricula'] ? inputErroCls : ''} font-mono"
+						/>
+						{#if erros['matricula']}<p class="mt-1 text-xs text-danger">{erros['matricula']}</p>{/if}
 					</div>
 					<div>
 						<label for="novo-email" class={labelCls}>

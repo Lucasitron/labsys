@@ -321,7 +321,7 @@
 									onclick={() => abrirOrcamento(orcamento.id)}
 									class="cursor-pointer border-b border-border transition last:border-0 hover:bg-elevated/40"
 								>
-									<td class="px-4 py-3 font-mono text-xs text-muted">{orcamento.codigo}</td>
+									<td class="px-4 py-3 font-mono text-xs text-muted">{orcamento.codigo ?? `#${orcamento.id}`}</td>
 									<td class="px-4 py-3">
 										<div class="flex min-w-0 items-center gap-3">
 											<Avatar name={orcamento.cliente.nome} size="sm" tone="brand" />
@@ -329,7 +329,7 @@
 										</div>
 									</td>
 									<td class="px-4 py-3 text-right font-mono text-sm tabnums text-ink">
-										{formatNumber(orcamento.qtdItens)}
+										{orcamento.qtdItens !== undefined ? formatNumber(orcamento.qtdItens) : '—'}
 									</td>
 									<td class="px-4 py-3 text-right font-mono text-sm tabnums text-ink">
 										{formatMoneyBRL(orcamento.valorTotal)}
@@ -342,7 +342,7 @@
 									</td>
 									<td class="px-4 py-3 text-right" onclick={(e) => e.stopPropagation()}>
 										<RowActions
-											label={`Ações do orçamento ${orcamento.codigo}`}
+											label={`Ações do orçamento ${orcamento.codigo ?? orcamento.id}`}
 											actions={[
 												{ id: 'ver', label: 'Ver', icon: 'eye' },
 												{ id: 'editar', label: 'Editar', icon: 'pencil', hidden: !podeEditar },
@@ -422,7 +422,7 @@
 
 {#if sugerirAlvo}
 	<SolicitarEdicaoModal
-		alvo={{ tipo: 'OC', id: sugerirAlvo.id, nome: sugerirAlvo.codigo }}
+		alvo={{ tipo: 'OC', id: sugerirAlvo.id, nome: sugerirAlvo.codigo ?? `#${sugerirAlvo.id}` }}
 		onClose={() => (sugerirAlvo = null)}
 	/>
 {/if}

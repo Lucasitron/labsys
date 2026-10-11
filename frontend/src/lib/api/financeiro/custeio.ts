@@ -11,10 +11,10 @@ import type {
 	DefinirOverheadPayload
 } from '$lib/types/financeiro';
 
-const FECHAMENTOS = '/api/financeiro/fechamento-encomenda';
-const CUSTOS = '/api/financeiro/custos-encomenda';
-const VALORES_HORA = '/api/financeiro/valores-hora';
-const OVERHEAD = '/api/financeiro/parametros-overhead';
+const FECHAMENTOS = '/financeiro/fechamento-encomenda';
+const CUSTOS = '/financeiro/custos-encomenda';
+const VALORES_HORA = '/financeiro/valores-hora';
+const OVERHEAD = '/financeiro/parametros-overhead';
 
 function bearer(): Record<string, string> {
 	const { token } = get(auth);

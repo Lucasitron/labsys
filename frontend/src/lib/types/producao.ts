@@ -23,13 +23,13 @@ export type ProjetoStatus = 'Planejado' | 'Em andamento' | 'Concluído' | 'Cance
 
 export type TarefaStatus = 'Pendente' | 'Em andamento' | 'Concluída' | 'Atrasada' | 'Bloqueada';
 
-export type Prioridade = 'Baixa' | 'Média' | 'Moderada' | 'Alta';
+export type Prioridade = 'Baixa' | 'Média' | 'Alta';
 
 export type KanbanColuna = 'Fila' | 'Produção' | 'Acabamento' | 'Pronto' | 'Entregue';
 
 export type Cartao5S = 'Verde' | 'Amarelo' | 'Vermelho';
 
-export type MaquinaStatus = 'Disponível' | 'Em manutenção' | 'Suspensa';
+export type MaquinaStatus = 'Disponível' | 'Em uso' | 'Em manutenção' | 'Suspensa';
 
 export type ChamadoStatus = 'Aberto' | 'Atribuído' | 'Em andamento' | 'Resolvido' | 'Aguardando compra';
 

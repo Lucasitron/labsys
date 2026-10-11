@@ -1,6 +1,6 @@
 import type { Ciclo5S, Paginado, Setor5S } from '$lib/types/producao';
 import { apiFetch } from '../client';
-import { bearer, montarQuery } from './client';
+import { bearer, paraPaginado } from './client';
 
 const BASE = '/producao/5s/setores';
 
@@ -35,8 +35,8 @@ export async function obterSetores5S(
 	params: Setor5SFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Setor5S>> {
-	const qs = montarQuery(params);
-	return await apiFetch<Paginado<Setor5S>>(`${BASE}${qs}`, { headers: bearer() }, fetchFn);
+	const res = await apiFetch<Paginado<Setor5S> | Setor5S[] | { data: Setor5S[] }>(BASE, { headers: bearer() }, fetchFn);
+	return paraPaginado(res, params.page, params.pageSize);
 }
 
 export async function obterSetor5SPorId(id: string, fetchFn: typeof fetch = fetch): Promise<Setor5S> {

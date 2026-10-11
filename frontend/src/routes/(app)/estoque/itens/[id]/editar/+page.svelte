@@ -76,6 +76,7 @@
 				descricao: description.trim() || undefined,
 				categoria: category as CategoriaEnum,
 				unidadeMedida: unit,
+				quantidadeAtual: item!.quantidadeAtual,
 				estoqueMinimo: minimum ? numeric(minimum) : 0,
 				idLocalizacao: location || null
 			});

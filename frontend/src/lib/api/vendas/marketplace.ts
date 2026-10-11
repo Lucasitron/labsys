@@ -23,7 +23,7 @@ export async function listMarketplace(
 	if (params.pageSize !== undefined) query.set('pageSize', String(params.pageSize));
 	const qs = query.toString();
 	return await apiFetch<MarketplaceResult>(
-		`/api/vendas/marketplace${qs ? `?${qs}` : ''}`,
+		`/vendas/marketplace${qs ? `?${qs}` : ''}`,
 		{ headers: bearer() },
 		fetchFn
 	);
@@ -34,7 +34,7 @@ export async function registrarVenda(
 	fetchFn: typeof fetch = fetch
 ): Promise<RegistroMarketplace> {
 	return await apiFetch<RegistroMarketplace>(
-		'/api/vendas/marketplace',
+		'/vendas/marketplace',
 		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
 		fetchFn
 	);

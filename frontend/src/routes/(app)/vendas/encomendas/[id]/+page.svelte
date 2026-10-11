@@ -106,8 +106,8 @@
 		if (avancando) return;
 		avancando = true;
 		try {
-			await moverKanban(id, { statusKanban: destino });
-			toasts.success(`Encomenda ${encomenda.codigo} movida para ${destino}.`);
+			await moverKanban(id, { statusKanban: destino, versao: encomenda.versao });
+			toasts.success(`Encomenda ${encomenda.codigo ?? id} movida para ${destino}.`);
 			await invalidateAll();
 		} catch (err) {
 			if (err instanceof ApiError && err.status === 409) {
@@ -139,7 +139,7 @@
 </script>
 
 <svelte:head>
-	<title>{encomenda ? `${encomenda.codigo} — Encomendas` : 'Encomenda — FabLab'}</title>
+	<title>{encomenda ? `${encomenda.codigo ?? `#${id}`} — Encomendas` : 'Encomenda — FabLab'}</title>
 </svelte:head>
 
 <div class="space-y-4">
@@ -171,7 +171,7 @@
 						{#if avancarAberto}
 							<div
 								role="menu"
-								aria-label={`Mover ${encomenda.codigo} para`}
+								aria-label={`Mover ${encomenda.codigo ?? id} para`}
 								class="absolute top-full right-0 z-30 mt-1 min-w-48 rounded-md border border-border bg-surface p-1 shadow-2xl shadow-black/50"
 							>
 								{#each destinos as destino (destino)}
@@ -198,7 +198,7 @@
 					</button>
 				{/if}
 				<RowActions
-					label={`Ações da encomenda ${encomenda.codigo}`}
+						label={`Ações da encomenda ${encomenda.codigo ?? id}`}
 					actions={[{ id: 'ver-cliente', label: 'Ver cliente', icon: 'eye' }]}
 					onSelect={(acao) => {
 						if (acao === 'ver-cliente') void goto(`/vendas/clientes/${encomenda.cliente.id}`);
@@ -243,7 +243,7 @@
 				<div class="min-w-0">
 					<div class="flex flex-wrap items-center gap-2">
 						<h1 class="font-mono text-2xl font-semibold tracking-tight text-ink">
-							{encomenda.codigo}
+							{encomenda.codigo ?? `#${id}`}
 						</h1>
 						<StatusBadge label={meta.label} color={meta.color} />
 						<TypeBadge tone={origemTone(encomenda.origem)} label={encomenda.origem} />
@@ -287,7 +287,7 @@
 			<div class="rounded-xl border border-border bg-elevated p-4">
 				<p class="text-xs text-muted">Itens</p>
 				<p class="mt-1 font-mono text-2xl font-semibold tabnums text-ink">
-					{formatNumber(encomenda.itensCount)}
+					{encomenda.itensCount !== undefined ? formatNumber(encomenda.itensCount) : '—'}
 				</p>
 				<p class="mt-0.5 text-xs text-muted">na encomenda</p>
 			</div>
@@ -420,7 +420,7 @@
 
 {#if sugerirAberto && encomenda}
 	<SolicitarEdicaoModal
-		alvo={{ tipo: 'EN', id, nome: encomenda.codigo }}
+		alvo={{ tipo: 'EN', id, nome: encomenda.codigo ?? `#${id}` }}
 		onClose={() => (sugerirAberto = false)}
 	/>
 {/if}

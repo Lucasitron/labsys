@@ -1,6 +1,6 @@
 import type { GravidadePendencia, Paginado, Pendencia5S, PenalidadeTipo, SituacaoPendencia } from '$lib/types/producao';
 import { apiFetch } from '../client';
-import { bearer, montarQuery } from './client';
+import { bearer, paraPaginado } from './client';
 
 const BASE = '/producao/pendencias-5s';
 
@@ -25,8 +25,8 @@ export async function obterPendencias5S(
 	params: PendenciaFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Pendencia5S>> {
-	const qs = montarQuery(params);
-	return await apiFetch<Paginado<Pendencia5S>>(`${BASE}${qs}`, { headers: bearer() }, fetchFn);
+	const res = await apiFetch<Paginado<Pendencia5S> | Pendencia5S[] | { data: Pendencia5S[] }>(BASE, { headers: bearer() }, fetchFn);
+	return paraPaginado(res, params.page, params.pageSize);
 }
 
 export async function obterPendencia5SPorId(id: string, fetchFn: typeof fetch = fetch): Promise<Pendencia5S> {

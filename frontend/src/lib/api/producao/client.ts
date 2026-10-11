@@ -61,6 +61,76 @@ export function totalDePaginas(totalItems: number, pageSize: number): number {
 	return Math.max(1, Math.ceil(totalItems / pageSize));
 }
 
+// Back serve listas como `{data:[...]}` (ResourceCollection) — desembrulha p/ array.
+export function unwrapLista<T>(res: T[] | { data: T[] } | null | undefined): T[] {
+	if (Array.isArray(res)) return res;
+	if (res && Array.isArray((res as { data?: T[] }).data)) {
+		return (res as { data: T[] }).data;
+	}
+	return [];
+}
+
+// Paginação/filtro client-side sobre a lista completa (precedente: estoque ItemsResult).
+export function paginarClient<T>(todos: T[], page = 1, pageSize = PADRAO_TAMANHO_PAGINA): Paginado<T> {
+	const totalItems = todos.length;
+	const size = pageSize > 0 ? pageSize : PADRAO_TAMANHO_PAGINA;
+	const totalPages = totalDePaginas(totalItems, size);
+	const atual = Math.min(Math.max(1, page), totalPages);
+	return {
+		dados: todos.slice((atual - 1) * size, atual * size),
+		paginacao: { page: atual, pageSize: size, totalItems, totalPages }
+	};
+}
+
+// O back pode devolver Paginado (dados), `{data}` ou array puro.
+export function paraPaginado<T>(
+	res: Paginado<T> | T[] | { data: T[] } | null | undefined,
+	page = 1,
+	pageSize = PADRAO_TAMANHO_PAGINA
+): Paginado<T> {
+	if (res && !Array.isArray(res) && Array.isArray((res as Paginado<T>).dados)) {
+		return res as Paginado<T>;
+	}
+	return paginarClient(unwrapLista(res as T[] | { data: T[] }), page, pageSize);
+}
+
+// Mapper UPPER (back) → Title (exibição/filtro).
+export const STATUS_PROJETO_UPPER: Record<string, string> = {
+	PLANEJADO: 'Planejado',
+	EM_ANDAMENTO: 'Em andamento',
+	CONCLUIDO: 'Concluído',
+	CANCELADO: 'Cancelado'
+};
+
+export const STATUS_TAREFA_UPPER: Record<string, string> = {
+	PENDENTE: 'Pendente',
+	EM_ANDAMENTO: 'Em andamento',
+	CONCLUIDA: 'Concluída',
+	ATRASADA: 'Atrasada',
+	BLOQUEADA: 'Bloqueada'
+};
+
+export const PRIORIDADE_UPPER: Record<string, string> = {
+	BAIXA: 'Baixa',
+	MEDIA: 'Média',
+	ALTA: 'Alta'
+};
+
+export const KANBAN_UPPER: Record<string, string> = {
+	FILA: 'Fila',
+	PRODUCAO: 'Produção',
+	ACABAMENTO: 'Acabamento',
+	PRONTO: 'Pronto',
+	ENTREGUE: 'Entregue'
+};
+
+export const MAQUINA_STATUS_UPPER: Record<string, string> = {
+	DISPONIVEL: 'Disponível',
+	EM_USO: 'Em uso',
+	MANUTENCAO: 'Em manutenção',
+	SUSPENSA: 'Suspensa'
+};
+
 export function paginadoVazio<T>(): Paginado<T> {
 	return {
 		dados: [],

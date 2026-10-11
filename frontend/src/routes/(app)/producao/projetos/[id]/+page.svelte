@@ -80,7 +80,6 @@
 		const map: Record<Tarefa['prioridade'], string> = {
 			Baixa: 'inline-flex rounded-full bg-muted/10 px-2 py-0.5 text-[11px] font-medium text-muted',
 			Média: 'inline-flex rounded-full bg-warn/10 px-2 py-0.5 text-[11px] font-medium text-warn',
-			Moderada: 'inline-flex rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brandhi',
 			Alta: 'inline-flex rounded-full bg-danger/10 px-2 py-0.5 text-[11px] font-medium text-danger'
 		};
 		return map[prioridade];

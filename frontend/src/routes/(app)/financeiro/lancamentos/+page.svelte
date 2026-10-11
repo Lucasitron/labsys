@@ -139,11 +139,14 @@
 	}
 
 	function descricao(l: Lancamento): string {
-		return l.observacao?.trim() ? (l.observacao as string) : l.categoria.nome;
+		return l.observacao?.trim()
+			? (l.observacao as string)
+			: (l.categoria.nome ?? categoriaLabel(l.categoria.id));
 	}
 
 	function referencia(l: Lancamento): string {
-		return l.idReferenciaExterna ? `${l.codigo} • REF ${l.idReferenciaExterna}` : l.codigo;
+		const cod = l.codigo ?? `#${l.id}`;
+		return l.idReferenciaExterna ? `${cod} • REF ${l.idReferenciaExterna}` : cod;
 	}
 
 	// ---- Seleção + bulk ----
@@ -566,7 +569,7 @@
 											checked={sel}
 											onchange={(e) =>
 												alternarUm(l.id, (e.currentTarget as HTMLInputElement).checked)}
-											aria-label={`Selecionar ${l.codigo}`}
+											aria-label={`Selecionar ${l.codigo ?? l.id}`}
 											class="h-4 w-4 rounded border-border bg-surface accent-brand"
 										/>
 									</td>
@@ -577,7 +580,7 @@
 										<p class="truncate font-medium text-ink">{descricao(l)}</p>
 										<p class="font-mono text-xs text-muted">{referencia(l)}</p>
 									</td>
-									<td class="px-4 py-3 text-xs text-muted">{l.categoria.nome}</td>
+									<td class="px-4 py-3 text-xs text-muted">{l.categoria.nome ?? categoriaLabel(l.categoria.id)}</td>
 									<td class="px-4 py-3">
 										<TypeBadge tone={tp.color === 'success' ? 'success' : 'danger'} label={tp.label} />
 									</td>
@@ -795,7 +798,7 @@
 
 <Modal
 	open={detalhe !== null}
-	title={detalhe ? detalhe.codigo : 'Lançamento'}
+	title={detalhe ? (detalhe.codigo ?? `#${detalhe.id}`) : 'Lançamento'}
 	subtitle="Ficha do lançamento"
 	onClose={() => (detalhe = null)}
 	width="sm"
@@ -828,7 +831,7 @@
 				</div>
 				<div class="flex items-center justify-between gap-2">
 					<dt class="text-xs text-muted">Categoria</dt>
-					<dd class="text-ink">{detalhe.categoria.nome}</dd>
+					<dd class="text-ink">{detalhe.categoria.nome ?? categoriaLabel(detalhe.categoria.id)}</dd>
 				</div>
 				<div class="flex items-center justify-between gap-2">
 					<dt class="text-xs text-muted">Vencimento</dt>

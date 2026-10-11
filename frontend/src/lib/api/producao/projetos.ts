@@ -1,6 +1,6 @@
 import type { MaterialProjeto, Paginado, Projeto, ProjetoDocumento, ProjetoStatus, SaidaMaterial, TipoDocumentoProjeto } from '$lib/types/producao';
 import { apiFetch } from '../client';
-import { bearer, montarQuery } from './client';
+import { bearer, paginarClient, STATUS_PROJETO_UPPER, unwrapLista } from './client';
 
 const BASE = '/producao/projetos';
 
@@ -45,12 +45,41 @@ function validarUrlDocumento(url: string): string {
 	return resultado.toString();
 }
 
+export interface RawProjeto {
+	id: number | string;
+	nome: string;
+	descricao?: string | null;
+	dataFimPrevista?: string | null;
+	status: string;
+	idResponsavel: number | string;
+}
+
+export function mapProjeto(raw: RawProjeto): Projeto {
+	return {
+		id: String(raw.id),
+		codigo: '',
+		nome: raw.nome,
+		descricao: raw.descricao ?? undefined,
+		responsavel: { id: String(raw.idResponsavel), nome: '' },
+		prazo: raw.dataFimPrevista ?? '',
+		status: (STATUS_PROJETO_UPPER[raw.status] ?? 'Planejado') as ProjetoStatus,
+		progresso: 0
+	};
+}
+
 export async function obterProjetos(
 	params: ProjetoFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Projeto>> {
-	const qs = montarQuery(params);
-	return await apiFetch<Paginado<Projeto>>(`${BASE}${qs}`, { headers: bearer() }, fetchFn);
+	const res = await apiFetch<RawProjeto[] | { data: RawProjeto[] }>(BASE, { headers: bearer() }, fetchFn);
+	let todos = unwrapLista(res).map(mapProjeto);
+	if (params.status && params.status.length > 0) {
+		todos = todos.filter((p) => params.status!.includes(p.status));
+	}
+	if (params.responsavel && params.responsavel.length > 0) {
+		todos = todos.filter((p) => params.responsavel!.includes(p.responsavel.id));
+	}
+	return paginarClient(todos, params.page, params.pageSize);
 }
 
 export async function obterProjetoPorId(id: string, fetchFn: typeof fetch = fetch): Promise<Projeto> {
