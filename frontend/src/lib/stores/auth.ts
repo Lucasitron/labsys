@@ -82,6 +82,20 @@ export function setUser(user: User): void {
 	});
 }
 
+export function applyRefreshedTokens(token: string, refreshToken: string | null): void {
+	auth.update((state) => {
+		if (!state.user) return state;
+		const next: AuthState = {
+			...state,
+			token,
+			refreshToken: refreshToken ?? state.refreshToken,
+			isAuthenticated: true
+		};
+		persist(next);
+		return next;
+	});
+}
+
 export function logout(): void {
 	auth.set(EMPTY);
 

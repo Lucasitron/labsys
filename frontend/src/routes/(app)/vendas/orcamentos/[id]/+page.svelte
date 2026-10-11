@@ -4,6 +4,7 @@
 	import { get } from 'svelte/store';
 	import { auth } from '$lib/stores/auth';
 	import { createEncomenda } from '$lib/api/vendas/encomendas';
+	import { duplicarOrcamento } from '$lib/api/vendas/orcamentos';
 	import { ApiError } from '$lib/api/client';
 	import { canEditVendas } from '$lib/utils/permissions';
 	import { toUserMessage } from '$lib/utils/errors';
@@ -58,8 +59,24 @@
 		return `vencido há ${formatNumber(Math.abs(dias))} ${Math.abs(dias) === 1 ? 'dia' : 'dias'}`;
 	}
 
-	function duplicarIndisponivel(): void {
-		toasts.warn('Duplicação indisponível — backend pendente (D-2).');
+	let duplicando = $state(false);
+
+	async function duplicar(): Promise<void> {
+		if (!orcamento || duplicando) return;
+		if (!canEditVendas(usuario, { createdBy: orcamento.createdBy })) {
+			toasts.warn('Somente o criador ou Admin pode duplicar este orçamento.');
+			return;
+		}
+		duplicando = true;
+		try {
+			const copia = await duplicarOrcamento(id);
+			toasts.success(`Orçamento ${copia.codigo ?? copia.id} duplicado.`);
+			await goto(`/vendas/orcamentos/${copia.id}`);
+		} catch (err) {
+			toasts.danger(toUserMessage(err).message);
+		} finally {
+			duplicando = false;
+		}
 	}
 
 	let sugerirAberto = $state(false);
@@ -157,7 +174,7 @@
 						{ id: 'duplicar', label: 'Duplicar', icon: 'duplicate' }
 					]}
 					onSelect={(acao) => {
-						if (acao === 'duplicar') duplicarIndisponivel();
+						if (acao === 'duplicar') void duplicar();
 						else if (acao === 'ver-encomenda' && orcamento.encomendaId)
 							void goto(`/vendas/encomendas/${orcamento.encomendaId}`);
 					}}

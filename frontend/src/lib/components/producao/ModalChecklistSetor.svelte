@@ -2,8 +2,8 @@
 	import { onMount } from 'svelte';
 	import type { Setor5S } from '$lib/types/producao';
 	import {
-		aprovarAlteracaoDoSetor,
-		atualizarChecklistDoSetor
+		adicionarChecklistDoSetor,
+		obterSetor5SPorId
 	} from '$lib/api/producao/client';
 	import { ApiError, NetworkError } from '$lib/api/client';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -66,21 +66,24 @@
 	async function salvar(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
 		const limpos = itensLocal.map((i) => i.trim()).filter((i) => i.length > 0);
-		if (limpos.length === 0) {
-			erro = 'Adicione ao menos um item específico.';
+		const originais = new Set(itens.map((i) => i.trim()).filter((i) => i.length > 0));
+		const novos = limpos.filter((i) => !originais.has(i));
+		if (novos.length === 0) {
+			erro = 'Adicione ao menos um item novo (remoção/edição por item segue no Lote 3).';
 			return;
 		}
 		enviando = true;
 		erro = '';
 		try {
-			let atualizado: Setor5S;
-			if (isAdmin) {
-				atualizado = await atualizarChecklistDoSetor(setor.id, { itens: limpos });
-				onSalvo?.(atualizado, false);
-			} else {
-				atualizado = await aprovarAlteracaoDoSetor(setor.id, { aprovado: false });
-				onSalvo?.(atualizado, true);
+			if (!isAdmin) {
+				erro = 'Aprovação de alteração indisponível — sem par no backend (Lote 3).';
+				return;
 			}
+			for (const item of novos) {
+				await adicionarChecklistDoSetor(setor.id, { item });
+			}
+			const atualizado = await obterSetor5SPorId(setor.id);
+			onSalvo?.(atualizado, false);
 		} catch (err) {
 			erro = mensagemErro(err);
 		} finally {

@@ -10,6 +10,7 @@
 		getTreinamento
 	} from '$lib/api/rh/treinamentos';
 	import type { TreinamentoDetail, TreinamentoSessao } from '$lib/types/rh';
+	import type { PersonOption } from '$lib/api/rh';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { trainingStatusMeta } from '$lib/utils/rh-status';
 	import { canEditRH, isInstrutor } from '$lib/utils/permissions';
@@ -17,6 +18,7 @@
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import PeoplePicker from '$lib/components/estoque/PeoplePicker.svelte';
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import TableSkeleton from '$lib/components/ui/TableSkeleton.svelte';
@@ -65,7 +67,7 @@
 				if (!sinal.aborted) carregando = false;
 			});
 
-		void getSessao(treinamentoId, fetch)
+		void getSessao()
 			.then((res) => {
 				if (!sinal.aborted) sessao = res;
 			})
@@ -115,11 +117,13 @@
 	let modalAvaliar = $state(false);
 	let nota = $state('');
 	let feedback = $state('');
+	let avaliado = $state<PersonOption | null>(null);
 	let erroAvaliar = $state<string | null>(null);
 
 	function abrirAvaliar(): void {
 		nota = '';
 		feedback = '';
+		avaliado = null;
 		erroAvaliar = null;
 		modalAvaliar = true;
 	}
@@ -131,9 +135,17 @@
 			erroAvaliar = 'Informe uma nota de 0 a 10.';
 			return;
 		}
+		if (!avaliado) {
+			erroAvaliar = 'Selecione o funcionário avaliado.';
+			return;
+		}
 		mutando = true;
 		try {
-			await avaliarTreinamento(detalhe.id, { nota: valor, feedback: feedback.trim() });
+			await avaliarTreinamento(detalhe.id, {
+				nota: valor,
+				feedback: feedback.trim(),
+				pessoaId: avaliado.id
+			});
 			toasts.success('Avaliação registrada com sucesso.');
 			modalAvaliar = false;
 			tentarNovamente();
@@ -170,10 +182,7 @@
 		}
 		mutando = true;
 		try {
-			await atribuirTarefaFinal(detalhe.id, {
-				title: tarefaTitulo.trim(),
-				dataConclusao: tarefaConclusao
-			});
+			await atribuirTarefaFinal();
 			toasts.success('Tarefa final atribuída com sucesso.');
 			modalTarefa = false;
 			tentarNovamente();
@@ -482,6 +491,10 @@
 					{erroAvaliar}
 				</p>
 			{/if}
+			<div>
+				<span class={labelCls}>Funcionário avaliado <span class="text-danger" aria-hidden="true">*</span></span>
+				<PeoplePicker selected={avaliado} onSelect={(p) => (avaliado = p)} hint="Quem recebe a avaliação" />
+			</div>
 			<div>
 				<label for="ava-nota" class={labelCls}>
 					Nota (0 a 10) <span class="text-danger" aria-hidden="true">*</span>

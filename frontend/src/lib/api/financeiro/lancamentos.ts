@@ -101,12 +101,11 @@ export async function listLancamentos(
 }
 
 export async function getLancamento(id: string, fetchFn: typeof fetch = fetch): Promise<Lancamento> {
-	const raw = await apiFetch<RawLancamento>(
-		`${BASE}/${encodeURIComponent(id)}`,
-		{ headers: bearer() },
-		fetchFn
-	);
-	return mapLancamento(raw);
+	// Sem rota :id no back (D10) — detalhe via lista/filtro.
+	const { lancamentos } = await listLancamentos({}, fetchFn);
+	const achado = lancamentos.find((l) => l.id === id);
+	if (!achado) throw new Error('Lançamento não encontrado.');
+	return achado;
 }
 
 export async function createLancamento(

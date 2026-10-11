@@ -74,6 +74,7 @@ export interface Projeto {
 	descricao?: string;
 	responsavel: NomeFunc;
 	prazo: string;
+	dataInicio?: string;
 	status: ProjetoStatus;
 	progresso: number;
 }

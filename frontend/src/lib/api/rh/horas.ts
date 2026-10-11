@@ -161,15 +161,16 @@ export async function rejeitarHoras(
 export async function getHorasDisponiveis(
 	fetchFn: typeof fetch = fetch
 ): Promise<ExtratoMensalHoras> {
-	const raw = await apiFetch<Partial<ExtratoMensalHoras>>(
+	const raw = await apiFetch<{ idFuncionario?: number | string | null; totalHorasDisponiveis?: number | string | null }>(
 		'/rh/horas/disponiveis',
 		{ headers: bearer() },
 		fetchFn
 	);
+	// O back serve só o total validado não consolidado (sem quebra por status).
 	return {
-		periodo: raw.periodo ?? '',
-		validadas: Number(raw.validadas ?? 0),
-		pendentes: Number(raw.pendentes ?? 0),
-		rejeitadas: Number(raw.rejeitadas ?? 0)
+		periodo: '',
+		validadas: Number(raw.totalHorasDisponiveis ?? 0),
+		pendentes: 0,
+		rejeitadas: 0
 	};
 }

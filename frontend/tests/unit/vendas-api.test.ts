@@ -44,6 +44,11 @@ async function freshEncomendas() {
 	return await import('$lib/api/vendas/encomendas');
 }
 
+async function freshOrcamentos() {
+	vi.resetModules();
+	return await import('$lib/api/vendas/orcamentos');
+}
+
 async function freshMarketplace() {
 	vi.resetModules();
 	return await import('$lib/api/vendas/marketplace');
@@ -120,15 +125,35 @@ describe('vendas/api — encomendas (Kanban)', () => {
 		expect(chamada().init['body']).toBe(JSON.stringify({ statusKanban: 'Produção', versao: 3 }));
 	});
 
-	it('createEncomenda converte orçamento via {idOrcamento}', async () => {
-		apiFetchMock.mockResolvedValue({ id: 'e9' });
+	it('createEncomenda converte orçamento via {idOrcamento} int', async () => {
+		apiFetchMock.mockResolvedValue({ id: 9, idCliente: 1, dataCriacao: '2026-09-20', statusKanban: 'Fila', valorFinal: '100', versao: 1 });
 		const { createEncomenda } = await freshEncomendas();
 
-		await createEncomenda({ idOrcamento: 'oc1' });
+		await createEncomenda({ idOrcamento: '5' });
 
 		expect(chamada().path).toBe('/vendas/encomendas');
 		expect(chamada().init['method']).toBe('POST');
-		expect(chamada().init['body']).toBe(JSON.stringify({ idOrcamento: 'oc1' }));
+		expect(chamada().init['body']).toBe(JSON.stringify({ idOrcamento: 5 }));
+	});
+
+	it('duplicarOrcamento usa POST …/{id}/duplicar; novaOrdem e historico-status fiados', async () => {
+		apiFetchMock.mockImplementation(async (path: string) => {
+			if (String(path).includes('historico-status')) return [];
+			return { id: 9, clienteId: 1, dataCriacao: '2026-09-20', validade: null, valorTotal: '100', status: 'Pendente', criadoPor: 1 };
+		});
+		const { duplicarOrcamento } = await freshOrcamentos();
+		const { novaOrdem, getHistoricoStatus } = await freshEncomendas();
+
+		await duplicarOrcamento('3');
+		expect(chamada(0).path).toBe('/vendas/orcamentos/3/duplicar');
+		expect(chamada(0).init['method']).toBe('POST');
+
+		await novaOrdem('7', { valorFinal: 120 });
+		expect(chamada(1).path).toBe('/vendas/encomendas/7/nova-ordem');
+		expect(chamada(1).init['body']).toBe(JSON.stringify({ valorFinal: 120 }));
+
+		await getHistoricoStatus('7');
+		expect(chamada(2).path).toBe('/vendas/historico-status/7');
 	});
 });
 

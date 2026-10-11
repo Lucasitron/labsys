@@ -158,7 +158,7 @@ import { toastError, toasts } from '$lib/stores/toast';
 	async function atribuir(): Promise<void> {
 		if (!modalDetalhe || !novoResponsavelId) return;
 		try {
-			await atribuirTarefa(modalDetalhe.id, { responsavelId: novoResponsavelId });
+			await atribuirTarefa();
 			toasts.success('Responsável atualizado');
 			modalDetalhe = null;
 			await invalidateAll();

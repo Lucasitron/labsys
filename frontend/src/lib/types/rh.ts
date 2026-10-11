@@ -249,6 +249,8 @@ export interface TreinamentoSessao {
 export interface AvaliarTreinamentoPayload {
 	nota: number;
 	feedback: string;
+	idFuncionario?: string;
+	pessoaId?: string;
 	instructorId?: string;
 	groupId?: string;
 }
@@ -308,6 +310,6 @@ export interface NivelMatrix {
 
 export interface ConvidarUsuarioPayload {
 	name: string;
-	email: string;
+	matricula: string;
 	nivel: Nivel;
 }

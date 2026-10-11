@@ -77,9 +77,9 @@ export async function createEncomenda(
 	fetchFn: typeof fetch = fetch
 ): Promise<Encomenda> {
 	const body: Record<string, unknown> = {};
-	if (payload.idOrcamento !== undefined) body['idOrcamento'] = payload.idOrcamento;
-	if (payload.clienteId !== undefined) body['clienteId'] = payload.clienteId;
-	if (payload.valorFinal !== undefined) body['valorFinal'] = payload.valorFinal;
+	if (payload.idOrcamento !== undefined) body['idOrcamento'] = Number(payload.idOrcamento);
+	if (payload.clienteId !== undefined) body['clienteId'] = Number(payload.clienteId);
+	if (payload.valorFinal !== undefined) body['valorFinal'] = Number(payload.valorFinal);
 	if (payload.previsao !== undefined) body['dataPrevisaoEntrega'] = payload.previsao;
 	if (payload.observacoes !== undefined) body['observacoes'] = payload.observacoes;
 	const raw = await apiFetch<RawEncomenda>(
@@ -109,4 +109,58 @@ export async function moverKanban(
 		fetchFn
 	);
 	return mapEncomenda(raw);
+}
+
+export interface NovaOrdemPayload {
+	valorFinal: number;
+	dataPrevisaoEntrega?: string;
+	observacoes?: string;
+}
+
+export async function novaOrdem(
+	id: string,
+	payload: NovaOrdemPayload,
+	fetchFn: typeof fetch = fetch
+): Promise<Encomenda> {
+	const raw = await apiFetch<RawEncomenda>(
+		`/vendas/encomendas/${id}/nova-ordem`,
+		{
+			method: 'POST',
+			headers: bearer(),
+			body: JSON.stringify({
+				valorFinal: Number(payload.valorFinal),
+				...(payload.dataPrevisaoEntrega ? { dataPrevisaoEntrega: payload.dataPrevisaoEntrega } : {}),
+				...(payload.observacoes ? { observacoes: payload.observacoes } : {})
+			})
+		},
+		fetchFn
+	);
+	return mapEncomenda(raw);
+}
+
+export interface RawHistorico {
+	statusAnterior: string;
+	statusNovo: string;
+	dataAlteracao: string;
+	idUsuario?: number | string | null;
+	responsavel?: string | null;
+	observacao?: string | null;
+}
+
+export async function getHistoricoStatus(
+	idEncomenda: string,
+	fetchFn: typeof fetch = fetch
+): Promise<import('$lib/types/vendas').HistoricoEncomenda[]> {
+	const raw = await apiFetch<RawHistorico[]>(
+		`/vendas/historico-status/${idEncomenda}`,
+		{ headers: bearer() },
+		fetchFn
+	);
+	return (raw ?? []).map((h) => ({
+		statusAnterior: h.statusAnterior as import('$lib/types/vendas').KanbanStatus,
+		statusNovo: h.statusNovo as import('$lib/types/vendas').KanbanStatus,
+		dataAlteracao: h.dataAlteracao,
+		responsavel: h.responsavel ?? (h.idUsuario != null ? String(h.idUsuario) : ''),
+		...(h.observacao ? { observacao: h.observacao } : {})
+	}));
 }

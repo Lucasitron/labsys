@@ -4,6 +4,7 @@
 	import { get } from 'svelte/store';
 	import { auth } from '$lib/stores/auth';
 	import type { Orcamento } from '$lib/types/vendas';
+	import { duplicarOrcamento } from '$lib/api/vendas/orcamentos';
 	import { canEditVendas } from '$lib/utils/permissions';
 	import { formatNumber } from '$lib/utils/format';
 	import { formatDateBR, formatMoneyBRL } from '$lib/utils/vendas-format';
@@ -131,8 +132,24 @@
 		void goto(`/vendas/orcamentos/${id}`);
 	}
 
-	function duplicarIndisponivel(): void {
-		toasts.warn('Duplicação indisponível — backend pendente (D-2).');
+	let duplicandoId = $state<string | null>(null);
+
+	async function duplicar(orcamento: Orcamento): Promise<void> {
+		if (duplicandoId) return;
+		if (!canEditVendas(usuario, { createdBy: orcamento.createdBy })) {
+			toasts.warn('Somente o criador ou Admin pode duplicar este orçamento.');
+			return;
+		}
+		duplicandoId = orcamento.id;
+		try {
+			const copia = await duplicarOrcamento(orcamento.id);
+			toasts.success(`Orçamento ${copia.codigo ?? copia.id} duplicado.`);
+			await goto(`/vendas/orcamentos/${copia.id}`);
+		} catch (err) {
+			toasts.danger(err instanceof Error ? err.message : 'Não foi possível duplicar.');
+		} finally {
+			duplicandoId = null;
+		}
 	}
 
 	let sugerirAlvo = $state<Orcamento | null>(null);
@@ -141,7 +158,7 @@
 		if (acao === 'ver') abrirOrcamento(orcamento.id);
 		else if (acao === 'editar') abrirOrcamento(orcamento.id);
 		else if (acao === 'sugerir') sugerirAlvo = orcamento;
-		else if (acao === 'duplicar') duplicarIndisponivel();
+		else if (acao === 'duplicar') void duplicar(orcamento);
 	}
 
 	const temProxima = $derived(orcamentos.length >= params.pageSize);

@@ -75,7 +75,28 @@ export async function createOrcamento(
 ): Promise<Orcamento> {
 	const raw = await apiFetch<RawOrcamento>(
 		'/vendas/orcamentos',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
+		{
+			method: 'POST',
+			headers: bearer(),
+			body: JSON.stringify({
+				...payload,
+				clienteId: Number(payload.clienteId),
+				itens: payload.itens.map((i) => ({
+					...i,
+					quantidade: Number(i.quantidade),
+					valorUnitario: Number(i.valorUnitario),
+					...(i.horas !== undefined ? { horas: Number(i.horas) } : {}),
+					...(i.material
+						? {
+								material: {
+									...i.material,
+									quantidade: Number(i.material.quantidade)
+								}
+							}
+						: {})
+				}))
+			})
+		},
 		fetchFn
 	);
 	return mapOrcamento(raw);
@@ -86,9 +107,23 @@ export async function updateOrcamento(
 	payload: UpdateOrcamentoPayload,
 	fetchFn: typeof fetch = fetch
 ): Promise<Orcamento> {
+	const body: Record<string, unknown> = { ...payload };
+	if (payload.clienteId !== undefined) body['clienteId'] = Number(payload.clienteId);
 	const raw = await apiFetch<RawOrcamento>(
 		`/vendas/orcamentos/${id}`,
-		{ method: 'PUT', headers: bearer(), body: JSON.stringify(payload) },
+		{ method: 'PUT', headers: bearer(), body: JSON.stringify(body) },
+		fetchFn
+	);
+	return mapOrcamento(raw);
+}
+
+export async function duplicarOrcamento(
+	id: string,
+	fetchFn: typeof fetch = fetch
+): Promise<Orcamento> {
+	const raw = await apiFetch<RawOrcamento>(
+		`/vendas/orcamentos/${id}/duplicar`,
+		{ method: 'POST', headers: bearer() },
 		fetchFn
 	);
 	return mapOrcamento(raw);

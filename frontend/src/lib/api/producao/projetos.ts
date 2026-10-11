@@ -13,11 +13,11 @@ export type ProjetoFiltros = {
 
 export interface CriarProjetoPayload {
 	nome: string;
-	cliente?: string;
 	descricao?: string;
-	responsavelId: string;
-	prazo: string;
-	status: ProjetoStatus;
+	dataInicio: string;
+	dataFimPrevista?: string;
+	idResponsavel: string;
+	status?: ProjetoStatus;
 }
 
 export interface CriarDocumentoPayload {
@@ -45,10 +45,43 @@ function validarUrlDocumento(url: string): string {
 	return resultado.toString();
 }
 
+const PROJETO_STATUS_PARA_UPPER: Record<ProjetoStatus, string> = {
+	Planejado: 'PLANEJADO',
+	'Em andamento': 'EM_ANDAMENTO',
+	Concluído: 'CONCLUIDO',
+	Cancelado: 'CANCELADO'
+};
+
+function paraPayloadProjeto(payload: CriarProjetoPayload | Partial<CriarProjetoPayload>): Record<string, unknown> {
+	const idResponsavel = Number(
+		(payload as CriarProjetoPayload).idResponsavel ?? (payload as { responsavelId?: string }).responsavelId
+	);
+	if (!Number.isInteger(idResponsavel)) {
+		throw new Error('Informe o responsável pelo projeto.');
+	}
+	const dataInicio =
+		(payload as CriarProjetoPayload).dataInicio ?? (payload as { prazo?: string }).prazo;
+	if (!dataInicio) {
+		throw new Error('Informe a data de início do projeto.');
+	}
+	const body: Record<string, unknown> = {
+		nome: (payload as CriarProjetoPayload).nome,
+		dataInicio,
+		idResponsavel
+	};
+	if (payload.descricao !== undefined) body['descricao'] = payload.descricao;
+	const dataFim =
+		(payload as CriarProjetoPayload).dataFimPrevista ?? (payload as { prazo?: string }).prazo;
+	if (dataFim) body['dataFimPrevista'] = dataFim;
+	if (payload.status !== undefined) body['status'] = PROJETO_STATUS_PARA_UPPER[payload.status];
+	return body;
+}
+
 export interface RawProjeto {
 	id: number | string;
 	nome: string;
 	descricao?: string | null;
+	dataInicio?: string | null;
 	dataFimPrevista?: string | null;
 	status: string;
 	idResponsavel: number | string;
@@ -62,6 +95,7 @@ export function mapProjeto(raw: RawProjeto): Projeto {
 		descricao: raw.descricao ?? undefined,
 		responsavel: { id: String(raw.idResponsavel), nome: '' },
 		prazo: raw.dataFimPrevista ?? '',
+		...(raw.dataInicio ? { dataInicio: raw.dataInicio.slice(0, 10) } : {}),
 		status: (STATUS_PROJETO_UPPER[raw.status] ?? 'Planejado') as ProjetoStatus,
 		progresso: 0
 	};
@@ -90,7 +124,7 @@ export function criarProjeto(payload: CriarProjetoPayload): Promise<Projeto> {
 	return apiFetch<Projeto>(BASE, {
 		method: 'POST',
 		headers: bearer(),
-		body: JSON.stringify(payload)
+		body: JSON.stringify(paraPayloadProjeto(payload))
 	});
 }
 
@@ -98,7 +132,7 @@ export function atualizarProjeto(id: string, payload: Partial<CriarProjetoPayloa
 	return apiFetch<Projeto>(`${BASE}/${id}`, {
 		method: 'PUT',
 		headers: bearer(),
-		body: JSON.stringify(payload)
+		body: JSON.stringify(paraPayloadProjeto(payload))
 	});
 }
 

@@ -11,23 +11,35 @@ export type KanbanFiltros = {
 
 export interface MoverKanbanItemPayload {
 	coluna: KanbanColuna;
+	version: number;
+	observacao?: string;
 }
+
+const KANBAN_PARA_UPPER: Record<KanbanColuna, string> = {
+	Fila: 'FILA',
+	Produção: 'PRODUCAO',
+	Acabamento: 'ACABAMENTO',
+	Pronto: 'PRONTO',
+	Entregue: 'ENTREGUE'
+};
 
 export interface RawKanban {
 	id: number | string;
 	idEncomenda: number | string;
 	status: string;
 	idResponsavel?: number | string | null;
+	version?: number | string | null;
 }
 
-export function mapKanban(raw: RawKanban): KanbanItem {
+export function mapKanban(raw: RawKanban): KanbanItem & { version: number } {
 	return {
 		id: String(raw.id),
 		codigo: '',
 		titulo: `#${raw.idEncomenda}`,
 		coluna: (KANBAN_UPPER[raw.status] ?? 'Fila') as KanbanColuna,
 		responsavel:
-			raw.idResponsavel != null ? { id: String(raw.idResponsavel), nome: '' } : null
+			raw.idResponsavel != null ? { id: String(raw.idResponsavel), nome: '' } : null,
+		version: raw.version != null ? Number(raw.version) : 0
 	};
 }
 
@@ -45,9 +57,17 @@ export async function obterKanban(
 }
 
 export function moverKanbanItem(id: string, payload: MoverKanbanItemPayload): Promise<KanbanItem> {
+	if (!Number.isInteger(payload.version)) {
+		throw new Error('Versão do cartão exigida para mover no kanban.');
+	}
+	const body: Record<string, unknown> = {
+		statusNovo: KANBAN_PARA_UPPER[payload.coluna],
+		version: payload.version
+	};
+	if (payload.observacao) body['observacao'] = payload.observacao;
 	return apiFetch<KanbanItem>(`${BASE}/${id}/mover`, {
-		method: 'PATCH',
+		method: 'PUT',
 		headers: bearer(),
-		body: JSON.stringify(payload)
+		body: JSON.stringify(body)
 	});
 }

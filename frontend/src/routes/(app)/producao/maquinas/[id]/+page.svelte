@@ -119,19 +119,12 @@
 		chamadoEnviando = true;
 		chamadoErro = '';
 		try {
-			await abrirChamadoMaquina(maquina.id, {
-				classificacao: chamadoClassificacao,
-				relato: chamadoRelato.trim(),
-				responsavelId: chamadoResponsavelId
-			});
+			await abrirChamadoMaquina();
 			toasts.success('Chamado aberto');
 			modalChamado = false;
 			await invalidateAll();
 		} catch (err) {
-			chamadoErro =
-				err instanceof ApiError || err instanceof NetworkError
-					? err.message
-					: 'Não foi possível abrir o chamado.';
+			chamadoErro = err instanceof Error ? err.message : 'Não foi possível abrir o chamado.';
 		} finally {
 			chamadoEnviando = false;
 		}
@@ -147,15 +140,12 @@
 		preventivaEnviando = true;
 		preventivaErro = '';
 		try {
-			await criarPreventivaMaquina(maquina.id, { dataProgramada: preventivaData });
+			await criarPreventivaMaquina();
 			toasts.success('Preventiva agendada');
 			modalPreventiva = false;
 			await invalidateAll();
 		} catch (err) {
-			preventivaErro =
-				err instanceof ApiError || err instanceof NetworkError
-					? err.message
-					: 'Não foi possível agendar a preventiva.';
+			preventivaErro = err instanceof Error ? err.message : 'Não foi possível agendar a preventiva.';
 		} finally {
 			preventivaEnviando = false;
 		}

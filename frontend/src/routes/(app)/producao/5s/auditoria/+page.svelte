@@ -127,7 +127,7 @@
 		salvarNomeacao = true;
 		erroNomeacao = null;
 		try {
-			await nomearAuditor5S(alvo.id, { auditorId: auditorSelecionado });
+			await nomearAuditor5S();
 			fecharNomear();
 			await invalidateAll();
 		} catch (err) {

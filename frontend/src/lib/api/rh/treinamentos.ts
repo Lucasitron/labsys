@@ -2,7 +2,6 @@ import { get } from 'svelte/store';
 import { apiFetch } from '$lib/api/client';
 import { auth } from '$lib/stores/auth';
 import type {
-	AtribuirTarefaFinalPayload,
 	AvaliarTreinamentoPayload,
 	FinalTask,
 	GuiasResult,
@@ -44,72 +43,55 @@ export async function getTreinamento(
 	);
 }
 
-export async function getSessao(id: string, fetchFn: typeof fetch = fetch): Promise<TreinamentoSessao> {
-	return await apiFetch<TreinamentoSessao>(
-		`/rh/treinamentos/${id}/sessao`,
-		{ headers: bearer() },
-		fetchFn
-	);
-}
-
 export async function avaliarTreinamento(
 	id: string,
 	payload: AvaliarTreinamentoPayload,
 	fetchFn: typeof fetch = fetch
 ): Promise<void> {
+	let idFuncionario = payload.idFuncionario ? Number(payload.idFuncionario) : NaN;
+	if (!Number.isInteger(idFuncionario) && payload.pessoaId) {
+		const detalhe = await apiFetch<{ idFuncionario?: number | string | null }>(
+			`/rh/pessoas/${payload.pessoaId}/detalhe`,
+			{ headers: bearer() },
+			fetchFn
+		);
+		idFuncionario = Number(detalhe.idFuncionario);
+	}
+	if (!Number.isInteger(idFuncionario)) {
+		throw new Error('Selecione o funcionário avaliado.');
+	}
 	await apiFetch<void>(
-		`/rh/treinamentos/${id}/avaliar`,
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
+		`/rh/treinamentos/${id}/avaliacoes`,
+		{
+			method: 'POST',
+			headers: bearer(),
+			body: JSON.stringify({
+				idFuncionario,
+				nota: Number(payload.nota),
+				...(payload.feedback?.trim() ? { feedback: payload.feedback.trim() } : {})
+			})
+		},
 		fetchFn
 	);
 }
 
-export async function atribuirTarefaFinal(
-	id: string,
-	payload: AtribuirTarefaFinalPayload,
-	fetchFn: typeof fetch = fetch
-): Promise<FinalTask> {
-	return await apiFetch<FinalTask>(
-		`/rh/treinamentos/${id}/tarefa-final`,
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
-		fetchFn
-	);
+// Sem par no backend (F35, Lote 3 do back): gateadas com mensagem.
+export async function getSessao(): Promise<TreinamentoSessao> {
+	throw new Error('Sessão de treinamento indisponível — sem par no backend (Lote 3).');
 }
 
-export async function listAgenda(
-	params: { tab?: string } = {},
-	fetchFn: typeof fetch = fetch
-): Promise<TreinamentosResult> {
-	const query = new URLSearchParams();
-	if (params.tab) query.set('tab', params.tab);
-	const qs = query.toString();
-	return await apiFetch<TreinamentosResult>(
-		`/rh/treinamentos/agenda${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
-		fetchFn
-	);
+export async function atribuirTarefaFinal(): Promise<FinalTask> {
+	throw new Error('Tarefa final indisponível — sem par no backend (Lote 3).');
 }
 
-export async function getDisponibilidade(
-	fetchFn: typeof fetch = fetch
-): Promise<InstrutorDisponibilidade[]> {
-	return await apiFetch<InstrutorDisponibilidade[]>(
-		'/rh/treinamentos/disponibilidade',
-		{ headers: bearer() },
-		fetchFn
-	);
+export async function listAgenda(): Promise<TreinamentosResult> {
+	throw new Error('Agenda de treinamentos indisponível — sem par no backend (Lote 3).');
 }
 
-export async function listGuias(
-	params: { maquinaId?: string } = {},
-	fetchFn: typeof fetch = fetch
-): Promise<GuiasResult> {
-	const query = new URLSearchParams();
-	if (params.maquinaId) query.set('maquinaId', params.maquinaId);
-	const qs = query.toString();
-	return await apiFetch<GuiasResult>(
-		`/rh/treinamentos/guias${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
-		fetchFn
-	);
+export async function getDisponibilidade(): Promise<InstrutorDisponibilidade[]> {
+	throw new Error('Disponibilidade de instrutores indisponível — sem par no backend (Lote 3).');
+}
+
+export async function listGuias(): Promise<GuiasResult> {
+	throw new Error('Guias indisponíveis — sem par no backend (Lote 3).');
 }

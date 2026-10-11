@@ -203,9 +203,10 @@ export interface SolicitacaoCompra {
 }
 
 export interface CreateSolicitacaoCompraPayload {
-	item: string;
+	idItemEstoque?: string;
+	item?: string;
 	quantidade: number;
-	valorEstimado: number;
+	valorEstimado?: number;
 	observacao?: string;
 }
 
@@ -217,7 +218,7 @@ export interface ConcluirCompraPayload {
 
 export interface ConcluirCompraResult {
 	status: CompraStatus;
-	lancamentoGerado: string;
+	lancamentoGerado?: string;
 }
 
 export interface ResumoFinanceiro {

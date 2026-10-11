@@ -16,26 +16,30 @@ export type TarefaFiltros = {
 export interface CriarTarefaPayload {
 	titulo: string;
 	descricao?: string;
-	projetoId?: string;
-	responsavelId: string;
-	prioridade: Prioridade;
-	prazo: string;
-	status: TarefaStatus;
+	idProjeto: string;
+	idResponsavel?: string;
+	dataInicio?: string;
+	dataFimPrevista?: string;
+	prioridade?: Prioridade;
 }
 
 export interface MoverTarefaPayload {
 	status: TarefaStatus;
+	dataConclusao?: string;
 }
 
-export interface ApontarHorasTarefaPayload {
-	horas: number;
-	minutos: number;
-	data: string;
-}
+const TAREFA_STATUS_PARA_UPPER: Record<string, string> = {
+	Pendente: 'PENDENTE',
+	'Em andamento': 'EM_ANDAMENTO',
+	Concluída: 'CONCLUIDA',
+	Atrasada: 'ATRASADA'
+};
 
-export interface AtribuirTarefaPayload {
-	responsavelId: string;
-}
+const PRIORIDADE_PARA_UPPER: Record<Prioridade, string> = {
+	Baixa: 'BAIXA',
+	Média: 'MEDIA',
+	Alta: 'ALTA'
+};
 
 export interface RawTarefa {
 	id: number | string;
@@ -88,10 +92,25 @@ export async function obterTarefas(
 }
 
 export function criarTarefa(payload: CriarTarefaPayload): Promise<Tarefa> {
+	const idProjeto = Number(payload.idProjeto);
+	if (!payload.idProjeto || !Number.isInteger(idProjeto)) {
+		throw new Error('Selecione o projeto da tarefa.');
+	}
+	const body: Record<string, unknown> = {
+		idProjeto,
+		titulo: payload.titulo
+	};
+	if (payload.descricao !== undefined) body['descricao'] = payload.descricao;
+	if (payload.idResponsavel !== undefined && payload.idResponsavel !== '') {
+		body['idResponsavel'] = Number(payload.idResponsavel);
+	}
+	if (payload.dataInicio) body['dataInicio'] = payload.dataInicio;
+	if (payload.dataFimPrevista) body['dataFimPrevista'] = payload.dataFimPrevista;
+	if (payload.prioridade !== undefined) body['prioridade'] = PRIORIDADE_PARA_UPPER[payload.prioridade];
 	return apiFetch<Tarefa>(BASE, {
 		method: 'POST',
 		headers: bearer(),
-		body: JSON.stringify(payload)
+		body: JSON.stringify(body)
 	});
 }
 
@@ -104,25 +123,28 @@ export function atualizarTarefa(id: string, payload: Partial<CriarTarefaPayload>
 }
 
 export function moverTarefa(id: string, payload: MoverTarefaPayload): Promise<Tarefa> {
-	return apiFetch<Tarefa>(`${BASE}/${id}/mover`, {
-		method: 'PATCH',
+	const status = TAREFA_STATUS_PARA_UPPER[payload.status];
+	if (!status) {
+		throw new Error(`Status de tarefa sem par no backend: ${payload.status}.`);
+	}
+	const body: Record<string, unknown> = { status };
+	if (payload.dataConclusao) body['dataConclusao'] = payload.dataConclusao;
+	return apiFetch<Tarefa>(`${BASE}/${id}/status`, {
+		method: 'PUT',
 		headers: bearer(),
-		body: JSON.stringify(payload)
+		body: JSON.stringify(body)
 	});
 }
 
-export function apontarHorasTarefa(id: string, payload: ApontarHorasTarefaPayload): Promise<Tarefa> {
-	return apiFetch<Tarefa>(`${BASE}/${id}/apontar-horas`, {
-		method: 'PATCH',
-		headers: bearer(),
-		body: JSON.stringify(payload)
-	});
+// Rotas inexistentes no backend (F41): gateadas com mensagem, sem mapear no vazio.
+export function apontarHorasTarefa(): Promise<never> {
+	return Promise.reject(
+		new Error('Apontar horas na tarefa indisponível — sem par no backend (Lote 3).')
+	);
 }
 
-export function atribuirTarefa(id: string, payload: AtribuirTarefaPayload): Promise<Tarefa> {
-	return apiFetch<Tarefa>(`${BASE}/${id}/atribuir`, {
-		method: 'PATCH',
-		headers: bearer(),
-		body: JSON.stringify(payload)
-	});
+export function atribuirTarefa(): Promise<never> {
+	return Promise.reject(
+		new Error('Atribuir tarefa indisponível — sem par no backend (Lote 3).')
+	);
 }

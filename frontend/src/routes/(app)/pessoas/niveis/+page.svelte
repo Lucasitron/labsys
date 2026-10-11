@@ -107,14 +107,14 @@
 
 	let modalConvidar = $state(false);
 	let nomeConvite = $state('');
-	let emailConvite = $state('');
+	let matriculaConvite = $state('');
 	let nivelConvite = $state<Nivel | ''>('');
 	let errosConvite = $state<Record<string, string>>({});
 	let convidando = $state(false);
 
 	function abrirConvidar(): void {
 		nomeConvite = '';
-		emailConvite = '';
+		matriculaConvite = '';
 		nivelConvite = '';
 		errosConvite = {};
 		modalConvidar = true;
@@ -124,9 +124,7 @@
 		if (convidando) return;
 		const novos: Record<string, string> = {};
 		if (!nomeConvite.trim()) novos['nome'] = 'Informe o nome.';
-		if (!emailConvite.trim()) novos['email'] = 'Informe o e-mail.';
-		else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailConvite.trim()))
-			novos['email'] = 'Informe um e-mail válido.';
+		if (!matriculaConvite.trim()) novos['matricula'] = 'Informe a matrícula.';
 		if (!nivelConvite) novos['nivel'] = 'Selecione o nível.';
 		errosConvite = novos;
 		if (Object.keys(novos).length > 0) return;
@@ -134,7 +132,7 @@
 		try {
 			await convidarUsuario({
 				name: nomeConvite.trim(),
-				email: emailConvite.trim(),
+				matricula: matriculaConvite.trim(),
 				nivel: nivelConvite as Nivel
 			});
 			toasts.success(`Convite enviado para ${nomeConvite.trim()}.`);
@@ -358,19 +356,18 @@
 				{#if errosConvite['nome']}<p class="mt-1 text-xs text-danger">{errosConvite['nome']}</p>{/if}
 			</div>
 			<div>
-				<label for="convite-email" class={labelCls}>
-					E-mail <span class="text-danger" aria-hidden="true">*</span>
+				<label for="convite-matricula" class={labelCls}>
+					Matrícula <span class="text-danger" aria-hidden="true">*</span>
 				</label>
 				<input
-					id="convite-email"
-					type="email"
-					bind:value={emailConvite}
-					placeholder="Ex.: ana.souza@fablab.ifsc.edu.br"
-					autocomplete="email"
-					aria-invalid={!!errosConvite['email']}
-					class="{inputCls} {errosConvite['email'] ? inputErroCls : ''}"
+					id="convite-matricula"
+					type="text"
+					bind:value={matriculaConvite}
+					placeholder="Ex.: 202601234"
+					aria-invalid={!!errosConvite['matricula']}
+					class="{inputCls} {errosConvite['matricula'] ? inputErroCls : ''}"
 				/>
-				{#if errosConvite['email']}<p class="mt-1 text-xs text-danger">{errosConvite['email']}</p>{/if}
+				{#if errosConvite['matricula']}<p class="mt-1 text-xs text-danger">{errosConvite['matricula']}</p>{/if}
 			</div>
 			<div>
 				<label for="convite-nivel" class={labelCls}>

@@ -245,7 +245,7 @@ export interface BomResponse {
 	id: string;
 	idProdutoServico: string;
 	nome: string;
-	versao: string;
+	versao: number;
 	editavel: boolean;
 	itens: BomItemResponse[];
 }
@@ -258,7 +258,7 @@ export interface BomItemPayload {
 export interface CreateBomPayload {
 	idProdutoServico: string;
 	nome: string;
-	versao: string;
+	versao: number;
 	itens: BomItemPayload[];
 }
 

@@ -51,6 +51,7 @@
 
 	function mensagemErro(err: unknown): string {
 		if (err instanceof ApiError || err instanceof NetworkError) return err.message;
+		if (err instanceof Error) return err.message;
 		return 'Não foi possível concluir a auditoria.';
 	}
 
@@ -59,9 +60,7 @@
 		enviando = true;
 		erro = '';
 		try {
-			const atualizada = await concluirInspecao5S(inspecao.id, {
-				itens: selecionados.map((conforme, idx) => ({ s: idx + 1, conforme }))
-			});
+			const atualizada = await concluirInspecao5S();
 			onConcluida?.(atualizada);
 		} catch (err) {
 			erro = mensagemErro(err);

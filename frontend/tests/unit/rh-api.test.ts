@@ -135,41 +135,39 @@ describe('rh/api — pessoas', () => {
 });
 
 describe('rh/api — processo seletivo', () => {
-	it('listPS monta /rh/processo-seletivo com estagio e omite quando ausente', async () => {
-		apiFetchMock.mockResolvedValue({ groups: [], counts: {} });
+	it('listPS monta /rh/processo-seletivo com estagio UPPER e omite quando ausente', async () => {
+		apiFetchMock.mockResolvedValue({ grupos: [], totais: { processos: 0, grupos: 0, emAvaliacao: 0, aprovados: 0 } });
 		const { listPS } = await freshPS();
 
-		await listPS({ estagio: 'triagem' });
-		expect(chamada(0).path).toBe('/rh/processo-seletivo?estagio=triagem');
+		const res = await listPS({ estagio: 'triagem' });
+		expect(chamada(0).path).toBe('/rh/processo-seletivo?estagio=EM_TRIAGEM');
+		expect(res.groups).toEqual([]);
 
 		await listPS({});
 		expect(chamada(1).path).toBe('/rh/processo-seletivo');
 	});
 
-	it('createGrupo faz POST com tutorId (nunca instrutor)', async () => {
-		apiFetchMock.mockResolvedValue({ id: 'g6' });
+	it('createGrupo faz POST {nome,idLider,membroIds} numéricos', async () => {
+		apiFetchMock.mockResolvedValue({ id: 6, nome: 'G-06', etapa: 'INSCRITO', total: 0, candidatos: [] });
 		const { createGrupo } = await freshPS();
-		const payload = { name: 'G-06', tutorId: 'p1', memberIds: ['p2', 'p3'] };
 
-		await createGrupo(payload);
+		await createGrupo({ name: 'G-06', tutorId: '1', memberIds: ['2', '3'] });
 
 		const { path, init } = chamada();
 		expect(path).toBe('/rh/processo-seletivo/grupos');
 		expect(init['method']).toBe('POST');
-		expect(init['body']).toBe(JSON.stringify(payload));
-		expect(String(init['body'])).toContain('tutorId');
-		expect(String(init['body'])).not.toContain('instrutor');
+		expect(init['body']).toBe(JSON.stringify({ nome: 'G-06', idLider: 1, membroIds: [2, 3] }));
 	});
 
-	it('moverEstagio faz PATCH …/{id}/estagio com o destino', async () => {
-		apiFetchMock.mockResolvedValue({ id: 'g1' });
+	it('moverEstagio faz PATCH …/{id}/estagio {etapa: UPPER}', async () => {
+		apiFetchMock.mockResolvedValue({ id: 9, idCandidato: 3, nomeCandidato: 'C', statusProcesso: 'ENTREVISTA', nota: null, feedback: null });
 		const { moverEstagio } = await freshPS();
 
-		await moverEstagio('g1', 'entrevista');
+		await moverEstagio('9', 'entrevista');
 
-		expect(chamada().path).toBe('/rh/processo-seletivo/g1/estagio');
+		expect(chamada().path).toBe('/rh/processo-seletivo/9/estagio');
 		expect(chamada().init['method']).toBe('PATCH');
-		expect(chamada().init['body']).toBe(JSON.stringify({ estagio: 'entrevista' }));
+		expect(chamada().init['body']).toBe(JSON.stringify({ etapa: 'ENTREVISTA' }));
 	});
 
 	it('avaliarMembro avalia individual (grupo + pessoa no path)', async () => {
@@ -196,14 +194,15 @@ describe('rh/api — horas', () => {
 		);
 	});
 
-	it('getHorasDisponiveis dispara GET /rh/horas/disponiveis (KPIs do extrato)', async () => {
-		apiFetchMock.mockResolvedValue({ periodo: '2026-09', validadas: 10, pendentes: 4, rejeitadas: 1 });
+	it('getHorasDisponiveis dispara GET /rh/horas/disponiveis (só total validado)', async () => {
+		apiFetchMock.mockResolvedValue({ idFuncionario: 7, totalHorasDisponiveis: '10.50' });
 		const { getHorasDisponiveis } = await freshHoras();
 
 		const extrato = await getHorasDisponiveis();
 
 		expect(chamada().path).toBe('/rh/horas/disponiveis');
-		expect(extrato.validadas).toBe(10);
+		expect(extrato.validadas).toBe(10.5);
+		expect(extrato.pendentes).toBe(0);
 	});
 
 	it('nova modelagem: listApontamentos/createApontamento/validarApontamento (PUT …/validar)', async () => {
@@ -261,61 +260,73 @@ describe('rh/api — treinamentos', () => {
 		expect(chamada().path).toBe('/rh/treinamentos?status=aberto&search=laser');
 	});
 
-	it('getTreinamento/getSessao disparam GET detalhe e sessão', async () => {
+	it('getTreinamento dispara GET detalhe; sessão/tarefa-final/agenda/disponibilidade/guias gateadas', async () => {
 		apiFetchMock.mockResolvedValue({ id: 't1' });
-		const { getTreinamento, getSessao } = await freshTreinamentos();
+		const { getTreinamento, getSessao, atribuirTarefaFinal, listAgenda, getDisponibilidade, listGuias } =
+			await freshTreinamentos();
 
 		await getTreinamento('t1');
 		expect(chamada(0).path).toBe('/rh/treinamentos/t1');
 
-		await getSessao('t1');
-		expect(chamada(1).path).toBe('/rh/treinamentos/t1/sessao');
+		await expect(getSessao()).rejects.toThrow('Lote 3');
+		await expect(atribuirTarefaFinal()).rejects.toThrow('Lote 3');
+		await expect(listAgenda()).rejects.toThrow('Lote 3');
+		await expect(getDisponibilidade()).rejects.toThrow('Lote 3');
+		await expect(listGuias()).rejects.toThrow('Lote 3');
+		expect(apiFetchMock).toHaveBeenCalledTimes(1);
 	});
 
-	it('avaliarTreinamento e atribuirTarefaFinal usam POST nos sub-paths', async () => {
-		apiFetchMock.mockResolvedValue({});
-		const { avaliarTreinamento, atribuirTarefaFinal } = await freshTreinamentos();
+	it('avaliarTreinamento usa POST …/avaliacoes {idFuncionario,nota,feedback}', async () => {
+		apiFetchMock.mockImplementation(async (path: string) => {
+			if (String(path).includes('/detalhe')) return { idFuncionario: 7 };
+			return {};
+		});
+		const { avaliarTreinamento } = await freshTreinamentos();
 
-		await avaliarTreinamento('t1', { nota: 9, feedback: 'Ótima turma.' });
-		expect(chamada(0).path).toBe('/rh/treinamentos/t1/avaliar');
-		expect(chamada(0).init['method']).toBe('POST');
-
-		await atribuirTarefaFinal('t1', { title: 'Peça final', dataConclusao: '2026-10-01' });
-		expect(chamada(1).path).toBe('/rh/treinamentos/t1/tarefa-final');
+		await avaliarTreinamento('t1', { nota: 9, feedback: 'Ótima turma.', pessoaId: 'p1' });
+		expect(chamada(0).path).toBe('/rh/pessoas/p1/detalhe');
+		expect(chamada(1).path).toBe('/rh/treinamentos/t1/avaliacoes');
 		expect(chamada(1).init['method']).toBe('POST');
-	});
+		expect(chamada(1).init['body']).toBe(
+			JSON.stringify({ idFuncionario: 7, nota: 9, feedback: 'Ótima turma.' })
+		);
 
-	it('agenda/disponibilidade/guias usam paths agregados', async () => {
-		apiFetchMock.mockResolvedValue({ trainings: [] });
-		const { listAgenda, getDisponibilidade, listGuias } = await freshTreinamentos();
-
-		await listAgenda({ tab: 'solicitados' });
-		expect(chamada(0).path).toBe('/rh/treinamentos/agenda?tab=solicitados');
-
-		await getDisponibilidade();
-		expect(chamada(1).path).toBe('/rh/treinamentos/disponibilidade');
-
-		await listGuias({ maquinaId: 'm1' });
-		expect(chamada(2).path).toBe('/rh/treinamentos/guias?maquinaId=m1');
+		await expect(avaliarTreinamento('t1', { nota: 9, feedback: 'x' })).rejects.toThrow(
+			'funcionário avaliado'
+		);
 	});
 });
 
 describe('rh/api — níveis', () => {
-	it('getNiveis/alterarNivel/convidarUsuario usam paths e métodos PT', async () => {
-		apiFetchMock.mockResolvedValue({});
+	it('getNiveis adapta {niveis,permissoes}; alterarNivel envia int; convite exige matrícula', async () => {
+		apiFetchMock.mockResolvedValue({
+			niveis: [{ id: 'admin', codigo: 0, label: 'Admin', total: 1 }],
+			permissoes: [
+				{ id: 'pessoas', rotulo: 'Pessoas', admin: 'TOTAL', bolsista: 'TOTAL', voluntario: 'TOTAL', estagiario: 'PROPRIO', recrutando: 'NAO' }
+			]
+		});
 		const { getNiveis, alterarNivel, convidarUsuario } = await freshNiveis();
 
-		await getNiveis();
+		const matriz = await getNiveis();
 		expect(chamada(0).path).toBe('/rh/niveis');
+		expect(matriz.niveis).toEqual(['admin']);
+		expect(matriz.modulos).toEqual(['pessoas']);
 
 		await alterarNivel('m1', 'bolsista');
 		expect(chamada(1).path).toBe('/rh/niveis/m1/membros');
 		expect(chamada(1).init['method']).toBe('PATCH');
-		expect(chamada(1).init['body']).toBe(JSON.stringify({ nivel: 'bolsista' }));
+		expect(chamada(1).init['body']).toBe(JSON.stringify({ nivel: 1 }));
 
-		await convidarUsuario({ name: 'Novo', email: 'novo@fablab.org', nivel: 'voluntario' });
+		await convidarUsuario({ name: 'Novo', matricula: 'M42', nivel: 'voluntario' });
 		expect(chamada(2).path).toBe('/rh/niveis/convites');
 		expect(chamada(2).init['method']).toBe('POST');
+		expect(chamada(2).init['body']).toBe(
+			JSON.stringify({ nomeCompleto: 'Novo', matricula: 'M42', nivelAcesso: 2 })
+		);
+
+		await expect(convidarUsuario({ name: 'N', matricula: ' ', nivel: 'voluntario' })).rejects.toThrow(
+			'matrícula'
+		);
 	});
 });
 
@@ -346,12 +357,24 @@ describe('rh/api — guardas de naming PT e R-5', () => {
 			if (String(path).includes('/pessoas')) {
 				return { pessoas: [], paginacao: { page: 1, pageSize: 10, total: 0, totalPages: 1 } };
 			}
-			if (String(path).includes('processo-seletivo')) return { groups: [], counts: {} };
-			if (String(path).includes('apontamentos')) return [];
-			if (String(path).includes('horas')) return { periodo: '', validadas: 0, pendentes: 0, rejeitadas: 0 };
-			if (String(path).includes('treinamentos')) return { trainings: [] };
-			if (String(path).includes('niveis')) return {};
-			return {};
+		if (String(path).includes('processo-seletivo')) {
+			if (String(path).includes('/estagio')) {
+				return { id: 9, idCandidato: 3, nomeCandidato: 'C', statusProcesso: 'ENTREVISTA', nota: null, feedback: null };
+			}
+			if (String(path).includes('/grupos')) {
+				return { id: 1, nome: 'G', etapa: 'INSCRITO', total: 0, candidatos: [] };
+			}
+			return { grupos: [], totais: { processos: 0, grupos: 0, emAvaliacao: 0, aprovados: 0 } };
+		}
+		if (String(path).includes('apontamentos')) return [];
+		if (String(path).includes('horas')) return { idFuncionario: 7, totalHorasDisponiveis: '0.00' };
+		if (String(path).includes('treinamentos')) return { trainings: [] };
+		if (String(path).includes('niveis')) {
+			if (String(path).includes('/convites')) return {};
+			if (String(path).includes('/membros')) return {};
+			return { niveis: [], permissoes: [] };
+		}
+		return {};
 		});
 		const pessoas = await freshPessoas();
 		const ps = await freshPS();
@@ -370,8 +393,8 @@ describe('rh/api — guardas de naming PT e R-5', () => {
 		await pessoas.updatePessoa('p1', { name: 'B' });
 		await pessoas.deletePessoa('p1');
 		await ps.listPS({ estagio: 'triagem' });
-		await ps.createGrupo({ name: 'G', tutorId: 'p1', memberIds: [] });
-		await ps.moverEstagio('g1', 'entrevista');
+		await ps.createGrupo({ name: 'G', tutorId: '1', memberIds: [] });
+		await ps.moverEstagio('9', 'entrevista');
 		await ps.avaliarMembro('g1', 'c1', { nota: 7, feedback: 'Ok' });
 		await horas.rejeitarHoras('h1', { reason: 'x' });
 		await horas.getHorasDisponiveis();
@@ -388,15 +411,10 @@ describe('rh/api — guardas de naming PT e R-5', () => {
 		await horas.validarApontamento('h1');
 		await treinamentos.listTreinamentos({ status: 'aberto' });
 		await treinamentos.getTreinamento('t1');
-		await treinamentos.getSessao('t1');
-		await treinamentos.avaliarTreinamento('t1', { nota: 8, feedback: 'Ok' });
-		await treinamentos.atribuirTarefaFinal('t1', { title: 'T', dataConclusao: '2026-10-01' });
-		await treinamentos.listAgenda({});
-		await treinamentos.getDisponibilidade();
-		await treinamentos.listGuias({});
+		await treinamentos.avaliarTreinamento('t1', { nota: 8, feedback: 'Ok', pessoaId: 'p1' });
 		await niveis.getNiveis();
 		await niveis.alterarNivel('m1', 'voluntario');
-		await niveis.convidarUsuario({ name: 'N', email: 'n@fablab.org', nivel: 'voluntario' });
+		await niveis.convidarUsuario({ name: 'N', matricula: 'M1', nivel: 'voluntario' });
 
 		const paths = apiFetchMock.mock.calls.map((c) => String(c[0]));
 		expect(paths.length).toBeGreaterThan(0);

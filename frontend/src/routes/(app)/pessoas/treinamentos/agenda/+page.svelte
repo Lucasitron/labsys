@@ -53,7 +53,7 @@
 		carregando = true;
 		erro = null;
 
-		void listAgenda({}, fetch)
+		void listAgenda()
 			.then((res) => {
 				if (sinal.aborted) return;
 				itens = res.trainings;
@@ -68,7 +68,7 @@
 
 		carregandoDisp = true;
 		erroDisp = null;
-		void getDisponibilidade(fetch)
+		void getDisponibilidade()
 			.then((res) => {
 				if (!sinal.aborted) disponibilidade = res;
 			})

@@ -154,25 +154,25 @@ describe('financeiro/api — categorias e doações', () => {
 });
 
 describe('financeiro/api — custeio (congelamento, sem cálculo)', () => {
-	it('createFechamento congela: payload só com idEncomenda/horas/valor/data', async () => {
-		apiFetchMock.mockResolvedValue({ id: 'f1' });
+	it('createFechamento congela: idEncomenda int + números coagidos', async () => {
+		apiFetchMock.mockResolvedValue({ id: 1, idEncomenda: 2051, horasEstimadas: '12', valorFechado: '1500', dataFechamento: '2026-09-20', status: 'ABERTA' });
 		const { createFechamento } = await freshCusteio();
 		const payload = {
-			idEncomenda: 'EN-2051',
+			idEncomenda: '2051',
 			horasEstimadas: 12,
 			valorFechado: 1500,
 			dataFechamento: '2026-09-20'
 		};
 
-		await createFechamento(payload);
+		const fechamento = await createFechamento(payload);
 
 		expect(chamada().path).toBe('/financeiro/fechamento-encomenda');
 		expect(chamada().init['method']).toBe('POST');
-		expect(chamada().init['body']).toBe(JSON.stringify(payload));
-		const enviado = JSON.parse(String(chamada().init['body'])) as Record<string, unknown>;
-		expect(Object.keys(enviado).sort()).toEqual(
-			['dataFechamento', 'horasEstimadas', 'idEncomenda', 'valorFechado'].sort()
+		expect(chamada().init['body']).toBe(
+			JSON.stringify({ idEncomenda: 2051, horasEstimadas: 12, valorFechado: 1500, dataFechamento: '2026-09-20' })
 		);
+		expect(fechamento.horasEstimadas).toBe(12);
+		expect(fechamento.status).toBe('Aberta');
 	});
 
 	it('getCusto busca o congelado via GET /financeiro/custos-encomenda/{id}', async () => {
@@ -185,26 +185,36 @@ describe('financeiro/api — custeio (congelamento, sem cálculo)', () => {
 		expect(chamada().init['method']).toBeUndefined();
 	});
 
-	it('concluirCompra faz PUT …/{id}/concluir com dataConclusao/valorReal', async () => {
-		apiFetchMock.mockResolvedValue({ status: 'Concluída', lancamentoGerado: 'LAN-0009' });
+	it('concluirCompra faz PUT …/{id}/concluir sem body (back ignora corpo)', async () => {
+		apiFetchMock.mockResolvedValue({ id: 1, idItemEstoque: 4, quantidade: '2', valorEstimado: null, status: 'CONCLUIDA', dataSolicitacao: '2026-09-21' });
 		const { concluirCompra } = await freshCompras();
 
-		await concluirCompra('c1', { dataConclusao: '2026-09-21', valorReal: 320.5 });
+		const res = await concluirCompra('c1');
 
 		expect(chamada().path).toBe('/financeiro/solicitacoes-compra/c1/concluir');
 		expect(chamada().init['method']).toBe('PUT');
-		expect(chamada().init['body']).toBe(
-			JSON.stringify({ dataConclusao: '2026-09-21', valorReal: 320.5 })
-		);
+		expect(chamada().init['body']).toBeUndefined();
+		expect(res.status).toBe('Concluída');
 	});
 });
 
 describe('financeiro/api — relatórios (1 endpoint por pane + ?periodo=)', () => {
-	it('cada relatório tem endpoint próprio com ?periodo=', async () => {
-		apiFetchMock.mockResolvedValue({});
+	it('cada relatório tem endpoint próprio (período só onde o back aceita)', async () => {
+		apiFetchMock.mockImplementation(async (path: string) => {
+			if (String(path).includes('fluxo-caixa')) {
+				return { entradas: '100', saidas: '40', saldo: '60', semanas: [{ semana: '2026-W38', entradas: '100', saidas: '40', liquido: '60' }] };
+			}
+			if (String(path).includes('lucratividade') || String(path).includes('inadimplencia') || String(path).includes('custo-maquina')) {
+				return [];
+			}
+			if (String(path).includes('doacoes-despesas')) return { saldo: '60', meses: [] };
+			return {};
+		});
 		const rel = await freshRelatorios();
 
-		await rel.getFluxoCaixa({ periodo: '2026-09' });
+		const fluxo = await rel.getFluxoCaixa({ periodo: '2026-09' });
+		expect(fluxo.linhas).toEqual([{ periodo: '2026-W38', entradas: 100, saidas: 40, liquido: 60 }]);
+		expect(fluxo.total).toBe(60);
 		await rel.getDre({ periodo: '2026-09' });
 		await rel.getLucratividade({ periodo: '2026-09' });
 		await rel.getInadimplencia({ periodo: '2026-09' });
@@ -215,10 +225,10 @@ describe('financeiro/api — relatórios (1 endpoint por pane + ?periodo=)', () 
 		expect(paths).toEqual([
 			'/financeiro/relatorios/fluxo-caixa?periodo=2026-09',
 			'/financeiro/relatorios/dre?periodo=2026-09',
-			'/financeiro/relatorios/lucratividade?periodo=2026-09',
-			'/financeiro/relatorios/inadimplencia?periodo=2026-09',
+			'/financeiro/relatorios/lucratividade',
+			'/financeiro/relatorios/inadimplencia',
 			'/financeiro/relatorios/doacoes-despesas?periodo=2026-09',
-			'/financeiro/relatorios/custo-maquina?periodo=2026-09'
+			'/financeiro/relatorios/custo-maquina'
 		]);
 	});
 
@@ -258,14 +268,19 @@ describe('financeiro/api — erros e bearer', () => {
 
 	it('envia Authorization Bearer quando há token na store', async () => {
 		authMock.set({ user: null, token: 'tk-fin', isAuthenticated: false });
-		apiFetchMock.mockResolvedValue({ id: 'l1' });
+		apiFetchMock.mockResolvedValue({
+			lancamentos: [
+				{ id: 1, idCategoria: 2, tipo: 'ENTRADA', valor: '100', dataVencimento: '2026-09-20', status: 'PENDENTE' }
+			]
+		});
 		const { getLancamento } = await freshLancamentos();
 
-		await getLancamento('l1');
+		const lancamento = await getLancamento('1');
 
 		expect((chamada().init['headers'] as Record<string, string>).Authorization).toBe(
 			'Bearer tk-fin'
 		);
+		expect(lancamento.valor).toBe(100);
 	});
 });
 
@@ -274,7 +289,15 @@ describe('financeiro/api — guarda de paths /financeiro/**', () => {
 		apiFetchMock.mockImplementation(async (path: string) => {
 			if (String(path).includes('doacoes')) return [];
 			if (String(path).includes('categorias')) return [];
-			if (String(path).includes('lancamentos')) return { lancamentos: [] };
+			if (String(path).includes('fechamento-encomenda') || String(path).includes('custos-encomenda')) return [];
+			if (String(path).includes('solicitacoes-compra')) return [];
+			if (String(path).includes('lancamentos')) {
+				return {
+					lancamentos: [
+						{ id: 1, idCategoria: 2, tipo: 'ENTRADA', valor: '100', dataVencimento: '2026-09-20', status: 'PENDENTE' }
+					]
+				};
+			}
 			return {};
 		});
 		const lanc = await freshLancamentos();
@@ -285,7 +308,7 @@ describe('financeiro/api — guarda de paths /financeiro/**', () => {
 		const rel = await freshRelatorios();
 
 		await lanc.listLancamentos({ status: 'Pendente' });
-		await lanc.getLancamento('l1');
+		await lanc.getLancamento('1');
 		await cat.listCategorias();
 		await doa.listDoacoes({ tipo: 'Projeto' });
 		await cus.listFechamentos();
