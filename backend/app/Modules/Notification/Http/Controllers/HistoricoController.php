@@ -23,7 +23,7 @@ class HistoricoController
         );
 
         return response()->json([
-            'items' => NotificationResource::collection($historico['items']),
+            'items' => NotificationResource::collection($historico['items'])->toArray($request),
             'total' => $historico['total'],
         ]);
     }

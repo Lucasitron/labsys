@@ -25,7 +25,7 @@ class NotificacaoController
         );
 
         return response()->json([
-            'items' => NotificationResource::collection($pagina['items']),
+            'items' => NotificationResource::collection($pagina['items'])->toArray($request),
             'total' => $pagina['total'],
             'page' => $pagina['page'],
             'size' => $pagina['size'],
