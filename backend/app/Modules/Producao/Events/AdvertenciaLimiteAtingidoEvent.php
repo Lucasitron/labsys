@@ -2,11 +2,10 @@
 
 namespace App\Modules\Producao\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Limite de advertências atingido (≥3) → Notification/Admin. Nome preservado. */
-class AdvertenciaLimiteAtingidoEvent implements ShouldQueue
+class AdvertenciaLimiteAtingidoEvent
 {
     use Dispatchable;
 

@@ -2,11 +2,10 @@
 
 namespace App\Modules\Financeiro\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Lançamento vencido sem liquidação → Notification. Nome preservado. */
-class LancamentoVencidoEvent implements ShouldQueue
+class LancamentoVencidoEvent
 {
     use Dispatchable;
 

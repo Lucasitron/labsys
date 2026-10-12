@@ -4,11 +4,10 @@ namespace App\Modules\Rh\Events;
 
 use App\Modules\Rh\Enums\NivelAcesso;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Nível alterado → Auth (claims) + Notification. Nome preservado. */
-class NivelAlteradoEvent implements ShouldQueue
+class NivelAlteradoEvent
 {
     use Dispatchable;
 

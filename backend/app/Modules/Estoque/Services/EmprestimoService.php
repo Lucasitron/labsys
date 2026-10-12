@@ -10,7 +10,6 @@ use App\Modules\Estoque\Models\Emprestimo;
 use App\Modules\Estoque\Models\Item;
 use App\Modules\Estoque\Models\SaidaEstoque;
 use App\Modules\Estoque\Policies\EstoquePolicy;
-use App\Modules\Rh\Contracts\RhContract;
 use App\Shared\Exceptions\ForbiddenException;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use App\Shared\Exceptions\SaldoInsuficienteException;
@@ -190,21 +189,6 @@ class EmprestimoService
         Log::info('Marcados '.count($atrasados).' empréstimo(s) como atrasado(s)');
 
         return count($atrasados);
-    }
-
-    /**
-     * Rótulo do tomador (E-4): nome oficial do RH, fail-soft `Pessoa #id`
-     * quando o RH não responde — nunca 500 por causa do nome.
-     */
-    public function tomadorPara(Emprestimo $emprestimo): string
-    {
-        try {
-            $nome = app(RhContract::class)->nomePessoa((int) $emprestimo->id_pessoa);
-        } catch (\Throwable) {
-            $nome = null;
-        }
-
-        return $nome ?? "Pessoa #{$emprestimo->id_pessoa}";
     }
 
     private function vencidos()

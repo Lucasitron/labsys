@@ -2,14 +2,13 @@
 
 namespace App\Modules\Estoque\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /**
  * Produção concluída (produtor real em M6/Produção): dispara a baixa
  * automática pelos itens consumidos. Nome preservado.
  */
-class ProducaoConcluidaEvent implements ShouldQueue
+class ProducaoConcluidaEvent
 {
     use Dispatchable;
 

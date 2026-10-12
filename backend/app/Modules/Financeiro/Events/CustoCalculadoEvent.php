@@ -2,11 +2,10 @@
 
 namespace App\Modules\Financeiro\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Custeio concluído → Vendas & CRM. Nome preservado. */
-class CustoCalculadoEvent implements ShouldQueue
+class CustoCalculadoEvent
 {
     use Dispatchable;
 

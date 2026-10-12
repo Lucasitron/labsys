@@ -2,11 +2,10 @@
 
 namespace App\Modules\Producao\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Mesa abandonada → RH e Notification. Nome preservado. */
-class ProjetoMesaAbandonadoEvent implements ShouldQueue
+class ProjetoMesaAbandonadoEvent
 {
     use Dispatchable;
 

@@ -2,11 +2,10 @@
 
 namespace App\Modules\Financeiro\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Solicitação de compra registrada → Estoque (`idFornecedor` null no MVP). Nome preservado. */
-class CompraSolicitadaEvent implements ShouldQueue
+class CompraSolicitadaEvent
 {
     use Dispatchable;
 

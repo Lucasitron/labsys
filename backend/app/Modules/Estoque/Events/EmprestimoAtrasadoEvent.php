@@ -2,11 +2,10 @@
 
 namespace App\Modules\Estoque\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Empréstimo com devolução vencida → Notification. Nome preservado. */
-class EmprestimoAtrasadoEvent implements ShouldQueue
+class EmprestimoAtrasadoEvent
 {
     use Dispatchable;
 

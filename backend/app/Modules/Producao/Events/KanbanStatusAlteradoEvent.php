@@ -2,11 +2,10 @@
 
 namespace App\Modules\Producao\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Cartão mudou de coluna → Vendas e Notification. Nome preservado. */
-class KanbanStatusAlteradoEvent implements ShouldQueue
+class KanbanStatusAlteradoEvent
 {
     use Dispatchable;
 

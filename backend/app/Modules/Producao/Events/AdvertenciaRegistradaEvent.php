@@ -2,11 +2,10 @@
 
 namespace App\Modules\Producao\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Advertência registrada → Notification. Nome preservado. */
-class AdvertenciaRegistradaEvent implements ShouldQueue
+class AdvertenciaRegistradaEvent
 {
     use Dispatchable;
 

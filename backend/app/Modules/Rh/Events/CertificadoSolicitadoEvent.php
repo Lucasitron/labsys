@@ -4,11 +4,10 @@ namespace App\Modules\Rh\Events;
 
 use App\Modules\Rh\Enums\TipoCertificado;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Certificado solicitado → Notification (avisa Admin). Nome preservado. */
-class CertificadoSolicitadoEvent implements ShouldQueue
+class CertificadoSolicitadoEvent
 {
     use Dispatchable;
 

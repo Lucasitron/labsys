@@ -4,7 +4,6 @@ namespace App\Modules\Auth\Events;
 
 use App\Modules\Auth\Enums\AccessLogType;
 use Carbon\Carbon;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /**
@@ -12,7 +11,7 @@ use Illuminate\Foundation\Events\Dispatchable;
  * Nome do evento preservado: "access.rfid.event" (exchange fablab.access).
  * Fila nativa "database" (sem broker no caminho crítico M1).
  */
-class RfidAccessEvent implements ShouldQueue
+class RfidAccessEvent
 {
     use Dispatchable;
 

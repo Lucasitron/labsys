@@ -2,11 +2,10 @@
 
 namespace App\Modules\Estoque\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Item igual/abaixo do mínimo → Notification. Nome preservado. */
-class EstoqueBaixoEvent implements ShouldQueue
+class EstoqueBaixoEvent
 {
     use Dispatchable;
 

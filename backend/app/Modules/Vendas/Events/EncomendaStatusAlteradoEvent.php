@@ -2,11 +2,10 @@
 
 namespace App\Modules\Vendas\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Kanban movido → Produção + Notification. Nome preservado. */
-class EncomendaStatusAlteradoEvent implements ShouldQueue
+class EncomendaStatusAlteradoEvent
 {
     use Dispatchable;
 

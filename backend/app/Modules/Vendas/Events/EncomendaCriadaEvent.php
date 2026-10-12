@@ -2,11 +2,10 @@
 
 namespace App\Modules\Vendas\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Encomenda criada → Produção. Nome preservado. */
-class EncomendaCriadaEvent implements ShouldQueue
+class EncomendaCriadaEvent
 {
     use Dispatchable;
 

@@ -2,11 +2,10 @@
 
 namespace App\Modules\Rh\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Extrato mensal → Notification (e-mail). 1 evento por ativo não-Recrutando. */
-class ExtratoMensalHorasEvent implements ShouldQueue
+class ExtratoMensalHorasEvent
 {
     use Dispatchable;
 

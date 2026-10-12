@@ -2,11 +2,10 @@
 
 namespace App\Modules\Producao\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Produção concluída → Estoque (baixa) e Financeiro (custeio). Nome preservado. */
-class ProducaoConcluidaEvent implements ShouldQueue
+class ProducaoConcluidaEvent
 {
     use Dispatchable;
 

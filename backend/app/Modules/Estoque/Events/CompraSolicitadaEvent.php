@@ -2,11 +2,10 @@
 
 namespace App\Modules\Estoque\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Entrada registrada → Financeiro (contas a pagar) + Notification. Nome preservado. */
-class CompraSolicitadaEvent implements ShouldQueue
+class CompraSolicitadaEvent
 {
     use Dispatchable;
 

@@ -2,11 +2,10 @@
 
 namespace App\Modules\Vendas\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Orçamento aprovado → Financeiro. Nome preservado. */
-class OrcamentoAprovadoEvent implements ShouldQueue
+class OrcamentoAprovadoEvent
 {
     use Dispatchable;
 

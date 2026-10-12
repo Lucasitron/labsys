@@ -3,11 +3,10 @@
 namespace App\Modules\Rh\Events;
 
 use App\Modules\Rh\Enums\TipoApontamento;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Horas validadas → Financeiro (custo/coerência). Nome preservado. */
-class HorasValidadasEvent implements ShouldQueue
+class HorasValidadasEvent
 {
     use Dispatchable;
 

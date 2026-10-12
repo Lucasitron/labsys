@@ -2,11 +2,10 @@
 
 namespace App\Modules\Producao\Events;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /** Mudança de coluna do Kanban → Vendas (sync) e Notification. Nome preservado. */
-class ProducaoStatusAlteradoEvent implements ShouldQueue
+class ProducaoStatusAlteradoEvent
 {
     use Dispatchable;
 
