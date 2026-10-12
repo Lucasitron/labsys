@@ -11,8 +11,6 @@ class EmprestimoAtrasadoEvent
 
     public const NAME = 'emprestimo.atrasado.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idEmprestimo,
         public readonly int $idPessoa,

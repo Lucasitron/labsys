@@ -11,8 +11,6 @@ class LancamentoVencidoEvent
 
     public const NAME = 'lancamento.vencido.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idLancamento,
         public readonly string $valor,

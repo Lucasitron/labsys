@@ -12,8 +12,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
  */
 class ConsumoProducaoListener implements ShouldQueue
 {
-    public const QUEUE = 'database';
-
     public function __construct(private ItemService $itens) {}
 
     public function handle(ProducaoConcluidaEvent $event): void

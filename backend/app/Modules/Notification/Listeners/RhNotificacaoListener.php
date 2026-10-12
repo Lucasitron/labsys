@@ -19,8 +19,6 @@ use Illuminate\Support\Facades\Log;
  */
 class RhNotificacaoListener implements ShouldQueue
 {
-    public const QUEUE = 'database';
-
     public function __construct(private NotificationDispatchService $dispatch) {}
 
     public function handleNivelAlterado(NivelAlteradoEvent $event): void

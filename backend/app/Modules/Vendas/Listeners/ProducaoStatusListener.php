@@ -16,8 +16,6 @@ use Illuminate\Support\Facades\Log;
  */
 class ProducaoStatusListener implements ShouldQueue
 {
-    public const QUEUE = 'database';
-
     public function __construct(private EncomendaService $encomendas) {}
 
     public function handle(ProducaoStatusAlteradoEvent $event): void

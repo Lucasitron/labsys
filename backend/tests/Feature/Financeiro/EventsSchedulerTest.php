@@ -103,7 +103,6 @@ class EventsSchedulerTest extends FinanceiroTestCase
 
         // Nomes preservados (custo calculado é coberto no FechamentoCusteioTest).
         $this->assertSame('custo.calculado.event', CustoCalculadoEvent::NAME);
-        $this->assertSame('database', CustoCalculadoEvent::QUEUE);
     }
 
     public function test_scheduler_manual_publica_um_evento_por_vencido(): void

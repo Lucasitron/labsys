@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Log;
  */
 class ProducaoConcluidaListener implements ShouldQueue
 {
-    public const QUEUE = 'database';
-
     public function __construct(private CusteioService $custeio) {}
 
     public function handle(ProducaoConcluidaEvent $event): void

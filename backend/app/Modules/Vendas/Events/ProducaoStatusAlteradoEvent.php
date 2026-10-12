@@ -14,8 +14,6 @@ class ProducaoStatusAlteradoEvent
 
     public const NAME = 'producao.status.alterado.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idEncomenda,
         public readonly string $statusNovo,

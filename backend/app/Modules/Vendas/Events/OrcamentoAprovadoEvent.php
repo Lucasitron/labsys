@@ -11,8 +11,6 @@ class OrcamentoAprovadoEvent
 
     public const NAME = 'orcamento.aprovado.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idOrcamento,
         public readonly int $idCliente,

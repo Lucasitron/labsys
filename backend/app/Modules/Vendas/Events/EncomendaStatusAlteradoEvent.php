@@ -11,8 +11,6 @@ class EncomendaStatusAlteradoEvent
 
     public const NAME = 'encomenda.status.alterado.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idEncomenda,
         public readonly string $statusAnterior,

@@ -11,8 +11,6 @@ class EncomendaCriadaEvent
 
     public const NAME = 'encomenda.criada.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idEncomenda,
         public readonly int $idCliente,

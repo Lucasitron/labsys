@@ -11,8 +11,6 @@ class ExtratoMensalHorasEvent
 
     public const NAME = 'extrato.mensal.horas.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idFuncionario,
         public readonly string $nome,

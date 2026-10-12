@@ -11,8 +11,6 @@ class EstoqueBaixoEvent
 
     public const NAME = 'estoque.baixo.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idItem,
         public readonly string $nome,

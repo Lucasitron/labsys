@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\Log;
  */
 class NivelAlteradoListener implements ShouldQueue
 {
-    public const QUEUE = 'database';
-
     public function handle(NivelAlteradoEvent $event): void
     {
         Log::info("Nível de acesso do funcionário {$event->idFuncionario} alterado de {$event->nivelAntigo->value} para {$event->nivelNovo->value}");

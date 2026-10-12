@@ -15,8 +15,6 @@ use Illuminate\Support\Facades\Log;
  */
 class FinanceiroNotificacaoListener implements ShouldQueue
 {
-    public const QUEUE = 'database';
-
     public function __construct(private NotificationDispatchService $dispatch) {}
 
     public function handleLancamentoVencido(LancamentoVencidoEvent $event): void
