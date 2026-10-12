@@ -3,11 +3,14 @@
 namespace App\Modules\Auth\Contracts;
 
 use App\Modules\Auth\Enums\Role;
+use App\Modules\Auth\Enums\SituacaoUsuario;
 use App\Modules\Auth\Models\Login;
 use App\Modules\Auth\Models\UserPermission;
 use App\Modules\Auth\Services\TokenBlacklistService;
 use App\Modules\Auth\Services\TokenService;
+use App\Modules\Auth\Services\UsuarioService;
 use App\Shared\Exceptions\TokenInvalidException;
+use Illuminate\Support\Str;
 
 class DefaultAuthContract implements AuthContract
 {
@@ -81,5 +84,42 @@ class DefaultAuthContract implements AuthContract
         $permission->save();
 
         return true;
+    }
+
+    public function provisionarAcesso(
+        int $idUser,
+        string $email,
+        Role $role,
+        ?string $nomeUsuario = null,
+        ?string $senha = null,
+        ?string $setor = null,
+    ): array {
+        $email = trim($email);
+
+        if (Login::where('id_user', $idUser)->exists()) {
+            throw new \InvalidArgumentException('Já existe acesso cadastrado para esta pessoa');
+        }
+
+        $convite = blank($senha);
+        $nome = blank($nomeUsuario)
+            ? (string) (strstr($email, '@', true) ?: $email)
+            : trim($nomeUsuario);
+
+        $login = app(UsuarioService::class)->criar([
+            'idUser' => $idUser,
+            'email' => $email,
+            'nomeUsuario' => $nome,
+            'senha' => $convite ? Str::random(48) : $senha,
+            'setor' => $setor,
+            'nivel' => $role->value,
+            'situacao' => $convite ? null : SituacaoUsuario::ATIVO->value,
+        ]);
+
+        return [
+            'id' => (int) $login->getKey(),
+            'idUser' => (int) $login->id_user,
+            'email' => (string) $login->email,
+            'situacao' => $login->situacao->value,
+        ];
     }
 }

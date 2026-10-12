@@ -2,6 +2,8 @@
 
 namespace App\Modules\Rh\Services;
 
+use App\Modules\Auth\Contracts\AuthContract;
+use App\Modules\Auth\Enums\Role;
 use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Enums\PessoaStatus;
 use App\Modules\Rh\Enums\StatusApontamento;
@@ -16,6 +18,7 @@ use App\Modules\Rh\RhPrincipal;
 use App\Modules\Rh\Rules\CpfRule;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Pessoas (F1): CRUD + matrícula única + CPF opcional/único/mascarado + busca/facetas.
@@ -25,13 +28,51 @@ class PessoaService
 {
     private const PAGE_SIZE_MAX = 100;
 
-    public function cadastrar(array $dados): Pessoa
+    /**
+     * Cria a pessoa e, opcionalmente, o vínculo (RH) e o acesso (Auth), numa
+     * única transação (RH+Auth no mesmo Postgres, schemas distintos).
+     * `$vinculo`: `nivel_acesso`/`departamento`; `$acesso`: `criar`/`email`/
+     * `senha`/`nome_usuario`/`setor` (sem senha → convite).
+     *
+     * @param  array<string,mixed>  $dados
+     * @param  array{nivel_acesso?:?NivelAcesso,departamento?:?string}  $vinculo
+     * @param  array{criar?:bool,email?:?string,senha?:?string,nome_usuario?:?string,setor?:?string}  $acesso
+     */
+    public function cadastrar(array $dados, array $vinculo = [], array $acesso = []): Pessoa
     {
-        $this->exigeMatriculaLivre($dados['matricula']);
-        $dados['cpf'] = $this->normalizarCpf($dados['cpf'] ?? null, null);
-        $dados['status'] ??= PessoaStatus::ATIVO;
+        return DB::transaction(function () use ($dados, $vinculo, $acesso): Pessoa {
+            $this->exigeMatriculaLivre($dados['matricula']);
+            $dados['cpf'] = $this->normalizarCpf($dados['cpf'] ?? null, null);
+            $dados['status'] ??= PessoaStatus::ATIVO;
 
-        return Pessoa::create($dados);
+            $pessoa = Pessoa::create($dados);
+
+            $nivel = $vinculo['nivel_acesso'] ?? null;
+            $departamento = $vinculo['departamento'] ?? null;
+            $criarAcesso = (bool) ($acesso['criar'] ?? false);
+
+            if ($nivel !== null || $departamento !== null || $criarAcesso) {
+                $funcionario = app(FuncionarioService::class)->vincular([
+                    'id_pessoa' => (int) $pessoa->getKey(),
+                    'nivel_acesso' => $nivel ?? NivelAcesso::BOLSISTA,
+                    'departamento' => $departamento,
+                ]);
+                $nivel = $funcionario->nivel_acesso;
+            }
+
+            if ($criarAcesso) {
+                app(AuthContract::class)->provisionarAcesso(
+                    (int) $pessoa->getKey(),
+                    (string) $acesso['email'],
+                    Role::from($nivel->value),
+                    $acesso['nome_usuario'] ?? null,
+                    $acesso['senha'] ?? null,
+                    $acesso['setor'] ?? null,
+                );
+            }
+
+            return $pessoa;
+        });
     }
 
     /** Pagina + busca LIKE + filtros + facetas. Estagiário vê só o próprio. */

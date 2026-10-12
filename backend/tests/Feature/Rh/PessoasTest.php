@@ -3,6 +3,7 @@
 namespace Tests\Feature\Rh;
 
 use App\Modules\Auth\Enums\Role;
+use App\Modules\Auth\Models\Login;
 use App\Modules\Rh\Enums\PessoaStatus;
 use App\Modules\Rh\Models\Pessoa;
 use Tests\TestCase;
@@ -103,6 +104,86 @@ class PessoasTest extends TestCase
         $this->deleteJson('/api/rh/pessoas/'.$solta->getKey(), [], $headers)
             ->assertOk()
             ->assertJson(['excluido' => true]);
+    }
+
+    public function test_cadastro_com_vinculo_e_acesso_provisiona_login_papel_e_funcionario(): void
+    {
+        $admin = $this->criarAdminRh();
+        $headers = $this->authHeader($admin['login'], Role::ADMIN);
+
+        $res = $this->postJson('/api/rh/pessoas', [
+            'nomeCompleto' => 'Grace Hopper',
+            'matricula' => 'MAT-GRACE',
+            'nivelAcesso' => Role::BOLSISTA->value,
+            'departamento' => 'ELETRONICA',
+            'criarAcesso' => true,
+            'email' => 'grace@fablab.org',
+            'senha' => 'segredo123',
+        ], $headers)->assertCreated();
+
+        $idPessoa = (int) $res->json('id');
+
+        $this->assertDatabaseHas('rh.funcionario', [
+            'id_pessoa' => $idPessoa,
+            'nivel_acesso' => Role::BOLSISTA->value,
+            'departamento' => 'ELETRONICA',
+        ]);
+        $this->assertDatabaseHas('auth.login', [
+            'id_user' => $idPessoa,
+            'email' => 'grace@fablab.org',
+            'nome_usuario' => 'grace',
+            'situacao' => 'ATIVO',
+        ]);
+        $this->assertDatabaseHas('auth.user_permissions', [
+            'id_user' => $idPessoa,
+            'role' => Role::BOLSISTA->value,
+            'active' => true,
+        ]);
+    }
+
+    public function test_cadastro_com_convite_cria_acesso_pendente(): void
+    {
+        $admin = $this->criarAdminRh();
+        $headers = $this->authHeader($admin['login'], Role::ADMIN);
+
+        $res = $this->postJson('/api/rh/pessoas', [
+            'nomeCompleto' => 'Alan Turing',
+            'matricula' => 'MAT-ALAN',
+            'nivelAcesso' => Role::ESTAGIARIO->value,
+            'criarAcesso' => true,
+            'email' => 'alan@fablab.org',
+        ], $headers)->assertCreated();
+
+        $this->assertDatabaseHas('auth.login', [
+            'id_user' => (int) $res->json('id'),
+            'situacao' => 'PENDENTE',
+            'nome_usuario' => 'alan',
+        ]);
+    }
+
+    public function test_criar_acesso_exige_email_e_falha_reverte_a_pessoa(): void
+    {
+        $admin = $this->criarAdminRh();
+        $headers = $this->authHeader($admin['login'], Role::ADMIN);
+
+        // Sem e-mail quando criarAcesso=true → 422 (FormRequest).
+        $this->postJson('/api/rh/pessoas', [
+            'nomeCompleto' => 'Sem Email', 'matricula' => 'MAT-SEM-EMAIL', 'criarAcesso' => true,
+        ], $headers)->assertStatus(422);
+
+        // E-mail já em uso: o provisionamento falha e a transação reverte tudo.
+        $this->postJson('/api/rh/pessoas', [
+            'nomeCompleto' => 'Original', 'matricula' => 'MAT-ORIG',
+            'criarAcesso' => true, 'email' => 'dup@fablab.org',
+        ], $headers)->assertCreated();
+
+        $this->postJson('/api/rh/pessoas', [
+            'nomeCompleto' => 'Duplicado', 'matricula' => 'MAT-DUP2',
+            'criarAcesso' => true, 'email' => 'dup@fablab.org',
+        ], $headers)->assertStatus(422);
+
+        $this->assertDatabaseMissing('rh.pessoa', ['matricula' => 'MAT-DUP2']);
+        $this->assertSame(1, Login::where('email', 'dup@fablab.org')->count());
     }
 
     public function test_atualizar_status_para_inativo(): void

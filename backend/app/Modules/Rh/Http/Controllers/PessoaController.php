@@ -20,7 +20,11 @@ class PessoaController
 
     public function store(PessoaRequest $request): JsonResponse
     {
-        $pessoa = $this->pessoas->cadastrar($this->dados($request));
+        $pessoa = $this->pessoas->cadastrar(
+            $this->dados($request),
+            $this->vinculo($request),
+            $this->acesso($request),
+        );
 
         return response()->json((new PessoaResource($pessoa))->toArray($request), 201);
     }
@@ -108,6 +112,33 @@ class PessoaController
             'turno' => $request->input('turno'),
             'status' => $request->input('status') !== null ? PessoaStatus::from((int) $request->input('status')) : null,
             'cpf' => $request->input('cpf'),
+        ];
+    }
+
+    /** @return array{nivel_acesso?:?NivelAcesso,departamento?:?string} */
+    private function vinculo(PessoaRequest $request): array
+    {
+        $nivelRaw = $request->input('nivelAcesso');
+
+        return array_filter([
+            'nivel_acesso' => $nivelRaw !== null ? NivelAcesso::from((int) $nivelRaw) : null,
+            'departamento' => $request->input('departamento'),
+        ], fn ($valor) => $valor !== null);
+    }
+
+    /** @return array{criar?:bool,email?:?string,senha?:?string,nome_usuario?:?string,setor?:?string} */
+    private function acesso(PessoaRequest $request): array
+    {
+        if (! $request->boolean('criarAcesso')) {
+            return [];
+        }
+
+        return [
+            'criar' => true,
+            'email' => $request->input('email'),
+            'senha' => $request->input('senha'),
+            'nome_usuario' => $request->input('nomeUsuario'),
+            'setor' => $request->input('setor'),
         ];
     }
 

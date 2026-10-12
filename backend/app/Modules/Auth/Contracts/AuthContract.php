@@ -31,4 +31,22 @@ interface AuthContract
      * No-op (false) quando não há credencial cadastrada — nunca cria permissão órfã.
      */
     public function definirRole(int $idUser, Role $role): bool;
+
+    /**
+     * Provisiona credencial + papel RBAC para uma pessoa (`id_user`).
+     * Sem senha → convite (situação PENDENTE, senha inutilizável). Deve rodar
+     * dentro da transação do chamador p/ manter RH+Auth atômicos.
+     *
+     * @return array{id:int,idUser:int,email:string,situacao:string}
+     *
+     * @throws \InvalidArgumentException se a pessoa já tem acesso, e-mail/usuário em uso
+     */
+    public function provisionarAcesso(
+        int $idUser,
+        string $email,
+        Role $role,
+        ?string $nomeUsuario = null,
+        ?string $senha = null,
+        ?string $setor = null,
+    ): array;
 }

@@ -24,6 +24,15 @@ class PessoaRequest extends FormRequest
             'turno' => ['nullable', 'string', 'max:32'],
             'status' => ['nullable', 'integer', 'min:0', 'max:2'],
             'cpf' => ['nullable', 'string', 'max:18', new CpfRule],
+            // Vínculo (RH) — opcional: cria funcionário com o nível/departamento.
+            'nivelAcesso' => ['nullable', 'integer', 'min:0', 'max:4'],
+            'departamento' => ['nullable', 'string', 'max:255'],
+            // Acesso (Auth) — opcional: provisiona credencial para a pessoa.
+            'criarAcesso' => ['nullable', 'boolean'],
+            'email' => ['nullable', 'required_if:criarAcesso,true', 'email', 'max:255'],
+            'senha' => ['nullable', 'string', 'min:8'],
+            'nomeUsuario' => ['nullable', 'string', 'max:255'],
+            'setor' => ['nullable', 'string', 'max:255'],
         ];
     }
 }
