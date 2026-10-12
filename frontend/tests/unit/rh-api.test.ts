@@ -159,6 +159,37 @@ describe('rh/api — processo seletivo', () => {
 		expect(init['body']).toBe(JSON.stringify({ nome: 'G-06', idLider: 1, membroIds: [2, 3] }));
 	});
 
+	it('iniciarProcesso faz POST /rh/processo-seletivo com nome+matricula e idTutor opcional', async () => {
+		apiFetchMock.mockResolvedValue({
+			id: 9,
+			idCandidato: 3,
+			nomeCandidato: 'Ana',
+			statusProcesso: 'INSCRITO'
+		});
+		const { iniciarProcesso } = await freshPS();
+
+		const res = await iniciarProcesso({
+			nomeCompleto: 'Ana Souza',
+			matricula: '2026-001',
+			contato: 'ana@fablab.org',
+			idTutor: 4
+		});
+
+		const { path, init } = chamada();
+		expect(path).toBe('/rh/processo-seletivo');
+		expect(init['method']).toBe('POST');
+		expect(init['body']).toBe(
+			JSON.stringify({
+				nomeCompleto: 'Ana Souza',
+				matricula: '2026-001',
+				contato: 'ana@fablab.org',
+				idTutor: 4
+			})
+		);
+		expect(res.idCandidato).toBe('3');
+		expect(res.statusProcesso).toBe('INSCRITO');
+	});
+
 	it('moverEstagio faz PATCH …/{id}/estagio {etapa: UPPER}', async () => {
 		apiFetchMock.mockResolvedValue({ id: 9, idCandidato: 3, nomeCandidato: 'C', statusProcesso: 'ENTREVISTA', nota: null, feedback: null });
 		const { moverEstagio } = await freshPS();

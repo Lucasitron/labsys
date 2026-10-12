@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { AlertaProducao, KpisProducao } from '$lib/types/producao';
-	import { CARTAO_META, INSPECAO_STATUS_META, KANBAN_COLUNA_META, MAQUINA_STATUS_META } from '$lib/utils/producao-status';
+	import { KANBAN_COLUNA_META, MAQUINA_STATUS_META } from '$lib/utils/producao-status';
 	import CartaoBadge from '$lib/components/producao/CartaoBadge.svelte';
 	import Skeleton from '$lib/components/ui/Skeleton.svelte';
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
@@ -69,7 +69,8 @@
 		<div class="flex-1">
 			<b class="text-ink">Dados de exemplo — contrato 🟡 pendente.</b>{' '}
 			Os dados voltam a ser reais quando o gateway expor{' '}
-			<span class="font-mono">/api/producao/**</span>.
+			<span class="font-mono">/api/producao/resumo</span>. Desligue com{' '}
+			<span class="font-mono">VITE_USE_PRODUCAO_MOCK=false</span>.
 		</div>
 	</div>
 {/if}

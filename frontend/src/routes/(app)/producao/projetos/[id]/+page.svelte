@@ -3,7 +3,7 @@
 	import type { PageProps } from './$types';
 	import type { Projeto, Tarefa } from '$lib/types/producao';
 	import { PROJETO_STATUS_META, TAREFA_STATUS_META } from '$lib/utils/producao-status';
-	import { ABAS_PROJETO, type AbaProjeto } from './+page';
+	import { ABAS_PROJETO } from './+page';
 	import ModalSaidaProjeto from '$lib/components/producao/ModalSaidaProjeto.svelte';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';

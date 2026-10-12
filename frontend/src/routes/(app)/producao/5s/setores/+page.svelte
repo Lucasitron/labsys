@@ -2,7 +2,6 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { Cartao5S, NomeFunc, Setor5S } from '$lib/types/producao';
-	import { CARTAO_META } from '$lib/utils/producao-status';
 	import CartaoBadge from '$lib/components/producao/CartaoBadge.svelte';
 	import ModalSetor from '$lib/components/producao/ModalSetor.svelte';
 	import ModalChecklistSetor from '$lib/components/producao/ModalChecklistSetor.svelte';

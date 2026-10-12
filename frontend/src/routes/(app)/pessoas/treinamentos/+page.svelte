@@ -4,7 +4,6 @@
 	import type { PersonOption } from '$lib/api/rh';
 	import type { Treinamento, TrainingStatus } from '$lib/types/rh';
 	import { formatNumber } from '$lib/utils/format';
-	import { toUserMessage } from '$lib/utils/errors';
 	import { trainingStatusMeta } from '$lib/utils/rh-status';
 	import { toasts } from '$lib/stores/toast';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';

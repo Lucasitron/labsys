@@ -77,6 +77,54 @@ function mapGrupo(raw: RawGrupo): PsGroup {
 	};
 }
 
+export interface IniciarProcessoPayload {
+	nomeCompleto: string;
+	matricula: string;
+	contato?: string;
+	turno?: string;
+	idTutor?: number;
+}
+
+export interface ProcessoIniciado {
+	id: string;
+	idCandidato: string;
+	nomeCandidato: string;
+	statusProcesso: string;
+}
+
+interface RawProcesso {
+	id: number | string;
+	idCandidato: number | string;
+	nomeCandidato?: string | null;
+	statusProcesso: string;
+}
+
+// POST /rh/processo-seletivo — candidato nasce como pessoa + funcionário
+// Recrutando e é o único caminho que o insere no Kanban do PS.
+export async function iniciarProcesso(
+	payload: IniciarProcessoPayload,
+	fetchFn: typeof fetch = fetch
+): Promise<ProcessoIniciado> {
+	const body: Record<string, unknown> = {
+		nomeCompleto: payload.nomeCompleto,
+		matricula: payload.matricula
+	};
+	if (payload.contato) body['contato'] = payload.contato;
+	if (payload.turno) body['turno'] = payload.turno;
+	if (payload.idTutor !== undefined) body['idTutor'] = payload.idTutor;
+	const raw = await apiFetch<RawProcesso>(
+		'/rh/processo-seletivo',
+		{ method: 'POST', headers: bearer(), body: JSON.stringify(body) },
+		fetchFn
+	);
+	return {
+		id: String(raw.id),
+		idCandidato: String(raw.idCandidato),
+		nomeCandidato: raw.nomeCandidato ?? '',
+		statusProcesso: raw.statusProcesso
+	};
+}
+
 export async function listPS(
 	params: { estagio?: PsStage } = {},
 	fetchFn: typeof fetch = fetch

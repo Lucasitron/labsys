@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import type { Pendencia5S, PenalidadeTipo } from '$lib/types/producao';
 	import {
-		GRAVIDADE_META,
 		PENDENCIA_STATUS_META,
 		PENALIDADE_TIPO_META,
 		gravidadeMeta

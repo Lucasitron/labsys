@@ -1,7 +1,7 @@
 import type { PageLoad } from './$types';
 import { obterPenalidades5S } from '$lib/api/producao/client';
 import { PADRAO_TAMANHO_PAGINA, paginaDaUrl, tamanhoDaPaginaDaUrl } from '$lib/api/producao/client';
-import type { Paginado, Penalidade5S, PenalidadeStatus, PenalidadeTipo } from '$lib/types/producao';
+import type { PenalidadeStatus, PenalidadeTipo } from '$lib/types/producao';
 
 export const ssr = false;
 export const prerender = false;

@@ -1,7 +1,10 @@
 import type { ResumoProducao } from '$lib/types/producao';
 
-// TODO contrato 🟡 — remover mock quando gateway expor /api/producao/**
-export const USE_PRODUCAO_MOCK = true; // alternar para false para usar a chamada real (apiFetch)
+// Mock do resumo de Produção — controlado por env (F-01).
+// O back ainda não expõe `GET /producao/resumo`; enquanto isso o mock fica
+// ligado por padrão. Defina `VITE_USE_PRODUCAO_MOCK=false` no build/deploy
+// para usar a chamada real e o banner de aviso desaparece junto.
+export const USE_PRODUCAO_MOCK: boolean = import.meta.env.VITE_USE_PRODUCAO_MOCK !== 'false';
 
 export const RESUMO_PRODUCAO_MOCK: ResumoProducao = {
 	kpis: {

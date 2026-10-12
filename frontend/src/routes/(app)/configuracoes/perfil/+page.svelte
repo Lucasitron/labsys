@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { get } from 'svelte/store';
 	import type { PageProps } from './$types';
-	import type { Perfil } from '$lib/types/configuracoes';
 	import type { Role } from '$lib/types/auth';
 	import type { Tone } from '$lib/types/stock';
 	import { auth } from '$lib/stores/auth';

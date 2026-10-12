@@ -1,6 +1,6 @@
 import type { Ciclo5S, Paginado, Setor5S } from '$lib/types/producao';
 import { apiFetch } from '../client';
-import { bearer, paginarClient, paraPaginado, unwrapLista } from './client';
+import { bearer, paginarClient, unwrapLista } from './client';
 
 const BASE = '/producao/setores';
 

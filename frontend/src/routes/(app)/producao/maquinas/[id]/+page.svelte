@@ -3,7 +3,6 @@
 	import type { PageProps } from './$types';
 	import type { ChamadoStatus, Maquina, NomeFunc } from '$lib/types/producao';
 	import {
-		CARTAO_META,
 		CHAMADO_STATUS_META,
 		MAQUINA_STATUS_META,
 		PREVENTIVA_STATUS_META
@@ -13,7 +12,6 @@
 		atualizarStatusMaquina,
 		criarPreventivaMaquina
 	} from '$lib/api/producao/client';
-	import { ApiError, NetworkError } from '$lib/api/client';
 	import { toasts, toastError } from '$lib/stores/toast';
 	import { isResponsavelAtribuido } from '$lib/utils/permissions';
 	import { ABAS_MAQUINA } from './+page';
@@ -26,7 +24,6 @@
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	let { data }: PageProps = $props();

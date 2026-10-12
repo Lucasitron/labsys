@@ -6,7 +6,7 @@
 	import { MESA_AUDITORIA_META, MESA_STATUS_META } from '$lib/utils/producao-status';
 	import { registrarAuditoriaMesa } from '$lib/api/producao/client';
 	import { ApiError, NetworkError } from '$lib/api/client';
-	import { toastError, toasts } from '$lib/stores/toast';
+	import { toasts } from '$lib/stores/toast';
 	import ModalMesa from '$lib/components/producao/ModalMesa.svelte';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';

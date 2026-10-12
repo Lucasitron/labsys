@@ -1,7 +1,7 @@
 import type { PageLoad } from './$types';
 import { obterPendencias5S } from '$lib/api/producao/client';
 import { PADRAO_TAMANHO_PAGINA, paginaDaUrl, tamanhoDaPaginaDaUrl } from '$lib/api/producao/client';
-import type { GravidadePendencia, Paginado, Pendencia5S, SituacaoPendencia } from '$lib/types/producao';
+import type { GravidadePendencia, SituacaoPendencia } from '$lib/types/producao';
 
 export const ssr = false;
 export const prerender = false;

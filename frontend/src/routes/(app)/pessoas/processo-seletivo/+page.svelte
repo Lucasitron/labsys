@@ -5,19 +5,20 @@
 	import type { PageProps } from './$types';
 	import { auth } from '$lib/stores/auth';
 	import { ApiError } from '$lib/api/client';
-	import { createPessoa } from '$lib/api/rh/pessoas';
 	import {
 		avaliarMembro,
 		createGrupo,
+		iniciarProcesso,
 		listPS,
 		moverEstagio
 	} from '$lib/api/rh/processo-seletivo';
+	import { listFuncionarios, type FuncionarioOption } from '$lib/api/rh/funcionarios';
 	import type { PersonOption } from '$lib/api/rh';
 	import type { PsCandidate, PsGroup, PsStage } from '$lib/types/rh';
 	import { initials, formatNumber } from '$lib/utils/format';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { psStageMeta } from '$lib/utils/rh-status';
-	import { isTutor } from '$lib/utils/permissions';
+	import { isTutor, isAdmin } from '$lib/utils/permissions';
 	import { toasts } from '$lib/stores/toast';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
@@ -37,6 +38,7 @@
 	const canEdit = $derived(data.canEdit ?? false);
 	const usuario = $derived(get(auth).user);
 	const podeGerir = $derived(canEdit || isTutor(usuario));
+	const ehAdmin = $derived(isAdmin(usuario));
 
 	const ESTAGIOS: PsStage[] = ['inscrito', 'triagem', 'entrevista', 'aprovado', 'reprovado'];
 	const TONE_COLUNA: Record<PsStage, 'muted' | 'brand' | 'warn' | 'success' | 'danger'> = {
@@ -184,10 +186,11 @@
 
 	let modalInscricao = $state(false);
 	let nomeInsc = $state('');
+	let matriculaInsc = $state('');
 	let emailInsc = $state('');
-	let cursoInsc = $state('');
-	let periodoInsc = $state('');
-	let dispInsc = $state('');
+	let tutorIdInsc = $state('');
+	let tutoresInsc = $state<FuncionarioOption[]>([]);
+	let carregandoTutores = $state(false);
 	let errosInsc = $state<Record<string, string>>({});
 
 	let modalCriarGrupo = $state(false);
@@ -207,12 +210,24 @@
 
 	function abrirInscricao(): void {
 		nomeInsc = '';
+		matriculaInsc = '';
 		emailInsc = '';
-		cursoInsc = '';
-		periodoInsc = '';
-		dispInsc = '';
+		tutorIdInsc = '';
 		errosInsc = {};
 		modalInscricao = true;
+		if (ehAdmin) void carregarTutores();
+	}
+
+	async function carregarTutores(): Promise<void> {
+		if (tutoresInsc.length > 0) return;
+		carregandoTutores = true;
+		try {
+			tutoresInsc = await listFuncionarios();
+		} catch {
+			tutoresInsc = [];
+		} finally {
+			carregandoTutores = false;
+		}
 	}
 
 	function abrirCriarGrupo(): void {
@@ -240,22 +255,20 @@
 		if (mutando) return;
 		const novos: Record<string, string> = {};
 		if (!nomeInsc.trim()) novos['nome'] = 'Informe o nome completo.';
+		if (!matriculaInsc.trim()) novos['matricula'] = 'Informe a matrícula.';
 		if (!emailInsc.trim()) novos['email'] = 'Informe o e-mail.';
 		else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInsc.trim()))
 			novos['email'] = 'Informe um e-mail válido.';
-		if (!cursoInsc.trim()) novos['curso'] = 'Informe o curso.';
+		if (ehAdmin && !tutorIdInsc) novos['tutor'] = 'Selecione o tutor responsável.';
 		errosInsc = novos;
 		if (Object.keys(novos).length > 0) return;
 		mutando = true;
 		try {
-			await createPessoa({
-				name: nomeInsc.trim(),
-				email: emailInsc.trim(),
-				type: 'voluntario',
-				nivel: 'recrutando',
-				...(cursoInsc.trim() ? { cursoTurma: cursoInsc.trim() } : {}),
-				...(periodoInsc.trim() ? { periodo: periodoInsc.trim() } : {}),
-				...(dispInsc.trim() ? { disponibilidades: dispInsc.trim() } : {})
+			await iniciarProcesso({
+				nomeCompleto: nomeInsc.trim(),
+				matricula: matriculaInsc.trim(),
+				contato: emailInsc.trim(),
+				...(tutorIdInsc ? { idTutor: Number(tutorIdInsc) } : {})
 			});
 			toasts.success('Inscrição registrada com sucesso.');
 			modalInscricao = false;
@@ -570,57 +583,55 @@
 				/>
 				{#if errosInsc['nome']}<p class="mt-1 text-xs text-danger">{errosInsc['nome']}</p>{/if}
 			</div>
-			<div>
-				<label for="insc-email" class={labelCls}>
-					E-mail <span class="text-danger" aria-hidden="true">*</span>
-				</label>
-				<input
-					id="insc-email"
-					type="email"
-					bind:value={emailInsc}
-					placeholder="nome@email.com"
-					autocomplete="email"
-					aria-invalid={!!errosInsc['email']}
-					class="{inputCls} {errosInsc['email'] ? inputErroCls : ''}"
-				/>
-				{#if errosInsc['email']}<p class="mt-1 text-xs text-danger">{errosInsc['email']}</p>{/if}
-			</div>
 			<div class="grid gap-4 sm:grid-cols-2">
 				<div>
-					<label for="insc-curso" class={labelCls}>
-						Curso <span class="text-danger" aria-hidden="true">*</span>
+					<label for="insc-matricula" class={labelCls}>
+						Matrícula <span class="text-danger" aria-hidden="true">*</span>
 					</label>
 					<input
-						id="insc-curso"
+						id="insc-matricula"
 						type="text"
-						bind:value={cursoInsc}
-						placeholder="Ex.: Sistemas de Informação"
-						aria-invalid={!!errosInsc['curso']}
-						class="{inputCls} {errosInsc['curso'] ? inputErroCls : ''}"
+						bind:value={matriculaInsc}
+						placeholder="Ex.: 2026-001"
+						aria-invalid={!!errosInsc['matricula']}
+						class="{inputCls} {errosInsc['matricula'] ? inputErroCls : ''} font-mono"
 					/>
-					{#if errosInsc['curso']}<p class="mt-1 text-xs text-danger">{errosInsc['curso']}</p>{/if}
+					{#if errosInsc['matricula']}<p class="mt-1 text-xs text-danger">{errosInsc['matricula']}</p>{/if}
 				</div>
 				<div>
-					<label for="insc-periodo" class={labelCls}>Período</label>
+					<label for="insc-email" class={labelCls}>
+						E-mail <span class="text-danger" aria-hidden="true">*</span>
+					</label>
 					<input
-						id="insc-periodo"
-						type="text"
-						bind:value={periodoInsc}
-						placeholder="Ex.: 4ª fase"
-						class={inputCls}
+						id="insc-email"
+						type="email"
+						bind:value={emailInsc}
+						placeholder="nome@email.com"
+						autocomplete="email"
+						aria-invalid={!!errosInsc['email']}
+						class="{inputCls} {errosInsc['email'] ? inputErroCls : ''}"
 					/>
+					{#if errosInsc['email']}<p class="mt-1 text-xs text-danger">{errosInsc['email']}</p>{/if}
 				</div>
 			</div>
-			<div>
-				<label for="insc-disp" class={labelCls}>Disponibilidade</label>
-				<input
-					id="insc-disp"
-					type="text"
-					bind:value={dispInsc}
-					placeholder="Ex.: quartas à tarde"
-					class={inputCls}
-				/>
-			</div>
+			{#if ehAdmin}
+				<div>
+					<Select
+						id="insc-tutor"
+						label="Tutor(a) responsável"
+						options={tutoresInsc.map((t) => ({ id: t.id, label: t.nome }))}
+						value={tutorIdInsc}
+						placeholder={carregandoTutores ? 'Carregando…' : 'Selecione…'}
+						disabled={carregandoTutores}
+						required
+						onChange={(v) => {
+							tutorIdInsc = v;
+							errosInsc = { ...errosInsc, tutor: '' };
+						}}
+					/>
+					{#if errosInsc['tutor']}<p class="mt-1 text-xs text-danger">{errosInsc['tutor']}</p>{/if}
+				</div>
+			{/if}
 		</div>
 	{/snippet}
 	{#snippet footer()}

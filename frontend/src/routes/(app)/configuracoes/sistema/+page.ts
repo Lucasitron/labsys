@@ -1,6 +1,5 @@
 import type { PageLoad } from './$types';
 import { listarTokens, obterSistema } from '$lib/api/configuracoes/sistema';
-import type { ParametroSistema, TokenIntegracao } from '$lib/types/configuracoes';
 
 export const ssr = false;
 export const prerender = false;
