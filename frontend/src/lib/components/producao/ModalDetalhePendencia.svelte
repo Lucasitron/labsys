@@ -11,7 +11,6 @@
 		registrarPenalidadeParaPendencia5S,
 		resolverPendencia5S
 	} from '$lib/api/producao/client';
-	import { ApiError, NetworkError } from '$lib/api/client';
 	import Modal from '$lib/components/ui/Modal.svelte';
 
 	export interface HistoricoResolucao {
@@ -87,7 +86,7 @@
 	}
 
 	function mensagemErro(err: unknown): string {
-		if (err instanceof ApiError || err instanceof NetworkError) return err.message;
+		if (err instanceof Error && err.message) return err.message;
 		return 'Não foi possível concluir a operação.';
 	}
 

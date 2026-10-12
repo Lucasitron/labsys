@@ -251,29 +251,28 @@ describe('rh/api — horas', () => {
 });
 
 describe('rh/api — treinamentos', () => {
-	it('listTreinamentos monta query com status/search', async () => {
-		apiFetchMock.mockResolvedValue({ trainings: [] });
+	it('list/get de treinamentos gateados (Lote 3: sem par no backend)', async () => {
 		const { listTreinamentos } = await freshTreinamentos();
 
-		await listTreinamentos({ status: 'aberto', search: 'laser' });
-
-		expect(chamada().path).toBe('/rh/treinamentos?status=aberto&search=laser');
+		await expect(listTreinamentos({ status: 'aberto', search: 'laser' })).rejects.toThrow(
+			'Lote 3'
+		);
+		expect(apiFetchMock).not.toHaveBeenCalled();
 	});
 
-	it('getTreinamento dispara GET detalhe; sessão/tarefa-final/agenda/disponibilidade/guias gateadas', async () => {
+	it('getTreinamento gateado; sessão/tarefa-final/agenda/disponibilidade/guias gateadas', async () => {
 		apiFetchMock.mockResolvedValue({ id: 't1' });
 		const { getTreinamento, getSessao, atribuirTarefaFinal, listAgenda, getDisponibilidade, listGuias } =
 			await freshTreinamentos();
 
-		await getTreinamento('t1');
-		expect(chamada(0).path).toBe('/rh/treinamentos/t1');
+		await expect(getTreinamento('t1')).rejects.toThrow('Lote 3');
 
 		await expect(getSessao()).rejects.toThrow('Lote 3');
 		await expect(atribuirTarefaFinal()).rejects.toThrow('Lote 3');
 		await expect(listAgenda()).rejects.toThrow('Lote 3');
 		await expect(getDisponibilidade()).rejects.toThrow('Lote 3');
 		await expect(listGuias()).rejects.toThrow('Lote 3');
-		expect(apiFetchMock).toHaveBeenCalledTimes(1);
+		expect(apiFetchMock).not.toHaveBeenCalled();
 	});
 
 	it('avaliarTreinamento usa POST …/avaliacoes {idFuncionario,nota,feedback}', async () => {
@@ -409,8 +408,8 @@ describe('rh/api — guardas de naming PT e R-5', () => {
 			projectId: '5'
 		});
 		await horas.validarApontamento('h1');
-		await treinamentos.listTreinamentos({ status: 'aberto' });
-		await treinamentos.getTreinamento('t1');
+		await expect(treinamentos.listTreinamentos({ status: 'aberto' })).rejects.toThrow('Lote 3');
+		await expect(treinamentos.getTreinamento('t1')).rejects.toThrow('Lote 3');
 		await treinamentos.avaliarTreinamento('t1', { nota: 8, feedback: 'Ok', pessoaId: 'p1' });
 		await niveis.getNiveis();
 		await niveis.alterarNivel('m1', 'voluntario');

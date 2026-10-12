@@ -1,8 +1,4 @@
 import type { RankingItem, SetorRef } from '$lib/types/producao';
-import { apiFetch } from '../client';
-import { bearer, montarQuery } from './client';
-
-const BASE = '/producao/ranking-5s';
 
 export interface ResultadoRanking5S {
 	ranking: RankingItem[];
@@ -15,18 +11,17 @@ export interface EvolucaoRanking5S {
 	pontos: { mes: string; nota: number }[];
 }
 
+// Sem par no backend (sem controller Java nem rota Laravel): gateadas com mensagem.
 export async function obterRanking5S(
 	params: { mes?: string } = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<ResultadoRanking5S> {
-	const qs = montarQuery(params);
-	return await apiFetch<ResultadoRanking5S>(`${BASE}${qs}`, { headers: bearer() }, fetchFn);
+	throw new Error('Ranking 5S indisponível — sem par no backend (Lote 3).');
 }
 
 export async function obterEvolucaoRanking5S(
 	params: { setor?: string; mes?: string } = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<EvolucaoRanking5S[]> {
-	const qs = montarQuery(params);
-	return await apiFetch<EvolucaoRanking5S[]>(`${BASE}/evolucao${qs}`, { headers: bearer() }, fetchFn);
+	throw new Error('Evolução do ranking 5S indisponível — sem par no backend (Lote 3).');
 }

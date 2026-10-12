@@ -29,7 +29,7 @@ export type KanbanColuna = 'Fila' | 'Produção' | 'Acabamento' | 'Pronto' | 'En
 
 export type Cartao5S = 'Verde' | 'Amarelo' | 'Vermelho';
 
-export type MaquinaStatus = 'Disponível' | 'Em uso' | 'Em manutenção' | 'Suspensa';
+export type MaquinaStatus = 'Disponível' | 'Em uso' | 'Em manutenção';
 
 export type ChamadoStatus = 'Aberto' | 'Atribuído' | 'Em andamento' | 'Resolvido' | 'Aguardando compra';
 

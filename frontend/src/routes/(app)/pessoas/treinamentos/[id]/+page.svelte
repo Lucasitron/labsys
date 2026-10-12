@@ -227,7 +227,7 @@
 		<EmptyState
 			icon="squares"
 			title="Treinamento não encontrado"
-			description="O treinamento pode ter sido removido ou o endereço está incorreto."
+			description={erroBloco ?? 'O treinamento pode ter sido removido ou o endereço está incorreto.'}
 		>
 			{#snippet children()}
 				<a

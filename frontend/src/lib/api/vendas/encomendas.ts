@@ -50,9 +50,9 @@ export async function listEncomendas(
 	params: ListEncomendasParams = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<EncomendasResult> {
+	// O back lê só `status` (Title-case) + `clienteId`; `search` filtra client-side.
 	const query = new URLSearchParams();
 	if (params.status) query.set('status', params.status);
-	if (params.search) query.set('search', params.search);
 	if (params.clienteId) query.set('clienteId', params.clienteId);
 	const qs = query.toString();
 	const res = await apiFetch<{ encomendas: RawEncomenda[]; counts: Record<string, number> }>(
@@ -60,7 +60,16 @@ export async function listEncomendas(
 		{ headers: bearer() },
 		fetchFn
 	);
-	return { encomendas: res.encomendas.map(mapEncomenda), counts: res.counts };
+	let encomendas = res.encomendas.map(mapEncomenda);
+	const termo = params.search?.trim().toLowerCase();
+	if (termo) {
+		encomendas = encomendas.filter(
+			(e) =>
+				e.cliente.nome.toLowerCase().includes(termo) ||
+				(e.codigo ?? '').toLowerCase().includes(termo)
+		);
+	}
+	return { encomendas, counts: res.counts };
 }
 
 export async function getEncomenda(id: string, fetchFn: typeof fetch = fetch): Promise<Encomenda> {

@@ -1,8 +1,4 @@
 import type { GravidadePendencia, Paginado, Pendencia5S, PenalidadeTipo, SituacaoPendencia } from '$lib/types/producao';
-import { apiFetch } from '../client';
-import { bearer, paraPaginado } from './client';
-
-const BASE = '/producao/pendencias-5s';
 
 export type PendenciaFiltros = {
 	gravidade?: GravidadePendencia[];
@@ -21,33 +17,29 @@ export interface RegistrarPenalidadePayload {
 	motivo: string;
 }
 
+// Sem par no backend (sem controller Java nem rota Laravel): gateadas com mensagem.
 export async function obterPendencias5S(
 	params: PendenciaFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Pendencia5S>> {
-	const res = await apiFetch<Paginado<Pendencia5S> | Pendencia5S[] | { data: Pendencia5S[] }>(BASE, { headers: bearer() }, fetchFn);
-	return paraPaginado(res, params.page, params.pageSize);
+	throw new Error('Pendências 5S indisponíveis — sem par no backend (Lote 3).');
 }
 
 export async function obterPendencia5SPorId(id: string, fetchFn: typeof fetch = fetch): Promise<Pendencia5S> {
-	return await apiFetch<Pendencia5S>(`${BASE}/${id}`, { headers: bearer() }, fetchFn);
+	throw new Error('Pendência 5S indisponível — sem par no backend (Lote 3).');
 }
 
 export function resolverPendencia5S(id: string, payload: ResolverPendenciaPayload): Promise<Pendencia5S> {
-	return apiFetch<Pendencia5S>(`${BASE}/${id}/resolver`, {
-		method: 'PUT',
-		headers: bearer(),
-		body: JSON.stringify(payload)
-	});
+	return Promise.reject(
+		new Error('Resolver pendência 5S indisponível — sem par no backend (Lote 3).')
+	);
 }
 
 export function registrarPenalidadeParaPendencia5S(
 	id: string,
 	payload: RegistrarPenalidadePayload
 ): Promise<Pendencia5S> {
-	return apiFetch<Pendencia5S>(`${BASE}/${id}/penalidade`, {
-		method: 'POST',
-		headers: bearer(),
-		body: JSON.stringify(payload)
-	});
+	return Promise.reject(
+		new Error('Penalidade de pendência 5S indisponível — sem par no backend (Lote 3).')
+	);
 }

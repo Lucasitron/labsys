@@ -151,15 +151,15 @@
 		}
 	}
 
-	async function alternarSuspensao(): Promise<void> {
+	async function alternarManutencao(): Promise<void> {
 		if (!maquina) return;
 		try {
-			if (maquina.status === 'Suspensa') {
+			if (maquina.status === 'Em manutenção') {
 				await atualizarStatusMaquina(maquina.id, { status: 'Disponível' });
 				toasts.success('Máquina liberada');
 			} else {
-				await atualizarStatusMaquina(maquina.id, { status: 'Suspensa' });
-				toasts.success('Máquina suspensa');
+				await atualizarStatusMaquina(maquina.id, { status: 'Em manutenção' });
+				toasts.success('Máquina em manutenção');
 			}
 			await invalidateAll();
 		} catch (err) {
@@ -224,12 +224,12 @@
 					</button>
 					<button
 						type="button"
-						data-testid="maq-suspender"
-						onclick={() => void alternarSuspensao()}
+						data-testid="maq-manutencao"
+						onclick={() => void alternarManutencao()}
 						class="inline-flex items-center gap-1.5 rounded-lg bg-danger px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-danger/20 transition hover:bg-danger/90"
 					>
-						<Icon name={maquina.status === 'Suspensa' ? 'check' : 'warning'} class="h-4 w-4" />
-						{maquina.status === 'Suspensa' ? 'Liberar' : 'Suspender'}
+						<Icon name={maquina.status === 'Em manutenção' ? 'check' : 'warning'} class="h-4 w-4" />
+						{maquina.status === 'Em manutenção' ? 'Liberar' : 'Em manutenção'}
 					</button>
 				{/if}
 			{/snippet}

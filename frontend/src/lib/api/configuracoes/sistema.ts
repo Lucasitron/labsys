@@ -15,6 +15,8 @@ interface RawToken {
 	criadoEm?: string | null;
 	ultimoUso?: string | null;
 	revogado?: boolean;
+	// O back devolve `chave` UMA vez no POST; lista nunca inclui.
+	chave?: string | null;
 }
 
 interface RawSistema {
@@ -90,12 +92,19 @@ export async function listarTokens(fetchFn: typeof fetch = fetch): Promise<Token
 	return (raw ?? []).map(mapToken);
 }
 
-export function criarToken(payload: { nome: string }): Promise<TokenIntegracao> {
+export interface TokenCriado extends TokenIntegracao {
+	chave?: string;
+}
+
+export function criarToken(payload: { nome: string }): Promise<TokenCriado> {
 	return apiFetch<RawToken>('/configuracoes/tokens', {
 		method: 'POST',
 		headers: bearer(),
 		body: JSON.stringify(payload)
-	}).then(mapToken);
+	}).then((raw) => ({
+		...mapToken(raw),
+		...(raw.chave ? { chave: raw.chave } : {})
+	}));
 }
 
 export function revogarToken(id: string): Promise<void> {

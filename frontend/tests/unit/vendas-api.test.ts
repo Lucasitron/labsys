@@ -103,12 +103,19 @@ describe('vendas/api — clientes (query PT)', () => {
 });
 
 describe('vendas/api — encomendas (Kanban)', () => {
-	it('listEncomendas usa status PT e omite quando ausente', async () => {
-		apiFetchMock.mockResolvedValue({ encomendas: [], counts: {} });
+	it('listEncomendas envia só status/clienteId; search filtra client-side (Lote 3)', async () => {
+		apiFetchMock.mockResolvedValue({
+			encomendas: [
+				{ id: 1, idCliente: 2, clienteNome: 'Mesa & Cia', dataCriacao: '2026-09-20', statusKanban: 'Fila', valorFinal: '100' },
+				{ id: 2, idCliente: 3, clienteNome: 'Outra Empresa', dataCriacao: '2026-09-21', statusKanban: 'Fila', valorFinal: '200' }
+			],
+			counts: {}
+		});
 		const { listEncomendas } = await freshEncomendas();
 
-		await listEncomendas({ status: 'Produção', search: 'mesa' });
-		expect(chamada(0).path).toBe('/vendas/encomendas?status=Produ%C3%A7%C3%A3o&search=mesa');
+		const filtradas = await listEncomendas({ status: 'Produção', search: 'mesa' });
+		expect(chamada(0).path).toBe('/vendas/encomendas?status=Produ%C3%A7%C3%A3o');
+		expect(filtradas.encomendas.map((e) => e.id)).toEqual(['1']);
 
 		await listEncomendas({});
 		expect(chamada(1).path).toBe('/vendas/encomendas');

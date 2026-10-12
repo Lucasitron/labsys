@@ -24,7 +24,8 @@ export function mapInteracao(raw: RawInteracao): Interacao {
 		tipo: raw.tipo,
 		descricao: raw.descricao,
 		dataInteracao: raw.dataInteracao,
-		responsavel: ''
+		// O back (InteracaoResource) não devolve `responsavel`, só `idUsuario`.
+		responsavel: raw.idUsuario != null ? String(raw.idUsuario) : ''
 	};
 }
 

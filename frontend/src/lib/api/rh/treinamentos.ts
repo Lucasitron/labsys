@@ -17,30 +17,19 @@ function bearer(): Record<string, string> {
 	return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+// Sem par no backend (só POST /treinamentos + /{id}/avaliacoes): gateadas com mensagem.
 export async function listTreinamentos(
 	params: { status?: TrainingStatus; search?: string } = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<TreinamentosResult> {
-	const query = new URLSearchParams();
-	if (params.status) query.set('status', params.status);
-	if (params.search) query.set('search', params.search);
-	const qs = query.toString();
-	return await apiFetch<TreinamentosResult>(
-		`/rh/treinamentos${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
-		fetchFn
-	);
+	throw new Error('Lista de treinamentos indisponível — sem par no backend (Lote 3).');
 }
 
 export async function getTreinamento(
 	id: string,
 	fetchFn: typeof fetch = fetch
 ): Promise<TreinamentoDetail> {
-	return await apiFetch<TreinamentoDetail>(
-		`/rh/treinamentos/${id}`,
-		{ headers: bearer() },
-		fetchFn
-	);
+	throw new Error('Detalhe de treinamento indisponível — sem par no backend (Lote 3).');
 }
 
 export async function avaliarTreinamento(

@@ -25,8 +25,7 @@ export interface CriarMaquinaPayload {
 const MAQUINA_STATUS_PARA_UPPER: Record<string, string> = {
 	Disponível: 'DISPONIVEL',
 	'Em uso': 'EM_USO',
-	'Em manutenção': 'MANUTENCAO',
-	Suspensa: 'SUSPENSA'
+	'Em manutenção': 'MANUTENCAO'
 };
 
 export interface AtualizarStatusMaquinaPayload {
@@ -64,7 +63,10 @@ export function mapMaquina(raw: RawMaquina): Maquina {
 		nome: raw.nome,
 		categoria: raw.localizacao ?? raw.descricao ?? '',
 		responsavelManutencao: { id: '', nome: '' },
-		status: (MAQUINA_STATUS_UPPER[raw.status] ?? 'Disponível') as MaquinaStatus,
+		// Legado 'SUSPENSA' sem par no back: lê como 'Em manutenção', nunca envia.
+		status: (raw.status === 'SUSPENSA'
+			? 'Em manutenção'
+			: (MAQUINA_STATUS_UPPER[raw.status] ?? 'Disponível')) as MaquinaStatus,
 		cartao: 'Verde' as Cartao5S
 	};
 }

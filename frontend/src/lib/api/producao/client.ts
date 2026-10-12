@@ -127,8 +127,7 @@ export const KANBAN_UPPER: Record<string, string> = {
 export const MAQUINA_STATUS_UPPER: Record<string, string> = {
 	DISPONIVEL: 'Disponível',
 	EM_USO: 'Em uso',
-	MANUTENCAO: 'Em manutenção',
-	SUSPENSA: 'Suspensa'
+	MANUTENCAO: 'Em manutenção'
 };
 
 export function paginadoVazio<T>(): Paginado<T> {

@@ -95,6 +95,8 @@
 	let mostrarNovo = $state(false);
 	let novoNome = $state('');
 	let criandoToken = $state(false);
+	let chaveNova = $state<string | null>(null);
+	let nomeChaveNova = $state('');
 
 	async function criarNovoToken(): Promise<void> {
 		if (criandoToken) return;
@@ -105,15 +107,33 @@
 		}
 		criandoToken = true;
 		try {
-			await criarToken({ nome });
-			toasts.success(`Token "${nome}" criado com sucesso. Guarde-o em local seguro.`);
+			const criado = await criarToken({ nome });
+			toasts.success(`Token "${nome}" criado com sucesso.`);
 			novoNome = '';
 			mostrarNovo = false;
+			// A chave aparece UMA vez: guarda só em memória até fechar o modal.
+			chaveNova = criado.chave ?? null;
+			nomeChaveNova = nome;
 			await invalidateAll();
 		} catch (err) {
 			toastError(err, 'Não foi possível criar o token.');
 		} finally {
 			criandoToken = false;
+		}
+	}
+
+	function fecharChaveNova(): void {
+		chaveNova = null;
+		nomeChaveNova = '';
+	}
+
+	async function copiarChaveNova(): Promise<void> {
+		if (!chaveNova) return;
+		try {
+			await navigator.clipboard.writeText(chaveNova);
+			toasts.success('Chave copiada. Guarde-a em local seguro.');
+		} catch {
+			toasts.warn('Cópia automática indisponível — selecione a chave e copie manualmente.');
 		}
 	}
 
@@ -395,3 +415,47 @@
 	onConfirm={() => void confirmarRevogacao()}
 	onClose={() => (tokenAlvo = null)}
 />
+
+<Modal open={chaveNova !== null} title="Token criado" subtitle="Copie agora — a chave não será exibida novamente." width="sm" onClose={fecharChaveNova}>
+	{#snippet children()}
+		<div class="space-y-3">
+			<div class="flex items-start gap-2 rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-xs text-muted">
+				<Icon name="warning" class="mt-0.5 h-4 w-4 shrink-0 text-warn" />
+				<p>
+					Esta é a única vez que a chave do token "{nomeChaveNova}" aparece.
+					Guarde-a em local seguro antes de fechar.
+				</p>
+			</div>
+			<label class="block">
+				<span class="mb-1 block text-xs font-medium text-muted">Chave do token</span>
+				<input
+					type="text"
+					readonly
+					value={chaveNova ?? ''}
+					aria-label="Chave do token criado"
+					data-testid="cfg-token-chave"
+					onfocus={(e) => (e.currentTarget as HTMLInputElement).select()}
+					class="w-full rounded-lg border border-border bg-elevated px-3 py-2 font-mono text-sm text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40"
+				/>
+			</label>
+		</div>
+	{/snippet}
+	{#snippet footer()}
+		<button
+			type="button"
+			onclick={() => void copiarChaveNova()}
+			data-testid="cfg-token-copiar"
+			class="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-border/40"
+		>
+			Copiar chave
+		</button>
+		<button
+			type="button"
+			onclick={fecharChaveNova}
+			data-testid="cfg-token-fechar"
+			class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brandhi"
+		>
+			Fechar
+		</button>
+	{/snippet}
+</Modal>

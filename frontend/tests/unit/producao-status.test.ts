@@ -85,7 +85,8 @@ describe('producao-status', () => {
 		});
 
 		it('MAQUINA_STATUS_META tem chaves e metadados válidos', () => {
-			expectMetaMap(MAQUINA_STATUS_META, ['Disponível', 'Em uso', 'Em manutenção', 'Suspensa']);
+			// Lote 3: `Suspensa` sem par no back (só DISPONIVEL/EM_USO/MANUTENCAO).
+			expectMetaMap(MAQUINA_STATUS_META, ['Disponível', 'Em uso', 'Em manutenção']);
 		});
 
 		it('CHAMADO_STATUS_META tem chaves e metadados válidos', () => {
