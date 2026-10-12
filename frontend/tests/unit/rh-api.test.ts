@@ -98,8 +98,8 @@ describe('rh/api — pessoas', () => {
 		expect(chamada().init['method']).toBeUndefined();
 	});
 
-	it('createPessoa faz POST /rh/pessoas com body JSON', async () => {
-		apiFetchMock.mockResolvedValue({ id: 9, nomeCompleto: 'Ana Souza', matricula: 'M9' });
+	it('createPessoa faz POST /rh/pessoas com body JSON (inclui nivelAcesso)', async () => {
+		apiFetchMock.mockResolvedValue({ id: 1, nomeCompleto: 'Ana Souza', matricula: 'M9' });
 		const { createPessoa } = await freshPessoas();
 		const payload = { name: 'Ana Souza', matricula: 'M9', email: 'ana@fablab.org', type: 'bolsista', nivel: 'bolsista' } as const;
 
@@ -108,7 +108,12 @@ describe('rh/api — pessoas', () => {
 		expect(chamada().path).toBe('/rh/pessoas');
 		expect(chamada().init['method']).toBe('POST');
 		expect(chamada().init['body']).toBe(
-			JSON.stringify({ nomeCompleto: 'Ana Souza', matricula: 'M9', contato: 'ana@fablab.org' })
+			JSON.stringify({
+				nomeCompleto: 'Ana Souza',
+				matricula: 'M9',
+				contato: 'ana@fablab.org',
+				nivelAcesso: 1
+			})
 		);
 	});
 
@@ -328,14 +333,14 @@ describe('rh/api — treinamentos', () => {
 });
 
 describe('rh/api — níveis', () => {
-	it('getNiveis adapta {niveis,permissoes}; alterarNivel envia int; convite exige matrícula', async () => {
+	it('getNiveis adapta {niveis,permissoes}; alterarNivel envia int', async () => {
 		apiFetchMock.mockResolvedValue({
 			niveis: [{ id: 'admin', codigo: 0, label: 'Admin', total: 1 }],
 			permissoes: [
 				{ id: 'pessoas', rotulo: 'Pessoas', admin: 'TOTAL', bolsista: 'TOTAL', voluntario: 'TOTAL', estagiario: 'PROPRIO', recrutando: 'NAO' }
 			]
 		});
-		const { getNiveis, alterarNivel, convidarUsuario } = await freshNiveis();
+		const { getNiveis, alterarNivel } = await freshNiveis();
 
 		const matriz = await getNiveis();
 		expect(chamada(0).path).toBe('/rh/niveis');
@@ -346,17 +351,6 @@ describe('rh/api — níveis', () => {
 		expect(chamada(1).path).toBe('/rh/niveis/m1/membros');
 		expect(chamada(1).init['method']).toBe('PATCH');
 		expect(chamada(1).init['body']).toBe(JSON.stringify({ nivel: 1 }));
-
-		await convidarUsuario({ name: 'Novo', matricula: 'M42', nivel: 'voluntario' });
-		expect(chamada(2).path).toBe('/rh/niveis/convites');
-		expect(chamada(2).init['method']).toBe('POST');
-		expect(chamada(2).init['body']).toBe(
-			JSON.stringify({ nomeCompleto: 'Novo', matricula: 'M42', nivelAcesso: 2 })
-		);
-
-		await expect(convidarUsuario({ name: 'N', matricula: ' ', nivel: 'voluntario' })).rejects.toThrow(
-			'matrícula'
-		);
 	});
 });
 
@@ -400,7 +394,6 @@ describe('rh/api — guardas de naming PT e R-5', () => {
 		if (String(path).includes('horas')) return { idFuncionario: 7, totalHorasDisponiveis: '0.00' };
 		if (String(path).includes('treinamentos')) return { trainings: [] };
 		if (String(path).includes('niveis')) {
-			if (String(path).includes('/convites')) return {};
 			if (String(path).includes('/membros')) return {};
 			return { niveis: [], permissoes: [] };
 		}
@@ -444,7 +437,6 @@ describe('rh/api — guardas de naming PT e R-5', () => {
 		await treinamentos.avaliarTreinamento('t1', { nota: 8, feedback: 'Ok', pessoaId: 'p1' });
 		await niveis.getNiveis();
 		await niveis.alterarNivel('m1', 'voluntario');
-		await niveis.convidarUsuario({ name: 'N', matricula: 'M1', nivel: 'voluntario' });
 
 		const paths = apiFetchMock.mock.calls.map((c) => String(c[0]));
 		expect(paths.length).toBeGreaterThan(0);

@@ -6,7 +6,6 @@
 declare global {
 	interface ImportMetaEnv {
 		readonly VITE_API_BASE_URL?: string;
-		readonly VITE_USE_PRODUCAO_MOCK?: string;
 	}
 
 	namespace App {

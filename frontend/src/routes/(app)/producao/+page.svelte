@@ -11,7 +11,7 @@
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import { USE_PRODUCAO_MOCK } from '$lib/api/producao/mocks';
+
 
 	let { data }: PageProps = $props();
 
@@ -55,21 +55,6 @@
 <svelte:head>
 	<title>Produção — Resumo — FabLab</title>
 </svelte:head>
-
-{#if USE_PRODUCAO_MOCK}
-	<div
-		data-testid="prd-mock-banner"
-		class="mb-5 flex items-start gap-3 rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-xs text-muted"
-	>
-		<span class="mt-0.5 text-warn" aria-hidden="true">🟡</span>
-		<div class="flex-1">
-			<b class="text-ink">Dados de exemplo — contrato 🟡 pendente.</b>{' '}
-			Os dados voltam a ser reais quando o gateway expor{' '}
-			<span class="font-mono">/api/producao/resumo</span>. Desligue com{' '}
-			<span class="font-mono">VITE_USE_PRODUCAO_MOCK=false</span>.
-		</div>
-	</div>
-{/if}
 
 {#if hasError}
 	<ErrorBanner

@@ -5,9 +5,9 @@ import type { ResumoProducao } from '$lib/types/producao';
 export const ssr = false;
 export const prerender = false;
 
-export const load: PageLoad = async () => {
+export const load: PageLoad = async ({ fetch }) => {
 	try {
-		const resumo: ResumoProducao = await obterResumo();
+		const resumo: ResumoProducao = await obterResumo(fetch);
 		return { resumo, error: null as string | null };
 	} catch (err) {
 		return {

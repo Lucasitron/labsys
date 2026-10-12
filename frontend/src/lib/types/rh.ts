@@ -81,10 +81,10 @@ export interface PersonDetail extends Person {
 export interface CreatePessoaPayload {
 	name: string;
 	matricula?: string;
-	email: string;
+	email?: string;
 	phone?: string;
-	type: PersonType;
-	nivel: Nivel;
+	type?: PersonType;
+	nivel?: Nivel;
 	grupoId?: string;
 	isInstrutor?: boolean;
 	qualification?: number;
@@ -97,6 +97,11 @@ export interface CreatePessoaPayload {
 	department?: string;
 	shift?: string;
 	status?: PersonStatus;
+	contato?: string;
+	turno?: string;
+	nivelAcesso?: Nivel;
+	departamento?: string;
+	criarAcesso?: boolean;
 }
 
 export type UpdatePessoaPayload = Partial<CreatePessoaPayload>;
@@ -306,10 +311,4 @@ export interface NivelMatrix {
 	niveis: Nivel[];
 	matriz: Record<string, Record<Nivel, string>>;
 	membros?: NivelMembro[];
-}
-
-export interface ConvidarUsuarioPayload {
-	name: string;
-	matricula: string;
-	nivel: Nivel;
 }

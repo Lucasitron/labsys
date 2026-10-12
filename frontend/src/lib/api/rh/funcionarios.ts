@@ -32,3 +32,17 @@ export async function listFuncionarios(
 		departamento: f.departamento ?? null
 	}));
 }
+
+// Best-effort (Admin-only): mapeia idPessoa → nivelAcesso p/ enriquecer a
+// listagem de pessoas (o PessoaResource não serializa o nível do vínculo).
+// Não-Admin recebe 403 e degrada para mapa vazio.
+export async function nivelPorPessoa(
+	fetchFn: typeof fetch = fetch
+): Promise<Map<string, string>> {
+	try {
+		const funcionarios = await listFuncionarios(fetchFn);
+		return new Map(funcionarios.map((f) => [f.idPessoa, f.nivelAcesso]));
+	} catch {
+		return new Map();
+	}
+}

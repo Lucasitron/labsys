@@ -1,5 +1,6 @@
 import type { PageLoad } from './$types';
-import { listPessoas } from '$lib/api/rh/pessoas';
+import { listPessoas, nivelDoServidor } from '$lib/api/rh/pessoas';
+import { nivelPorPessoa } from '$lib/api/rh/funcionarios';
 import { intParam, strParam } from '$lib/utils/stock-url';
 import type { PessoasResult } from '$lib/types/rh';
 
@@ -28,18 +29,25 @@ export const load: PageLoad = async ({ url, fetch }) => {
 	};
 
 	try {
-		const resultado: PessoasResult = await listPessoas(
-			{
-				search: params.search || undefined,
-				setor: params.setor || undefined,
-				nivel: params.nivel || undefined,
-				status: params.status || undefined,
-				page: params.page,
-				pageSize: params.pageSize
-			},
-			fetch
-		);
-		return { params, resultado, error: null as string | null };
+		const [resultado, niveis] = await Promise.all([
+			listPessoas(
+				{
+					search: params.search || undefined,
+					setor: params.setor || undefined,
+					nivel: params.nivel || undefined,
+					status: params.status || undefined,
+					page: params.page,
+					pageSize: params.pageSize
+				},
+				fetch
+			),
+			nivelPorPessoa(fetch)
+		]);
+		const people = resultado.people.map((pessoa) => {
+			const nivel = nivelDoServidor(niveis.get(pessoa.id));
+			return nivel ? { ...pessoa, nivel } : pessoa;
+		});
+		return { params, resultado: { ...resultado, people }, error: null as string | null };
 	} catch {
 		return {
 			params,

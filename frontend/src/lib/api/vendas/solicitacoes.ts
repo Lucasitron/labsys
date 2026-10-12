@@ -119,7 +119,7 @@ export async function decidirSolicitacao(
 	fetchFn: typeof fetch = fetch
 ): Promise<SolicitacaoEdicao> {
 	if (!decisao.aprovada && !decisao.motivo?.trim()) {
-		throw new ApiError(400, 'MOTIVO_OBRIGATORIO', 'Informe o motivo da rejeição.');
+		throw new ApiError(422, 'MOTIVO_OBRIGATORIO', 'Informe o motivo da rejeição.');
 	}
 	const body: Record<string, unknown> = {
 		decisao: decisao.aprovada ? 'APROVAR' : 'REJEITAR'

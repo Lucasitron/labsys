@@ -74,8 +74,7 @@ const mocks = vi.hoisted(() => {
 		getDisponibilidade: vi.fn(),
 		listGuias: vi.fn(),
 		getNiveis: vi.fn(),
-		alterarNivel: vi.fn(),
-		convidarUsuario: vi.fn()
+		alterarNivel: vi.fn()
 	};
 });
 
@@ -132,8 +131,7 @@ vi.mock('$lib/api/rh/treinamentos', () => ({
 }));
 vi.mock('$lib/api/rh/niveis', () => ({
 	getNiveis: mocks.getNiveis,
-	alterarNivel: mocks.alterarNivel,
-	convidarUsuario: mocks.convidarUsuario
+	alterarNivel: mocks.alterarNivel
 }));
 
 const ADMIN: User = {

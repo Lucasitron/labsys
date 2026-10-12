@@ -7,8 +7,6 @@ export interface UsuarioPayload {
 	email: string;
 	nivel: Nivel;
 	situacao?: SituacaoUsuario;
-	idUser?: number;
-	senha?: string;
 }
 
 export interface UsuariosFiltros {
@@ -91,26 +89,6 @@ export async function listarUsuarios(
 			totalPages: res.totalPages
 		}
 	};
-}
-
-export function criarUsuario(payload: UsuarioPayload): Promise<Usuario> {
-	if (payload.idUser === undefined || !payload.senha) {
-		return Promise.reject(
-			new Error('Selecione a pessoa do RH vinculada para criar o acesso.')
-		);
-	}
-	return apiFetch<RawUsuario>('/usuarios', {
-		method: 'POST',
-		headers: bearer(),
-		body: JSON.stringify({
-			idUser: payload.idUser,
-			email: payload.email,
-			nomeUsuario: payload.nome,
-			senha: payload.senha,
-			nivel: payload.nivel,
-			...(payload.situacao ? { situacao: SITUACAO_PARA_UPPER[payload.situacao] } : {})
-		})
-	}).then(mapUsuario);
 }
 
 export function atualizarUsuario(id: string, payload: UsuarioPayload): Promise<Usuario> {

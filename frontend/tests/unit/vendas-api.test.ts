@@ -220,11 +220,11 @@ describe('vendas/api — solicitações (decisão com motivo)', () => {
 		);
 	});
 
-	it('rejeitar sem motivo falha local (400) sem chamar apiFetch', async () => {
+	it('rejeitar sem motivo falha local (422) sem chamar apiFetch', async () => {
 		const { decidirSolicitacao } = await freshSolicitacoes();
 
 		await expect(decidirSolicitacao('s1', { aprovada: false })).rejects.toMatchObject({
-			status: 400
+			status: 422
 		});
 		expect(apiFetchMock).not.toHaveBeenCalled();
 	});

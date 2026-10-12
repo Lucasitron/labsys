@@ -1,6 +1,6 @@
 import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import type { ConvidarUsuarioPayload, Nivel, NivelMatrix, NivelMembro } from '$lib/types/rh';
+import type { Nivel, NivelMatrix, NivelMembro } from '$lib/types/rh';
 
 
 export const NIVEL_PARA_INT: Record<Nivel, number> = {
@@ -68,25 +68,6 @@ export async function alterarNivel(
 	return await apiFetch<NivelMembro>(
 		`/rh/niveis/${membroId}/membros`,
 		{ method: 'PATCH', headers: bearer(), body: JSON.stringify({ nivel: NIVEL_PARA_INT[nivel] }) },
-		fetchFn
-	);
-}
-
-export async function convidarUsuario(
-	payload: ConvidarUsuarioPayload,
-	fetchFn: typeof fetch = fetch
-): Promise<NivelMembro> {
-	if (!payload.matricula?.trim()) {
-		throw new Error('Informe a matrícula para o convite.');
-	}
-	const body: Record<string, unknown> = {
-		nomeCompleto: payload.name,
-		matricula: payload.matricula.trim()
-	};
-	if (payload.nivel) body['nivelAcesso'] = NIVEL_PARA_INT[payload.nivel];
-	return await apiFetch<NivelMembro>(
-		'/rh/niveis/convites',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(body) },
 		fetchFn
 	);
 }

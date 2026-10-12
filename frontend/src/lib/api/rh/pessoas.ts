@@ -1,5 +1,6 @@
 import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
+import { NIVEL_PARA_INT } from './niveis';
 import type {
 	CreatePessoaPayload,
 	Nivel,
@@ -19,6 +20,14 @@ const STATUS_PARA_UPPER: Record<PersonStatus, string | null> = {
 	afastado: null
 };
 
+// O contrato aceita `status` como inteiro (PessoaStatus: 0 Ativo, 1 Inativo).
+// 'afastado' não tem par no backend → omitido.
+const STATUS_PARA_INT: Record<PersonStatus, number | null> = {
+	ativo: 0,
+	inativo: 1,
+	afastado: null
+};
+
 const NIVEL_PARA_UPPER: Record<Nivel, string> = {
 	admin: 'ADMIN',
 	bolsista: 'BOLSISTA',
@@ -35,6 +44,17 @@ export interface RawPessoa {
 	contato?: string | null;
 	turno?: string | null;
 	status?: string | null;
+	nivel?: string | null;
+	nivelAcesso?: string | null;
+}
+
+export function nivelDoServidor(valor: string | null | undefined): Nivel | null {
+	if (!valor) return null;
+	const upper = valor.trim().toUpperCase();
+	const encontrado = (Object.keys(NIVEL_PARA_UPPER) as Nivel[]).find(
+		(nivel) => NIVEL_PARA_UPPER[nivel] === upper
+	);
+	return encontrado ?? null;
 }
 
 function iniciais(nome: string): string {
@@ -45,17 +65,21 @@ function iniciais(nome: string): string {
 	return `${primeira}${ultima}`.toUpperCase();
 }
 
-export function mapPerson(raw: RawPessoa): Person {
+export function mapPerson(raw: RawPessoa, nivel?: Nivel): Person {
 	const status: PersonStatus =
 		raw.status === 'ATIVO' ? 'ativo' : raw.status === 'INATIVO' ? 'inativo' : 'afastado';
 	const contato = raw.contato ?? '';
 	const ehEmail = contato.includes('@');
+	const nivelFinal: Nivel =
+		nivel ??
+		nivelDoServidor(raw.nivelAcesso ?? raw.nivel) ??
+		(raw.status === 'RECRUTANDO' ? 'recrutando' : 'bolsista');
 	return {
 		id: String(raw.id),
 		matricula: raw.matricula ?? '',
 		name: raw.nomeCompleto,
 		type: 'funcionario' as PersonType,
-		nivel: 'recrutando' as Nivel,
+		nivel: nivelFinal,
 		status,
 		group: null,
 		email: ehEmail ? contato : '',
@@ -71,15 +95,33 @@ function toPayload(
 	const body: Record<string, unknown> = {};
 	if (payload.name !== undefined) body['nomeCompleto'] = payload.name;
 	if (payload.matricula !== undefined) body['matricula'] = payload.matricula;
-	const contato = payload.phone?.trim() || payload.email?.trim();
+
+	const contato = payload.contato ?? payload.phone?.trim() ?? payload.email?.trim();
 	if (contato) body['contato'] = contato;
+
 	if (payload.cpf) body['cpf'] = payload.cpf;
 	if (payload.dataAdmissao) body['dataAdmissao'] = payload.dataAdmissao;
-	if (payload.shift) body['turno'] = payload.shift;
+
+	const turno = payload.turno ?? payload.shift;
+	if (turno) body['turno'] = turno;
+
 	if (payload.status !== undefined) {
-		const upper = STATUS_PARA_UPPER[payload.status];
-		if (upper) body['status'] = upper;
+		const int = STATUS_PARA_INT[payload.status];
+		if (int !== undefined && int !== null) body['status'] = int;
 	}
+
+	const nivel = payload.nivelAcesso ?? payload.nivel;
+	if (nivel) body['nivelAcesso'] = NIVEL_PARA_INT[nivel];
+
+	const departamento = payload.departamento ?? payload.department;
+	if (departamento) body['departamento'] = departamento;
+
+	if (payload.criarAcesso) {
+		body['criarAcesso'] = true;
+		if (payload.email?.trim()) body['email'] = payload.email.trim();
+		if (payload.senha) body['senha'] = payload.senha;
+	}
+
 	return body;
 }
 
@@ -109,7 +151,7 @@ export async function listPessoas(
 		{ headers: bearer() },
 		fetchFn
 	);
-	let people = (res.pessoas ?? []).map(mapPerson);
+	let people = (res.pessoas ?? []).map((p) => mapPerson(p));
 	if (params.status) {
 		people = people.filter((p) => p.status === params.status);
 	}
