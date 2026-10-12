@@ -1,86 +1,105 @@
-# Guia de Deploy — FabLab
+# Guia de Deploy — FabLab (monólito Laravel)
 
-Ambiente alvo: Ubuntu Server local, Docker Compose, Tailscale, HTTPS.
+Ambiente alvo: **Ubuntu Server local, Docker Compose, Tailscale, HTTPS**. Um backend Laravel
+(`backend/`) em **uma** imagem e **uma** porta (`8080`) + **um** PostgreSQL (`fablab`).
+Visão de infraestrutura: [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## 1. Pré-requisitos
 
 *   Docker Engine + Docker Compose plugin.
 *   Tailscale instalado e conectado (rede mesh).
-*   Java 21 e Maven 3.9+ (apenas para build local).
+*   (Build local de imagem) Apenas Docker — o PHP roda dentro do container.
 
-## 2. Variáveis de Ambiente
+## 2. Variáveis de ambiente
 
-Copie o modelo de ambiente e preencha os segredos (nunca versionar):
+Copie o modelo e preencha os segredos (**nunca versionar**):
 
 ```sh
-# .env (na raiz do repositório ou em infra/)
-POSTGRES_USER=fablab
-POSTGRES_PASSWORD=<senha-forte>
-POSTGRES_DB=fablab_auth
-RABBITMQ_USER=fablab
-RABBITMQ_PASS=<senha-forte>
-TAG=dev
+cp infra/.env.example infra/.env && chmod 600 infra/.env
 ```
+
+Valores obrigatórios (ver `infra/.env.example`):
+
+| Variável | Descrição |
+| :--- | :--- |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | Banco único `fablab` |
+| `APP_KEY` | `php artisan key:generate --show` |
+| `JWT_SECRET` | `php artisan jwt:secret --show` (≥ 32 chars) |
+| `APP_URL` | URL pública (ex.: `https://fablab.exemplo.br`) |
+| `AUTH_SEED_ENABLED` | **dev only** — em prod manter `false` (seed do admin raiz) |
+| `TAG` | Versão da imagem publicada (obrigatória em testing/prod) |
 
 ## 3. Ambientes
 
-### Desenvolvimento (local)
+### Desenvolvimento (local, build)
 
 ```sh
-# 1) Infra base (Postgres + RabbitMQ)
-docker compose -f infra/docker-compose.yml up -d
-
-# 2) Stack completa com build
-docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up --build -d
-
-# 3) Frontend (via npm)
-cd frontend && npm install && npm run dev
+docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up -d --build
 ```
 
-Checklist de saúde:
+*   `app` em `http://localhost:8080` (`GET /up` = health); Postgres em `localhost:5432`.
+*   Seed do admin raiz: `AUTH_SEED_ENABLED=true` → `admin@fablab.org` / `admin123`.
+*   Frontend (fora do Docker):
 
-| Componente | URL |
-| :--- | :--- |
-| Eureka | http://localhost:8761 |
-| Gateway | http://localhost:8080/actuator/health |
-| RabbitMQ | http://localhost:15672 |
-| Auth | http://localhost:8081/actuator/health |
+    ```sh
+    cd frontend && npm install && npm run dev   # Vite em http://localhost:5173, proxy /api → :8080
+    ```
 
 ### Homologação (testing)
 
 ```sh
-TAG=testing docker compose -f infra/docker-compose.yml -f infra/docker-compose.testing.yml up --build -d
+TAG=testing docker compose -f infra/docker-compose.yml -f infra/docker-compose.testing.yml up -d --build
 ```
 
 ### Produção
 
-Imagens publicadas em um registry (ex: GHCR). Tague o ambiente com `.env`:
+Imagens publicadas previamente (CI) no registry. **Sem `build`** em prod:
 
 ```sh
+TAG=1.2.3 docker compose -f infra/docker-compose.yml -f infra/docker-compose.prod.yml pull
 TAG=1.2.3 docker compose -f infra/docker-compose.yml -f infra/docker-compose.prod.yml up -d
 ```
 
+Regras duras do overlay prod: `TAG` obrigatória; `APP_DEBUG=false`; `AUTH_SEED_ENABLED=false`;
+Postgres **sem** `ports:` (5432 só na rede `fablab-net`); `app` publica `8080` para o proxy/Tailscale.
+
 ## 4. HTTPS
 
-*   O `infra/nginx/nginx.conf` termina TLS. Em produção, aponte os certificados
-    (Tailscale Serve ou Certbot/Let's Encrypt).
-*   Todo tráfego externo passa obrigatoriamente pelo Gateway.
+*   `infra/nginx/nginx.conf` termina TLS e encaminha para `app:8080`; produção redireciona 80→443.
+*   Certificados: Tailscale Serve ou Certbot/Let's Encrypt. Todo tráfego externo passa pelo Nginx.
 
-## 5. Rollback
+## 5. Verificação pós-deploy
 
-1.  Identificar a TAG anterior válida.
-2.  `TAG=<anterior> docker compose -f infra/docker-compose.yml -f infra/docker-compose.prod.yml up -d`.
-3.  Validation smoke: health checks + login E2E.
+```sh
+curl -fsS http://<host>:8080/up && echo OK                 # health da API
+docker compose ... ps                                       # app/worker/scheduler UP
+docker compose ... logs -f app                              # migrate/seed/caches no boot
+```
 
-## 6. Backups
+Smoke funcional: login + 1 rota autenticada (ver RUNBOOK).
 
-*   PostgreSQL: `pg_dump` diário por banco (`fablab_*`).
-*   RabbitMQ: as definições ficam versionadas em `infra/rabbitmq/definitions.json`.
+## 6. Rollback
 
-## 7. CI/CD (planejado)
+```sh
+TAG=<versao-anterior> docker compose -f infra/docker-compose.yml -f infra/docker-compose.prod.yml up -d
+```
 
-Pipeline por branch:
+As migrações do Laravel são **aditivas**: o código anterior ignora tabelas/constraints novas, então
+o rollback de imagem é seguro sem desfazer o banco. Para desfazer migrações específicas, ver o
+runbook de `auth v9` em `.opencode/state/auth-v9-backfill-plan.md`.
 
-*   `development` → build + testes unitários/integração;
+## 7. Backups
+
+*   PostgreSQL (banco único `fablab`):
+    ```sh
+    docker compose ... exec -T postgres pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc > fablab_$(date +%F).dump
+    ```
+*   Restauração: `pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean fablab_<data>.dump`.
+
+## 8. CI/CD (planejado)
+
+Pipeline por branch (Git Flow em `docs/GITFLOW.md`):
+
+*   `development` → build + testes (`composer test` / PHPUnit);
 *   `testing` → build + testes de segurança/contrato + publicação `:testing`;
-*   `main` → build + publicação `:<tag>` no GHCR.
+*   `main` → publicação `:<tag>` em `ghcr.io/fablab/backend`.

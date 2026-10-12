@@ -1,72 +1,90 @@
-# Arquitetura — Infraestrutura FabLab
+# Arquitetura — Infraestrutura FabLab (monólito modular Laravel)
 
-## Visão de Rede
+> Fonte da verdade do sistema: `.opencode/specs/system/architecture.md`.
+> Este documento descreve **só a infraestrutura** (rede, containers, persistência, borda).
 
-Todos os contêineres compartilham a rede `fablab-net` (bridge). A comunicação entre
-serviços ocorre por nome de serviço Docker (`discovery`, `gateway`, `auth`, `rh`, ...).
+## Visão geral
 
-```
-                     Internet / Tailscale
-                             │
-                        ┌────▼─────┐
-                        │  Nginx   │ 443/80  (termina TLS)
-                        └────┬─────┘
-                             │
-                        ┌────▼─────┐
-                        │  Gateway │ 8080  (Spring Cloud Gateway + Eureka discovery)
-                        └────┬─────┘
-                             │
-                     ┌───────▼────────┐
-                     │    Eureka      │ 8761
-                     └───────┬────────┘
-                             │
-   ┌────────┬───────┬────────┼────────┬─────────┬─────────┬────────────┐
-   ▼        ▼       ▼        ▼        ▼         ▼         ▼            ▼
-  Auth     RH     Estoque   Vendas  Financeiro Produção  Notification  Frontend
-  8081    8082     8083     8084      8085      8086       8087          5173/3000
-   │        │       │        │        │         │          │
-   └─────── Postgres 16 (5432)  ────  RabbitMQ (5672/15672) ────────────┘
-```
-
-## Topologias de Banco
-
-*   **Database-per-service:** cada microsserviço possui seu próprio banco
-    (`fablab_auth`, `fablab_rh`, ...), criado em `postgres/init-scripts/init.sql`.
-*   **Migrações:** Flyway (`classpath:db/migration`) em cada serviço.
-*   **Notification Service** mantém dois esquemas/estruturas no seu banco:
-    ativo (`notificacao`) e histórico (`notificacao_historico`, retenção 90 dias).
-
-## Mensageria
-
-*   RabbitMQ é o barramento assíncrono. As definições iniciais ficam em
-    `rabbitmq/definitions.json` (exchanges, queues, bindings).
-*   Padrão de nomenclatura de eventos: `<dominio>.<acao>` (ex: `ponto.registrado`,
-    `estoque.baixo`, `encomenda.entregue`).
-
-## Camadas e Padrões por Serviço
-
-Cada microsserviço segue a mesma organização de pacotes:
+Um **único** backend Laravel (`backend/`) — monólito modular, MVC — servido em **uma** porta
+(`8080`) com **um** PostgreSQL (`fablab`) e **schema por módulo**. O SPA **SvelteKit** (adapter-node)
+fala com **um único endpoint HTTP**. Sem Eureka, sem API Gateway, sem banco por serviço, sem HTTP
+entre módulos.
 
 ```
-com.fablab.<servico>/
-├── config/        → Security, RabbitMQ, JPA
-├── controller/    → REST
-├── dto/           → abstrações de entrada/saída
-├── entity/        → entidades JPA
-├── exception/     → exceções + @ControllerAdvice
-├── mapper/        → Entity <-> DTO
-├── repository/    → Spring Data JPA
-└── service/       → regras de negócio
+                    Internet / Tailscale
+                            │
+                       ┌────▼─────┐
+                       │  Nginx   │  80/443 (termina TLS)
+                       └────┬─────┘
+                            │  proxy_pass → app:8080
+                       ┌────▼───────────────────────────┐
+                       │  app  (Laravel, artisan serve)  │  :8080
+                       │  worker (queue:work)            │
+                       │  scheduler (schedule:run)       │
+                       └────┬───────────────────────────┘
+                            │
+                       ┌────▼───────────────────────────┐
+                       │  postgres 16  (banco `fablab`)  │  5432 (só na rede Docker)
+                       │  schemas: auth, rh, estoque,    │
+                       │  vendas, financeiro, producao,  │
+                       │  notification                   │
+                       └────────────────────────────────┘
 ```
 
-## Segurança
+## Topologia de containers (Docker Compose)
 
-*   TLS via Tailscale (comunicações dentro da mesh).
-*   Autenticação JWT e autorização RBAC na borda (Gateway) e em cada serviço.
-*   Segredos nunca versionados: variáveis de ambiente + `.env` local fora do git.
+Rede `fablab-net` (bridge); volume nomeado `postgres-data`.
+
+| Serviço | Imagem | Porta | Papel |
+| :--- | :--- | :--- | :--- |
+| `postgres` | `postgres:16-alpine` | 5432 | Banco único `fablab`, schemas por módulo |
+| `app` | `ghcr.io/fablab/backend:${TAG}` (dev: build `../backend`) | 8080 | API Laravel (`artisan serve`) |
+| `worker` | mesma imagem | — | Consome a fila: `queue:work --sleep=3 --tries=3 --max-time=3600` |
+| `scheduler` | mesma imagem | — | `schedule:run` a cada 60s (loop) |
+
+- **Sem RabbitMQ, sem Redis, sem Eureka/Gateway.** Filas/cache/sessão usam o driver nativo
+  **`database`** (tabelas `jobs`, `cache`).
+- Overlays: `docker-compose.dev.yml` (build local, publica `5432` e `8080`, seed ON),
+  `docker-compose.testing.yml` (imagem `:testing`), `docker-compose.prod.yml` (imagem `:${TAG}`,
+  **não** publica `5432`)
+- **Entrypoint** de qualquer container (`backend/docker-entrypoint.sh`): espera o Postgres →
+  `php artisan migrate --force` → `db:seed --force` (no-op se seed off/banco não vazio) →
+  `config:cache`/`route:cache` → `queue:restart`. Migrações concorrentes são serializadas pelo lock
+  de migração (cache `database`).
+
+## Persistência
+
+- **Um** banco PostgreSQL `fablab`; **schema por módulo** (não database-per-service).
+- Migrações do Laravel por módulo em `backend/database/migrations/<modulo>/`, com tabelas
+  qualificadas pelo schema (ex.: `Schema::create('rh.pessoa', …)`; Eloquent `$table = 'rh.pessoa'`).
+- O módulo lê/escreve **só** o próprio schema; leitura cruzada via `Contract` do módulo dono.
+- Backups: `pg_dump` (ver RUNBOOK/DEPLOY).
+
+## Comunicação
+
+- **Síncrona (in-process):** chamada direta ao `Contract` público do módulo dono
+  (`app/Shared/Contracts` ou `<Modulo>/Contracts`).
+- **Assíncrona:** `Event`/`Listener`/`Job` do Laravel com fila `database`; nomes de evento
+  preservados do legado (`<contexto>.<entidade>.<ação>.event`). RabbitMQ só se um contrato exigir
+  entrega durável real (hoje: não).
+
+## Borda / Segurança
+
+- **Nginx** (`infra/nginx/nginx.conf`) termina TLS (Tailscale ou Let's Encrypt) e faz `proxy_pass`
+  para `app:8080`. Produção redireciona 80→443.
+- Externo **apenas** via Tailscale + Nginx.
+- Auth de API via **Laravel Sanctum** (Bearer) + `Policy`/`Gate` + middleware RBAC
+  (`system/rbac-matrix.md`). A antiga fronteira do Gateway é agora middleware + Policy.
+- Segredos **nunca** versionados: `infra/.env` (chmod 600) ou ambiente do orquestrador
+  (`APP_KEY`, `JWT_SECRET`, `POSTGRES_*`, `APP_URL`). Ver `infra/.env.example`.
 
 ## Observabilidade
 
-*   Spring Boot Actuator expõe `health`, `info` e `metrics` em todos os serviços.
-*   Rota de health do Gateway: `GET /actuator/health`.
-*   (Futuro) Prometheus + Grafana e centralização de logs (Loki/ELK).
+- Healthcheck do `app`: `GET /up` (usado pelo compose). Logs em `storage/logs` (por container).
+- (Futuro) Prometheus/Grafana + centralização de logs (Loki/ELK).
+
+## Legado no repositório
+
+Os diretórios `*-service/` (Java/Spring), `discovery-service/`, `gateway-service/` e `web/` ainda
+existem **apenas como referência AS-IS**; o alvo é consolidá-los em `backend/` e removê-los. Nada
+de runtime aponta para eles.

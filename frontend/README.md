@@ -14,7 +14,7 @@ npm run dev
 ```
 
 A aplicação roda em http://localhost:5173. Em dev, `/api/*` é proxyado para o
-Gateway (`http://localhost:8080`).
+backend Laravel (`http://localhost:8080`).
 
 ## Como testar
 
