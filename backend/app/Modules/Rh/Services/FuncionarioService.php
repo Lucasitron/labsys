@@ -2,6 +2,8 @@
 
 namespace App\Modules\Rh\Services;
 
+use App\Modules\Auth\Contracts\AuthContract;
+use App\Modules\Auth\Enums\Role;
 use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Enums\StatusApontamento;
 use App\Modules\Rh\Enums\TipoApontamento;
@@ -82,6 +84,9 @@ class FuncionarioService
         ]);
 
         event(new NivelAlteradoEvent($id, $nivelAntigo, $nivelNovo, $data));
+
+        // Fonte única de nível: espelha no RBAC do Auth (id_pessoa == id_user).
+        app(AuthContract::class)->definirRole((int) $funcionario->id_pessoa, Role::from($nivelNovo->value));
 
         return [
             'idFuncionario' => $id, 'nivelAntigo' => $nivelAntigo->value,

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Rh;
 
 use App\Modules\Auth\Enums\Role;
+use App\Modules\Auth\Models\UserPermission;
 use App\Modules\Rh\Enums\StatusApontamento;
 use App\Modules\Rh\Enums\TipoApontamento;
 use App\Modules\Rh\Events\NivelAlteradoEvent;
@@ -60,6 +61,12 @@ class FuncionariosNiveisTest extends TestCase
 
         $this->assertSame(2, Funcionario::find($membro['funcionario']->getKey())->nivel_acesso->value);
         $this->assertSame(1, HistoricoNivel::where('id_funcionario', $membro['funcionario']->getKey())->count());
+
+        // Espelho no RBAC do Auth (id_pessoa == id_user): papel ativo acompanha o nível.
+        $this->assertSame(
+            Role::VOLUNTARIO,
+            UserPermission::where('id_user', $membro['pessoa']->getKey())->where('active', true)->first()?->role,
+        );
 
         Event::assertDispatched(
             NivelAlteradoEvent::class,

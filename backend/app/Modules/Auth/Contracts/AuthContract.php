@@ -25,4 +25,10 @@ interface AuthContract
 
     /** Ids (`id_user`) com permissão ADMIN ativa (broadcasts — ex. Notification). */
     public function adminIds(): array;
+
+    /**
+     * Espelha o nível de acesso do RH no papel RBAC ativo do usuário (`id_user`).
+     * No-op (false) quando não há credencial cadastrada — nunca cria permissão órfã.
+     */
+    public function definirRole(int $idUser, Role $role): bool;
 }

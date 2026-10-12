@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\Contracts;
 
 use App\Modules\Auth\Enums\Role;
+use App\Modules\Auth\Models\Login;
 use App\Modules\Auth\Models\UserPermission;
 use App\Modules\Auth\Services\TokenBlacklistService;
 use App\Modules\Auth\Services\TokenService;
@@ -58,5 +59,27 @@ class DefaultAuthContract implements AuthContract
             ->unique()
             ->values()
             ->all();
+    }
+
+    public function definirRole(int $idUser, Role $role): bool
+    {
+        if (! Login::where('id_user', $idUser)->exists()) {
+            return false;
+        }
+
+        $permission = UserPermission::where('id_user', $idUser)
+            ->where('active', true)
+            ->first();
+
+        if ($permission === null) {
+            UserPermission::create(['id_user' => $idUser, 'role' => $role, 'active' => true]);
+
+            return true;
+        }
+
+        $permission->role = $role;
+        $permission->save();
+
+        return true;
     }
 }
