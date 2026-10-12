@@ -7,13 +7,12 @@ use App\Modules\Rh\Services\PontoService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
- * Consome `access.rfid.event` (Auth, fila `database`) → ponto diário.
- * Idempotente por (funcionário, data). Sem broker.
+ * Consome `access.rfid.event` (Auth) → ponto diário na fila padrão consumida
+ * pelo worker (`queue:work`, conexão `database`). Idempotente por
+ * (funcionário, data). Sem broker.
  */
 class ProcessarPontoRfid implements ShouldQueue
 {
-    public string $queue = 'database';
-
     public function __construct(private PontoService $ponto) {}
 
     public function handle(RfidAccessEvent $event): void
