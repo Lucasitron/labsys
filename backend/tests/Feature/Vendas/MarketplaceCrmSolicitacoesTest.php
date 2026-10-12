@@ -104,7 +104,7 @@ class MarketplaceCrmSolicitacoesTest extends VendasTestCase
             'titulo' => 'Ruim', 'responsavelId' => 1001,
             'dataInicio' => today()->addWeek()->toDateString(),
             'dataFim' => today()->toDateString(),
-        ], $headers)->assertBadRequest();
+        ], $headers)->assertUnprocessable();
 
         $this->putJson("/api/vendas/tarefas-marketing/{$id}", ['status' => 'Em Andamento'], $headers)
             ->assertOk()->assertJsonPath('status', 'Em Andamento');
@@ -154,7 +154,7 @@ class MarketplaceCrmSolicitacoesTest extends VendasTestCase
         ], $headersBolsista)->assertCreated()->json('id');
 
         $this->putJson("/api/vendas/solicitacoes/{$sol2}/decisao", ['decisao' => 'REJEITAR'], $headersAdmin)
-            ->assertBadRequest();
+            ->assertUnprocessable();
         $this->putJson("/api/vendas/solicitacoes/{$sol2}/decisao", [
             'decisao' => 'REJEITAR', 'motivo' => 'Sem necessidade',
         ], $headersAdmin)->assertOk()->assertJsonPath('status', 'Rejeitada');

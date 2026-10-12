@@ -97,13 +97,13 @@ class BomTest extends EstoqueTestCase
         $this->assertTrue(SaidaEstoque::where('tipo_saida', 'CONSUMO')
             ->where('id_referencia', $id)->exists());
 
-        // Item estranho → 400 e nenhuma baixa parcial.
+        // Item estranho → 422 e nenhuma baixa parcial.
         $this->postJson("/api/estoque/boms/{$id}/consumo", [
             'itens' => [
                 ['idItem' => $a->getKey(), 'quantidadeConsumida' => '1.00'],
                 ['idItem' => $estranho->getKey(), 'quantidadeConsumida' => '1.00'],
             ],
-        ], $headers)->assertStatus(400);
+        ], $headers)->assertStatus(422);
 
         $this->assertSame('14.00', Item::find($a->getKey())->quantidade_atual);
         $this->assertSame('20.00', Item::find($estranho->getKey())->quantidade_atual);

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Event;
 /** Admin: preferências, histórico integral, revisão e canais. */
 class AdminTest extends NotificationTestCase
 {
-    public function test_preferencias_get_put_e_matriz_invalida_400(): void
+    public function test_preferencias_get_put_e_matriz_invalida_422(): void
     {
         Event::fake();
         $admin = $this->headersAdmin();
@@ -28,7 +28,7 @@ class AdminTest extends NotificationTestCase
             ['pessoas' => ['zap' => true]],
             ['pessoas' => ['inapp' => null]],
         ] as $matriz) {
-            $this->putJson('/api/notification/preferencias', $matriz, $admin)->assertBadRequest();
+            $this->putJson('/api/notification/preferencias', $matriz, $admin)->assertUnprocessable();
         }
 
         $bolsista = $this->headersPapel(Role::BOLSISTA);
@@ -65,7 +65,7 @@ class AdminTest extends NotificationTestCase
         $this->getJson('/api/notification/historico?search=estoque', $admin)->assertOk()->assertJsonPath('total', 1);
         $this->getJson('/api/notification/historico?type=pessoas&channel=email', $admin)->assertOk()->assertJsonPath('total', 1);
         $this->getJson('/api/notification/historico?period=24h', $admin)->assertOk()->assertJsonPath('total', 2);
-        $this->getJson('/api/notification/historico?period=ontem', $admin)->assertBadRequest();
+        $this->getJson('/api/notification/historico?period=ontem', $admin)->assertUnprocessable();
 
         $bolsista = $this->headersPapel(Role::BOLSISTA);
         $this->getJson('/api/notification/historico', $bolsista)->assertForbidden();

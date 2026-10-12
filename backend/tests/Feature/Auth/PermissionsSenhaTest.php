@@ -50,7 +50,7 @@ class PermissionsSenhaTest extends TestCase
             ->assertOk();
     }
 
-    public function test_alterar_senha_atual_errada_da_401_e_mismatch_da_400(): void
+    public function test_alterar_senha_atual_errada_da_401_e_mismatch_da_422(): void
     {
         $login = $this->criarLogin(['senha_hash' => Hash::make('certa1234')]);
         $this->comPermissao($login, Role::BOLSISTA);
@@ -66,6 +66,6 @@ class PermissionsSenhaTest extends TestCase
             'senhaAtual' => 'certa1234',
             'novaSenha' => 'novasenha123',
             'confirmacaoSenha' => 'outra12345',
-        ], $headers)->assertStatus(400);
+        ], $headers)->assertStatus(422);
     }
 }

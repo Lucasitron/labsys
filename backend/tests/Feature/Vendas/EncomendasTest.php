@@ -67,8 +67,8 @@ class EncomendasTest extends VendasTestCase
             ->assertJsonPath('statusKanban', 'Fila')
             ->assertJsonPath('idOrcamento', null);
 
-        $this->postJson('/api/vendas/encomendas', ['valorFinal' => '10.00'], $headers)->assertBadRequest();
-        $this->postJson('/api/vendas/encomendas', ['clienteId' => $clienteId], $headers)->assertBadRequest();
+        $this->postJson('/api/vendas/encomendas', ['valorFinal' => '10.00'], $headers)->assertUnprocessable();
+        $this->postJson('/api/vendas/encomendas', ['clienteId' => $clienteId], $headers)->assertUnprocessable();
     }
 
     public function test_kanban_move_historico_e_evento(): void

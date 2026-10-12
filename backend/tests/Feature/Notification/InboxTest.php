@@ -60,9 +60,9 @@ class InboxTest extends NotificationTestCase
         // Alias do App Shell/sino.
         $this->getJson('/api/notificacoes', $headers)->assertOk()->assertJsonPath('total', 3);
 
-        // Faixas inválidas → 400 (service); lixo de tipo → 422 (Request).
-        $this->getJson('/api/notification/notificacoes?page=0', $headers)->assertBadRequest();
-        $this->getJson('/api/notification/notificacoes?size=101', $headers)->assertBadRequest();
+        // Faixas inválidas → 422 (service); lixo de tipo → 422 (Request).
+        $this->getJson('/api/notification/notificacoes?page=0', $headers)->assertUnprocessable();
+        $this->getJson('/api/notification/notificacoes?size=101', $headers)->assertUnprocessable();
         $this->getJson('/api/notification/notificacoes?page=abc', $headers)->assertStatus(422);
     }
 

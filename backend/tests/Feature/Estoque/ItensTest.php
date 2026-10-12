@@ -94,7 +94,7 @@ class ItensTest extends EstoqueTestCase
 
         $ruim = UploadedFile::fake()->createWithContent('ruim.csv', "só;duas;colunas\n");
         $this->withHeaders($headers)->post('/api/estoque/itens/import', ['arquivo' => $ruim])
-            ->assertStatus(400);
+            ->assertStatus(422);
     }
 
     public function test_sem_token_da_401(): void

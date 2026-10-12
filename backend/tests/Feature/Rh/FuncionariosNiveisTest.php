@@ -29,9 +29,9 @@ class FuncionariosNiveisTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('nivelAcesso', 'VOLUNTARIO');
 
-        // Vínculo duplicado dá 400.
+        // Vínculo duplicado dá 422.
         $this->postJson('/api/rh/funcionarios', ['idPessoa' => $pessoa->getKey()], $headers)
-            ->assertStatus(400);
+            ->assertStatus(422);
 
         $this->getJson('/api/rh/funcionarios?nivel=VOLUNTARIO', $headers)
             ->assertOk()

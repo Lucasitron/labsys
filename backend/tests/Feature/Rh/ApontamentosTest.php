@@ -69,12 +69,12 @@ class ApontamentosTest extends TestCase
             'status' => StatusApontamento::PENDENTE, 'consolidado' => false,
         ]);
 
-        // Sem presença: 400.
+        // Sem presença: 422.
         $this->putJson(
             "/api/rh/apontamentos-horas/{$apontamento->getKey()}/validar",
             ['status' => 'VALIDADO'],
             $headersAdmin
-        )->assertStatus(400);
+        )->assertStatus(422);
 
         RegistroPontoDiario::create([
             'id_funcionario' => $id, 'data' => '2026-08-04', 'total_horas' => '4.00',
@@ -91,15 +91,15 @@ class ApontamentosTest extends TestCase
             fn (HorasValidadasEvent $e) => $e->idFuncionario === $id && $e->horas === '3.00'
         );
 
-        // Revalidar dá 400.
+        // Revalidar dá 422.
         $this->putJson(
             "/api/rh/apontamentos-horas/{$apontamento->getKey()}/validar",
             ['status' => 'REJEITADO', 'motivo' => 'x'],
             $headersAdmin
-        )->assertStatus(400);
+        )->assertStatus(422);
     }
 
-    public function test_rejeitar_sem_motivo_da_400_e_tutor_valida(): void
+    public function test_rejeitar_sem_motivo_da_422_e_tutor_valida(): void
     {
         $tutor = $this->criarFuncionario(null, Role::BOLSISTA);
         $this->criarTutor($tutor['funcionario']);

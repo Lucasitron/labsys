@@ -59,7 +59,7 @@ class EmprestimosTest extends EstoqueTestCase
         ], $headers)->assertStatus(422);
     }
 
-    public function test_devolver_soma_saldo_e_redevolucao_da_400(): void
+    public function test_devolver_soma_saldo_e_redevolucao_da_422(): void
     {
         ['login' => $login, 'headers' => $headers] = $this->responsavel();
         $item = $this->criarItem(['quantidade_atual' => '10.00']);
@@ -75,7 +75,7 @@ class EmprestimosTest extends EstoqueTestCase
 
         $this->assertSame('10.00', Item::find($item->getKey())->quantidade_atual);
 
-        $this->putJson("/api/estoque/emprestimos/{$id}/devolucao", [], $headers)->assertStatus(400);
+        $this->putJson("/api/estoque/emprestimos/{$id}/devolucao", [], $headers)->assertStatus(422);
 
         // Terceiro não devolve o alheio.
         $outro = $this->responsavel();

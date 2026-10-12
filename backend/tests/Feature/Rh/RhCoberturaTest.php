@@ -20,7 +20,7 @@ use App\Modules\Rh\Models\Treinamento;
 use App\Modules\Rh\Models\Tutor;
 use Tests\TestCase;
 
-/** Bordas dos services (404/403/400) + fiação das relations Eloquent. */
+/** Bordas dos services (404/403/422) + fiação das relations Eloquent. */
 class RhCoberturaTest extends TestCase
 {
     public function test_vincular_pessoa_inexistente_e_nivel_sem_vinculo(): void
@@ -54,9 +54,9 @@ class RhCoberturaTest extends TestCase
             'idTutor' => $tutor['funcionario']->getKey(),
         ], $headers)->assertCreated();
 
-        // Pessoa com processo não exclui (400); detalhe de pessoa sem vínculo degrada.
+        // Pessoa com processo não exclui (422); detalhe de pessoa sem vínculo degrada.
         $pessoaId = Pessoa::where('matricula', 'MAT-DEL')->firstOrFail()->getKey();
-        $this->deleteJson("/api/rh/pessoas/{$pessoaId}", [], $headers)->assertStatus(400);
+        $this->deleteJson("/api/rh/pessoas/{$pessoaId}", [], $headers)->assertStatus(422);
 
         $solta = $this->criarPessoa();
         $this->getJson('/api/rh/pessoas/'.$solta->getKey().'/detalhe', $headers)
@@ -83,7 +83,7 @@ class RhCoberturaTest extends TestCase
         $this->getJson('/api/rh/apontamentos-horas', $this->authHeader($solto, Role::BOLSISTA))
             ->assertForbidden();
 
-        // Coerência excedida: presença 2h, apontado 3h → 400 na validação.
+        // Coerência excedida: presença 2h, apontado 3h → 422 na validação.
         RegistroPontoDiario::create(['id_funcionario' => $id, 'data' => '2026-08-06', 'total_horas' => '2.00']);
         $ap = ApontamentoHoras::create([
             'id_funcionario' => $id, 'tipo' => TipoApontamento::ENCOMENDA,
@@ -92,9 +92,9 @@ class RhCoberturaTest extends TestCase
         ]);
 
         $this->putJson("/api/rh/apontamentos-horas/{$ap->getKey()}/validar", ['status' => 'VALIDADO'], $headersAdmin)
-            ->assertStatus(400);
+            ->assertStatus(422);
 
-        // Status PENDENTE na validação: 400.
+        // Status PENDENTE na validação: 422.
         $this->putJson("/api/rh/apontamentos-horas/{$ap->getKey()}/validar", ['status' => 'PENDENTE'], $headersAdmin)
             ->assertStatus(422); // nem passa do FormRequest (in:)
     }
@@ -108,10 +108,10 @@ class RhCoberturaTest extends TestCase
         $outro = $this->criarFuncionario(null, Role::BOLSISTA);
         $this->criarTutor($outro['funcionario']);
 
-        // Admin sem idTutor / com tutor inexistente: 400/404.
+        // Admin sem idTutor / com tutor inexistente: 422/404.
         $this->postJson('/api/rh/processo-seletivo', [
             'nomeCompleto' => 'C0', 'matricula' => 'MAT-C0',
-        ], $headersAdmin)->assertStatus(400);
+        ], $headersAdmin)->assertStatus(422);
         $this->postJson('/api/rh/processo-seletivo', [
             'nomeCompleto' => 'C0', 'matricula' => 'MAT-C0', 'idTutor' => 999999,
         ], $headersAdmin)->assertNotFound();
@@ -127,10 +127,10 @@ class RhCoberturaTest extends TestCase
         ], $headersAdmin)->assertCreated();
         $idProc = $proc->json('id');
 
-        // Matrícula duplicada: 400.
+        // Matrícula duplicada: 422.
         $this->postJson('/api/rh/processo-seletivo', [
             'nomeCompleto' => 'C1b', 'matricula' => 'MAT-C1', 'idTutor' => $tutor['funcionario']->getKey(),
-        ], $headersAdmin)->assertStatus(400);
+        ], $headersAdmin)->assertStatus(422);
 
         // Tutor de outro processo não altera nem avalia.
         $headersOutro = $this->authHeader($outro['login'], Role::BOLSISTA);
@@ -174,11 +174,11 @@ class RhCoberturaTest extends TestCase
             'nome' => 'Gx', 'idLider' => $tutor['funcionario']->getKey(), 'membroIds' => [999999],
         ], $headersAdmin)->assertNotFound();
 
-        // Líder não-tutor: 400.
+        // Líder não-tutor: 422.
         $comum = $this->criarFuncionario(null, Role::BOLSISTA);
         $this->postJson('/api/rh/processo-seletivo/grupos', [
             'nome' => 'G2', 'idLider' => $comum['funcionario']->getKey(),
-        ], $headersAdmin)->assertStatus(400);
+        ], $headersAdmin)->assertStatus(422);
 
         $this->assertSame('G1', $grupo->json('nome'));
     }
@@ -203,7 +203,7 @@ class RhCoberturaTest extends TestCase
             'tipoCertificado' => 'EXTENSAO', 'horasSolicitadas' => 1,
         ], $this->authHeader($solto, Role::BOLSISTA))->assertForbidden();
 
-        // Aprovar inexistente: 404; decidir duas vezes: 400.
+        // Aprovar inexistente: 404; decidir duas vezes: 422.
         $this->putJson('/api/rh/certificados/solicitacoes/999999/aprovar', [], $headersAdmin)->assertNotFound();
         $this->getJson('/api/rh/certificados/emitidos/999999', $headersAdmin)->assertNotFound();
         $this->getJson('/api/rh/extrato-mensal-horas?mes=2026-08&funcionarioId=999999', $headersAdmin)->assertNotFound();
@@ -211,8 +211,8 @@ class RhCoberturaTest extends TestCase
         // Treinamento/avaliacao inexistentes: 404.
         $this->getJson('/api/rh/treinamentos/999999/avaliacoes', $headersAdmin)->assertNotFound();
 
-        // Admin sem idTutor: 400; com tutor inexistente: 404.
-        $this->postJson('/api/rh/treinamentos', ['titulo' => 'T0'], $headersAdmin)->assertStatus(400);
+        // Admin sem idTutor: 422; com tutor inexistente: 404.
+        $this->postJson('/api/rh/treinamentos', ['titulo' => 'T0'], $headersAdmin)->assertStatus(422);
         $this->postJson('/api/rh/treinamentos', ['titulo' => 'T0', 'idTutor' => 999999], $headersAdmin)
             ->assertNotFound();
 

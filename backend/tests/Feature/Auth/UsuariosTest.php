@@ -45,12 +45,12 @@ class UsuariosTest extends TestCase
         $this->assertSame('novo@fablab.org', $res['email']);
     }
 
-    public function test_criar_duplicado_da_400(): void
+    public function test_criar_duplicado_da_422(): void
     {
         $admin = $this->criarAdmin();
 
         $payload = ['idUser' => 501, 'email' => $admin->email, 'nomeUsuario' => 'outro', 'senha' => 'senha1234'];
-        $this->postJson('/api/usuarios', $payload, $this->authHeader($admin))->assertStatus(400);
+        $this->postJson('/api/usuarios', $payload, $this->authHeader($admin))->assertStatus(422);
     }
 
     public function test_atualizar_e_alterar_status(): void

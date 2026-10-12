@@ -16,7 +16,7 @@ class RoleEnumTest extends TestCase
         $this->assertSame('Admin', Role::ADMIN->label());
     }
 
-    public function test_parse_invalido_lanca_400(): void
+    public function test_parse_invalido_lanca_422(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         Role::parse(9);

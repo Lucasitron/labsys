@@ -43,7 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
             AccessDeniedHttpException::class => 403,
             ResourceNotFoundException::class => 404,
             NotFoundHttpException::class => 404,
-            InvalidArgumentException::class => 400,
+            InvalidArgumentException::class => 422,
             SaldoInsuficienteException::class => 409,
             ConflitoException::class => 409,
             ConfiguracaoInvalidaException::class => 422,

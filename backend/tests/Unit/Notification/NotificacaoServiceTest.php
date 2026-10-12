@@ -10,7 +10,7 @@ use App\Modules\Notification\Models\PreferenciaNotificacao;
 use App\Modules\Notification\Services\NotificacaoService;
 use Tests\TestCase;
 
-/** Regras do inbox (validações 400/422/404/403, matriz default, revisão). */
+/** Regras do inbox (validações 422/422/404/403, matriz default, revisão). */
 class NotificacaoServiceTest extends TestCase
 {
     private NotificacaoService $inbox;
@@ -39,7 +39,7 @@ class NotificacaoServiceTest extends TestCase
         $this->assertSame(18, PreferenciaNotificacao::count());
     }
 
-    public function test_paginacao_invalida_400(): void
+    public function test_paginacao_invalida_422(): void
     {
         try {
             $this->inbox->listar(7, 0, 10);
@@ -58,7 +58,7 @@ class NotificacaoServiceTest extends TestCase
         }
     }
 
-    public function test_salvar_preferencias_estrita_400(): void
+    public function test_salvar_preferencias_estrita_422(): void
     {
         foreach ([
             [],
@@ -80,7 +80,7 @@ class NotificacaoServiceTest extends TestCase
         $this->assertFalse($this->inbox->preferenciaHabilitada('pessoas', 'email'));
     }
 
-    public function test_periodo_invalido_400_e_cortes_ok(): void
+    public function test_periodo_invalido_422_e_cortes_ok(): void
     {
         try {
             $this->inbox->historico(null, null, null, null, 'ontem');

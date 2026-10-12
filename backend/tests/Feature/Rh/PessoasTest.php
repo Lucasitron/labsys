@@ -30,7 +30,7 @@ class PessoasTest extends TestCase
         $this->assertSame('52998224725', Pessoa::where('matricula', 'MAT-ADA')->firstOrFail()->cpf);
     }
 
-    public function test_matricula_duplicada_cpf_invalido_e_cpf_duplicado_dao_400(): void
+    public function test_matricula_duplicada_cpf_invalido_e_cpf_duplicado_dao_422(): void
     {
         $admin = $this->criarAdminRh();
         $headers = $this->authHeader($admin['login'], Role::ADMIN);
@@ -38,12 +38,12 @@ class PessoasTest extends TestCase
         $base = ['nomeCompleto' => 'A', 'matricula' => 'MAT-X', 'cpf' => '529.982.247-25'];
 
         $this->postJson('/api/rh/pessoas', $base, $headers)->assertCreated();
-        $this->postJson('/api/rh/pessoas', $base, $headers)->assertStatus(400);
-        // Formato/dígitos inválidos barram no FormRequest (422, padrão M1); duplicado no service (400).
+        $this->postJson('/api/rh/pessoas', $base, $headers)->assertStatus(422);
+        // Formato/dígitos inválidos barram no FormRequest (422, padrão M1); duplicado no service (422).
         $this->postJson('/api/rh/pessoas', ['nomeCompleto' => 'B', 'matricula' => 'MAT-Y', 'cpf' => '111.111.111-11'], $headers)
             ->assertStatus(422);
         $this->postJson('/api/rh/pessoas', ['nomeCompleto' => 'C', 'matricula' => 'MAT-Z', 'cpf' => '52998224725'], $headers)
-            ->assertStatus(400);
+            ->assertStatus(422);
     }
 
     public function test_listar_com_busca_paginacao_e_facetas(): void
@@ -95,8 +95,8 @@ class PessoasTest extends TestCase
                 'pendencias', 'horasPorStatus', 'avaliacoes', 'historicoNivel',
             ]);
 
-        // Com vínculo: excluir dá 400.
-        $this->deleteJson('/api/rh/pessoas/'.$membro['pessoa']->getKey(), [], $headers)->assertStatus(400);
+        // Com vínculo: excluir dá 422.
+        $this->deleteJson('/api/rh/pessoas/'.$membro['pessoa']->getKey(), [], $headers)->assertStatus(422);
 
         // Sem vínculo: exclui.
         $solta = $this->criarPessoa();

@@ -44,10 +44,10 @@ class CertificadosTest extends TestCase
             ->assertOk()
             ->assertJsonPath('totalHorasDisponiveis', '5.00');
 
-        // Acima do disponível: 400.
+        // Acima do disponível: 422.
         $this->postJson('/api/rh/certificados/solicitar', [
             'tipoCertificado' => 'EXTENSAO', 'horasSolicitadas' => 99,
-        ], $headersMembro)->assertStatus(400);
+        ], $headersMembro)->assertStatus(422);
 
         $sol = $this->postJson('/api/rh/certificados/solicitar', [
             'tipoCertificado' => 'EXTENSAO', 'horasSolicitadas' => 5,
@@ -145,11 +145,11 @@ class CertificadosTest extends TestCase
         $this->putJson('/api/rh/certificados/solicitacoes/'.$a->json('idSolicitacao').'/aprovar', [], $headersAdmin)
             ->assertOk();
 
-        // A consolida tudo: B não tem mais lastro (400) e A já decidida (400).
+        // A consolida tudo: B não tem mais lastro (422) e A já decidida (422).
         $this->putJson('/api/rh/certificados/solicitacoes/'.$b->json('idSolicitacao').'/aprovar', [], $headersAdmin)
-            ->assertStatus(400);
+            ->assertStatus(422);
         $this->putJson('/api/rh/certificados/solicitacoes/'.$a->json('idSolicitacao').'/rejeitar', [], $headersAdmin)
-            ->assertStatus(400);
+            ->assertStatus(422);
 
         // Admin sem vínculo não decide (sem id_admin_aprovador possível).
         $adminSolto = $this->criarAdmin();
