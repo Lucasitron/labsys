@@ -9,6 +9,7 @@ use App\Modules\Estoque\Http\Resources\EmprestimoResource;
 use App\Modules\Estoque\Services\EmprestimoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /** Empréstimos — só HTTP (`?status=` só aqui; escopo E-7 no service). */
 class EmprestimoController
@@ -25,7 +26,7 @@ class EmprestimoController
     public function index(Request $request): JsonResponse
     {
         $filtros = $request->validate([
-            'status' => ['nullable', 'string', 'max:32'],
+            'status' => ['nullable', Rule::in(['ativos', 'atrasados', 'historico'])],
         ]);
 
         $emprestimos = $this->emprestimos->listar(

@@ -130,7 +130,7 @@ class EmprestimosTest extends EstoqueTestCase
             ->assertOk()->assertJsonCount(0);
         $this->getJson('/api/estoque/emprestimos/atrasados', $headers)
             ->assertOk()->assertJsonPath('0.id', (int) $vencido->getKey());
-        $this->getJson('/api/estoque/emprestimos?status=perdidos', $headers)->assertStatus(400);
+        $this->getJson('/api/estoque/emprestimos?status=perdidos', $headers)->assertStatus(422);
     }
 
     public function test_verificar_atrasados_marca_so_vencido_ativo_e_publica_evento(): void
