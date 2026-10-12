@@ -16,8 +16,6 @@ use Illuminate\Support\Facades\Log;
  */
 class VendasNotificacaoListener implements ShouldQueue
 {
-    public const QUEUE = 'database';
-
     public function __construct(private NotificationDispatchService $dispatch) {}
 
     public function handleEncomendaCriada(EncomendaCriadaEvent $event): void

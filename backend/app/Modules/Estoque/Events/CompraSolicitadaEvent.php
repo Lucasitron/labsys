@@ -11,8 +11,6 @@ class CompraSolicitadaEvent
 
     public const NAME = 'compra.solicitada.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idEntrada,
         public readonly int $idItem,

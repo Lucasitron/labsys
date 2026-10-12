@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Log;
  */
 class EncomendaCriadaListener implements ShouldQueue
 {
-    public const QUEUE = 'database';
-
     public function __construct(private FechamentoService $fechamentos) {}
 
     public function handle(EncomendaCriadaEvent $event): void

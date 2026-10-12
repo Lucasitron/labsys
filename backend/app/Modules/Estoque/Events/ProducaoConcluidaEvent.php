@@ -14,8 +14,6 @@ class ProducaoConcluidaEvent
 
     public const NAME = 'producao.concluida.event';
 
-    public const QUEUE = 'database';
-
     /**
      * @param list<array{idItem:int,quantidadeConsumida:string|float|int}> $itens
      */

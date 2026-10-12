@@ -11,8 +11,6 @@ class ProjetoMesaAbandonadoEvent
 
     public const NAME = 'projeto.mesa.abandonado.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idProjetoMesa,
         public readonly int $idFuncionario,

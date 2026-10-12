@@ -15,8 +15,6 @@ use Illuminate\Support\Facades\Log;
  */
 class EncomendaCriadaListener implements ShouldQueue
 {
-    public const QUEUE = 'database';
-
     public function handle(EncomendaCriadaEvent $event): void
     {
         if ($event->idEncomenda === 0) {

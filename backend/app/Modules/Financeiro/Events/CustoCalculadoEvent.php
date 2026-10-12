@@ -11,8 +11,6 @@ class CustoCalculadoEvent
 
     public const NAME = 'custo.calculado.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idEncomenda,
         public readonly string $custoTotal,

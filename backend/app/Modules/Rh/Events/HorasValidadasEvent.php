@@ -12,8 +12,6 @@ class HorasValidadasEvent
 
     public const NAME = 'horas.validadas.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idFuncionario,
         public readonly TipoApontamento $tipo,

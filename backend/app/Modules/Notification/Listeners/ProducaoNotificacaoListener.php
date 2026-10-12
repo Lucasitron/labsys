@@ -19,8 +19,6 @@ use Illuminate\Support\Facades\Log;
  */
 class ProducaoNotificacaoListener implements ShouldQueue
 {
-    public const QUEUE = 'database';
-
     public function __construct(private NotificationDispatchService $dispatch) {}
 
     public function handleKanbanStatusAlterado(KanbanStatusAlteradoEvent $event): void

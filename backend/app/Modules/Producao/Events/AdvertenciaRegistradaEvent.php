@@ -11,8 +11,6 @@ class AdvertenciaRegistradaEvent
 
     public const NAME = 'advertencia.registrada.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idFuncionario,
         public readonly int $contador,

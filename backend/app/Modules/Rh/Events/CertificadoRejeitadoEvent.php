@@ -13,8 +13,6 @@ class CertificadoRejeitadoEvent
 
     public const NAME = 'certificado.rejeitado.event';
 
-    public const QUEUE = 'database';
-
     public function __construct(
         public readonly int $idSolicitacao,
         public readonly int $idFuncionario,

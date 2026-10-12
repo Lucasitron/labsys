@@ -17,8 +17,6 @@ use Illuminate\Support\Facades\Log;
  */
 class HorasValidadasListener implements ShouldQueue
 {
-    public const QUEUE = 'database';
-
     public function __construct(private FechamentoService $fechamentos) {}
 
     public function handle(HorasValidadasEvent $event): void
