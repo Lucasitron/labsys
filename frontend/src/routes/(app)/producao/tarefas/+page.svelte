@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatDate as formatarData } from '$lib/utils/format';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { KanbanColuna, NomeFunc, Projeto, Tarefa, TarefaStatus } from '$lib/types/producao';
@@ -114,7 +115,7 @@ import { toastError, toasts } from '$lib/stores/toast';
 		Object.entries(TAREFA_STATUS_META).map(([id, meta]) => ({ id, label: meta.label }))
 	);
 	const prioridadeOptions = $derived(
-		(['Baixa', 'Média', 'Moderada', 'Alta'] as const).map((id) => ({ id, label: id }))
+		(['Baixa', 'Média', 'Alta'] as const).map((id) => ({ id, label: id }))
 	);
 	const responsavelOptions = $derived(
 		responsaveis.map((p) => ({ id: p.id, label: p.nome }))
@@ -158,7 +159,7 @@ import { toastError, toasts } from '$lib/stores/toast';
 	async function atribuir(): Promise<void> {
 		if (!modalDetalhe || !novoResponsavelId) return;
 		try {
-			await atribuirTarefa(modalDetalhe.id, { responsavelId: novoResponsavelId });
+			await atribuirTarefa();
 			toasts.success('Responsável atualizado');
 			modalDetalhe = null;
 			await invalidateAll();
@@ -227,11 +228,6 @@ import { toastError, toasts } from '$lib/stores/toast';
 		void goto(navegar({ view: visao, page: 1 }));
 	}
 
-	function formatarData(iso?: string): string {
-		if (!iso) return '—';
-		const [a, m, d] = iso.slice(0, 10).split('-');
-		return d ? `${d}/${m}/${a}` : '—';
-	}
 
 	function aoDetalhar(t: Tarefa): void {
 		modalDetalhe = t as TarefaDetalhe;
@@ -623,9 +619,9 @@ import { toastError, toasts } from '$lib/stores/toast';
 								<button
 									type="button"
 									data-testid="tar-atribuir"
-									onclick={() => void atribuir()}
-									disabled={novoResponsavelId === tarefa.responsavel.id}
-									class="shrink-0 rounded-md border border-border bg-surface px-3 text-sm font-medium text-ink transition hover:border-brand/50 hover:text-brandhi disabled:cursor-not-allowed disabled:opacity-40"
+									disabled
+									title="Contrato pendente (🟡) — sem par no backend"
+									class="shrink-0 rounded-md border border-border bg-surface px-3 text-sm font-medium text-muted opacity-50 cursor-not-allowed transition"
 								>
 									Atribuir
 								</button>
@@ -675,8 +671,9 @@ import { toastError, toasts } from '$lib/stores/toast';
 								<button
 									type="button"
 									data-testid="tar-resolver-pendencia"
-									onclick={() => void resolverPendencia()}
-									class="rounded-md bg-danger px-3 py-2 text-sm font-medium text-white transition hover:bg-danger/90"
+									disabled
+									title="Contrato pendente (🟡) — sem par no backend"
+									class="rounded-md bg-danger px-3 py-2 text-sm font-medium text-white opacity-50 cursor-not-allowed transition"
 								>
 									Resolver pendência
 								</button>

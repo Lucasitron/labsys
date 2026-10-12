@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { formatDate as formatarData } from '$lib/utils/format';
 	import { goto } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { AlertaProducao, KpisProducao } from '$lib/types/producao';
-	import { CARTAO_META, INSPECAO_STATUS_META, KANBAN_COLUNA_META, MAQUINA_STATUS_META } from '$lib/utils/producao-status';
+	import { KANBAN_COLUNA_META, MAQUINA_STATUS_META } from '$lib/utils/producao-status';
 	import CartaoBadge from '$lib/components/producao/CartaoBadge.svelte';
 	import Skeleton from '$lib/components/ui/Skeleton.svelte';
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
@@ -10,7 +11,7 @@
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import { USE_PRODUCAO_MOCK } from '$lib/api/producao/mocks';
+
 
 	let { data }: PageProps = $props();
 
@@ -22,11 +23,6 @@
 
 	const hasError = $derived(error !== null && resumo === null);
 
-	function formatarData(iso: string): string {
-		if (!iso) return '—';
-		const [a, m, d] = iso.slice(0, 10).split('-');
-		return d ? `${d}/${m}/${a}` : '—';
-	}
 
 	const ALERTA_TONES: Record<AlertaProducao['severidade'], string> = {
 		danger: 'border-danger/30 bg-danger/10 text-danger',
@@ -59,20 +55,6 @@
 <svelte:head>
 	<title>Produção — Resumo — FabLab</title>
 </svelte:head>
-
-{#if USE_PRODUCAO_MOCK}
-	<div
-		data-testid="prd-mock-banner"
-		class="mb-5 flex items-start gap-3 rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-xs text-muted"
-	>
-		<span class="mt-0.5 text-warn" aria-hidden="true">🟡</span>
-		<div class="flex-1">
-			<b class="text-ink">Dados de exemplo — contrato 🟡 pendente.</b>{' '}
-			Os dados voltam a ser reais quando o gateway expor{' '}
-			<span class="font-mono">/api/producao/**</span>.
-		</div>
-	</div>
-{/if}
 
 {#if hasError}
 	<ErrorBanner

@@ -39,7 +39,7 @@
 		carregando = true;
 		erro = null;
 
-		void listGuias({}, fetch)
+		void listGuias()
 			.then((res) => {
 				if (sinal.aborted) return;
 				maquinas = res.machines;

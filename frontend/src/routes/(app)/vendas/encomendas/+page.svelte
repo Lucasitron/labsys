@@ -39,7 +39,7 @@
 	const comErro = $derived(erro !== null && resultado === null);
 
 	const filtrado = $derived(
-		params.status_kanban !== '' || params.search !== '' || params.clienteId !== ''
+		params.status !== '' || params.search !== '' || params.clienteId !== ''
 	);
 
 	const COLUNAS: { id: KanbanStatus; slug: string; tone: 'muted' | 'brand' | 'warn' | 'success' }[] =
@@ -83,7 +83,7 @@
 				cards: daColuna.map(
 					(e): KanbanCard => ({
 						id: e.id,
-						title: e.codigo,
+						title: e.codigo ?? `#${e.id}`,
 						description: e.cliente.nome,
 						meta: formatMoneyBRL(e.valorFinal)
 					})
@@ -123,7 +123,7 @@
 
 	function navegar(overrides: Query): void {
 		const base: Query = {
-			status_kanban: params.status_kanban || undefined,
+			status: params.status || undefined,
 			search: params.search || undefined,
 			clienteId: params.clienteId || undefined
 		};
@@ -141,7 +141,7 @@
 	}
 
 	function onEtapa(valor: string): void {
-		navegar({ status_kanban: valor || undefined });
+		navegar({ status: valor || undefined });
 	}
 
 	function onClienteId(valor: string): void {
@@ -149,7 +149,7 @@
 	}
 
 	function limparFiltros(): void {
-		navegar({ status_kanban: undefined, search: undefined, clienteId: undefined });
+		navegar({ status: undefined, search: undefined, clienteId: undefined });
 	}
 
 	function tentarNovamente(): void {
@@ -170,8 +170,8 @@
 		if (movendoId) return;
 		movendoId = enc.id;
 		try {
-			await moverKanban(enc.id, { statusKanban: destino });
-			toasts.success(`Encomenda ${enc.codigo} movida para ${destino}.`);
+			await moverKanban(enc.id, { statusKanban: destino, versao: enc.versao });
+			toasts.success(`Encomenda ${enc.codigo ?? enc.id} movida para ${destino}.`);
 			await invalidateAll();
 		} catch (err) {
 			if (err instanceof ApiError && err.status === 409) {
@@ -288,7 +288,7 @@
 				...(previsao ? { previsao } : {}),
 				...(produtos.trim() ? { observacoes: produtos.trim() } : {})
 			});
-			toasts.success(`Encomenda ${enc.codigo} criada na Fila.`);
+			toasts.success(`Encomenda ${enc.codigo ?? enc.id} criada na Fila.`);
 			modalAberto = false;
 			await invalidateAll();
 		} catch (err) {
@@ -389,7 +389,7 @@
 				<label for="enc-etapa" class="mb-1 block text-xs font-medium text-muted">Etapa</label>
 				<select
 					id="enc-etapa"
-					value={params.status_kanban}
+					value={params.status}
 					onchange={(e) => onEtapa((e.currentTarget as HTMLSelectElement).value)}
 					class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40"
 				>
@@ -471,10 +471,10 @@
 						<div data-testid="en-card" class="w-full space-y-1.5">
 							<a
 								href={`/vendas/encomendas/${enc.id}`}
-								aria-label={`Ver encomenda ${enc.codigo}`}
+								aria-label={`Ver encomenda ${enc.codigo ?? enc.id}`}
 								class="font-mono text-xs font-semibold text-brandhi hover:text-brand"
 							>
-								{enc.codigo}
+								{enc.codigo ?? `#${enc.id}`}
 							</a>
 							<p class="text-xs text-muted">
 								Previsão
@@ -484,16 +484,18 @@
 							</p>
 							<div class="flex flex-wrap items-center gap-1.5">
 								<TypeBadge tone={origemTone(enc.origem)} label={enc.origem} />
-								<span class="text-[11px] text-muted">
-									{formatNumber(enc.itensCount)}
-									{enc.itensCount === 1 ? 'item' : 'itens'}
-								</span>
+								{#if enc.itensCount !== undefined}
+									<span class="text-[11px] text-muted">
+										{formatNumber(enc.itensCount)}
+										{enc.itensCount === 1 ? 'item' : 'itens'}
+									</span>
+								{/if}
 							</div>
 							<div class="relative flex items-center gap-1.5">
 								<button
 									type="button"
 									data-testid="move-en{enc.id}"
-									aria-label={`Mover encomenda ${enc.codigo}`}
+									aria-label={`Mover encomenda ${enc.codigo ?? enc.id}`}
 									aria-expanded={popoverMover === enc.id}
 									aria-haspopup="menu"
 									disabled={movendoId === enc.id}
@@ -505,7 +507,7 @@
 								{#if popoverMover === enc.id}
 									<div
 										role="menu"
-										aria-label={`Mover ${enc.codigo} para`}
+										aria-label={`Mover ${enc.codigo ?? enc.id} para`}
 										class="absolute top-full left-0 z-30 mt-1 min-w-40 rounded-md border border-border bg-surface p-1 shadow-2xl shadow-black/50"
 									>
 										{#each destinosDe(enc) as destino (destino)}

@@ -1,3 +1,7 @@
+import type { Paginacao } from './pagination';
+
+export type { Paginacao };
+
 export type TipoLancamento = 'Entrada' | 'Saída';
 export type LancamentoStatus = 'Pendente' | 'Pago' | 'Atrasado' | 'Cancelado';
 export type FechamentoStatus = 'Aberta' | 'Concluída' | 'Cancelada';
@@ -14,13 +18,6 @@ export type RelatorioId =
 
 export type CategoriaTipo = 'Receita' | 'Despesa';
 export type NivelAcesso = 0 | 1 | 2 | 3;
-
-export interface Paginacao {
-	page: number;
-	pageSize: number;
-	totalItems: number;
-	totalPages: number;
-}
 
 export interface Paged<T> {
 	items: T[];
@@ -42,12 +39,12 @@ export interface CreateCategoriaPayload {
 
 export interface CategoriaResumo {
 	id: string;
-	nome: string;
+	nome?: string;
 }
 
 export interface Lancamento {
 	id: string;
-	codigo: string;
+	codigo?: string;
 	categoria: CategoriaResumo;
 	tipo: TipoLancamento;
 	valor: number;
@@ -127,7 +124,7 @@ export interface DoacoesCobertura {
 export interface DoacoesResult {
 	registros: DoacaoRecurso[];
 	resumo: DoacoesResumo;
-	cobertura: DoacoesCobertura;
+	cobertura?: DoacoesCobertura;
 }
 
 export interface ListDoacoesParams {
@@ -203,9 +200,10 @@ export interface SolicitacaoCompra {
 }
 
 export interface CreateSolicitacaoCompraPayload {
-	item: string;
+	idItemEstoque?: string;
+	item?: string;
 	quantidade: number;
-	valorEstimado: number;
+	valorEstimado?: number;
 	observacao?: string;
 }
 
@@ -217,7 +215,7 @@ export interface ConcluirCompraPayload {
 
 export interface ConcluirCompraResult {
 	status: CompraStatus;
-	lancamentoGerado: string;
+	lancamentoGerado?: string;
 }
 
 export interface ResumoFinanceiro {

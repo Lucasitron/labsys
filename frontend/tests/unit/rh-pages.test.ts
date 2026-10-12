@@ -60,9 +60,11 @@ const mocks = vi.hoisted(() => {
 		createApontamento: vi.fn(),
 		validarApontamento: vi.fn(),
 		listPS: vi.fn(),
+		iniciarProcesso: vi.fn(),
 		createGrupo: vi.fn(),
 		moverEstagio: vi.fn(),
 		avaliarMembro: vi.fn(),
+		listFuncionarios: vi.fn(),
 		listTreinamentos: vi.fn(),
 		getTreinamento: vi.fn(),
 		getSessao: vi.fn(),
@@ -72,8 +74,7 @@ const mocks = vi.hoisted(() => {
 		getDisponibilidade: vi.fn(),
 		listGuias: vi.fn(),
 		getNiveis: vi.fn(),
-		alterarNivel: vi.fn(),
-		convidarUsuario: vi.fn()
+		alterarNivel: vi.fn()
 	};
 });
 
@@ -110,9 +111,13 @@ vi.mock('$lib/api/rh/horas', () => ({
 }));
 vi.mock('$lib/api/rh/processo-seletivo', () => ({
 	listPS: mocks.listPS,
+	iniciarProcesso: mocks.iniciarProcesso,
 	createGrupo: mocks.createGrupo,
 	moverEstagio: mocks.moverEstagio,
 	avaliarMembro: mocks.avaliarMembro
+}));
+vi.mock('$lib/api/rh/funcionarios', () => ({
+	listFuncionarios: mocks.listFuncionarios
 }));
 vi.mock('$lib/api/rh/treinamentos', () => ({
 	listTreinamentos: mocks.listTreinamentos,
@@ -126,8 +131,7 @@ vi.mock('$lib/api/rh/treinamentos', () => ({
 }));
 vi.mock('$lib/api/rh/niveis', () => ({
 	getNiveis: mocks.getNiveis,
-	alterarNivel: mocks.alterarNivel,
-	convidarUsuario: mocks.convidarUsuario
+	alterarNivel: mocks.alterarNivel
 }));
 
 const ADMIN: User = {

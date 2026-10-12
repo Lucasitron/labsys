@@ -22,9 +22,7 @@ export const ABAS_MAQUINA: { id: AbaMaquina; label: string }[] = [
 	{ id: 'geral', label: 'Geral' },
 	{ id: 'documentacao', label: 'Documentação' },
 	{ id: 'receitas', label: 'Receitas' },
-	{ id: 'preflight', label: 'Pré-flight' },
-	{ id: 'manutencao', label: 'Manutenção' },
-	{ id: 'chamados', label: 'Chamados' }
+	{ id: 'preflight', label: 'Pré-flight' }
 ];
 
 function abaDaUrl(url: URL): AbaMaquina {
@@ -59,13 +57,13 @@ export const load: PageLoad = async ({ params, url, fetch }) => {
 	}
 
 	try {
-		preventivas = await obterPreventivasDaMaquina(id, fetch);
+		preventivas = await obterPreventivasDaMaquina();
 	} catch (err) {
 		erroPreventivas = err instanceof Error ? err.message : 'Não foi possível carregar as preventivas';
 	}
 
 	try {
-		chamados = await obterChamadosDaMaquina(id, fetch);
+		chamados = await obterChamadosDaMaquina();
 	} catch (err) {
 		erroChamados = err instanceof Error ? err.message : 'Não foi possível carregar os chamados';
 	}

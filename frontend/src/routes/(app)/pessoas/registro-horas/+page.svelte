@@ -265,6 +265,8 @@
 		if (!inicioReg) novos['inicio'] = 'Informe o início.';
 		if (!fimReg) novos['fim'] = 'Informe o fim.';
 		else if (duracaoHoras <= 0) novos['fim'] = 'O fim deve ser após o início.';
+		if (!refReg.trim()) novos['ref'] = 'Informe a referência.';
+		else if (!/^\d+$/.test(refReg.trim())) novos['ref'] = 'Informe o ID numérico da referência.';
 		errosReg = novos;
 		if (Object.keys(novos).length > 0 || !pessoaId) return;
 		mutando = true;
@@ -625,14 +627,15 @@
 				</div>
 			</fieldset>
 			<div>
-				<label for="reg-ref" class={labelCls}>Referência</label>
+				<label for="reg-ref" class={labelCls}>Referência *</label>
 				<input
 					id="reg-ref"
 					type="search"
 					bind:value={refReg}
-					placeholder={tipoReg === 'encomenda' ? 'Ex.: ENC-1044' : 'Ex.: PRJ-210'}
-					class="{inputCls} font-mono"
+					placeholder={tipoReg === 'encomenda' ? 'Ex.: 1044' : 'Ex.: 210'}
+					class="{inputCls} font-mono {errosReg['ref'] ? inputErroCls : ''}"
 				/>
+				{#if errosReg['ref']}<p class="mt-1 text-xs text-danger">{errosReg['ref']}</p>{/if}
 			</div>
 			<div>
 				<label for="reg-obs" class={labelCls}>Observações</label>

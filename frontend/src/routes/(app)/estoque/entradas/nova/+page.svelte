@@ -43,7 +43,7 @@
 		} else if (!supplierId) {
 			next.supplierId = 'Selecione o fornecedor';
 		}
-		if (unitValue && numeric(unitValue) < 0) next.unitValue = 'Valor inválido';
+		if (!unitValue || numeric(unitValue) <= 0) next.unitValue = 'Informe o valor unitário';
 		errors = next;
 		return Object.keys(next).length === 0;
 	}
@@ -56,9 +56,9 @@
 		try {
 			await criarEntrada({
 				idItem: item!.id,
-				idFornecedor: supplierId || null,
+				idFornecedor: supplierId,
 				quantidade: numeric(quantity),
-				valorUnitario: unitValue ? numeric(unitValue) : null,
+				valorUnitario: numeric(unitValue),
 				dataEntrada: date,
 				notaFiscal: notafiscal.trim() || undefined,
 				observacao: observation.trim() || undefined

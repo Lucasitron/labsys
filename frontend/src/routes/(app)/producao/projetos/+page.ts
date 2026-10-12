@@ -41,7 +41,7 @@ export const load: PageLoad = async ({ url, fetch }) => {
 
 	try {
 		projetos = await obterProjetos(
-			{ page: params.page, pageSize: params.pageSize },
+			{ page: params.page, pageSize: params.pageSize, status: params.status },
 			fetch
 		);
 	} catch (err) {

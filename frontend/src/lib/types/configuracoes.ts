@@ -1,5 +1,7 @@
 import type { Module } from './auth';
 
+export type { Paginacao, Paginado } from './pagination';
+
 export type Nivel = 0 | 1 | 2 | 3 | 4;
 
 export type SituacaoUsuario = 'Ativo' | 'Pendente' | 'Desativado';
@@ -44,16 +46,4 @@ export interface TokenIntegracao {
 	criadoEm: string;
 	ultimoUso?: string | null;
 	revogado: boolean;
-}
-
-export interface Paginacao {
-	page: number;
-	pageSize: number;
-	totalItems: number;
-	totalPages: number;
-}
-
-export interface Paginado<T> {
-	dados: T[];
-	paginacao: Paginacao;
 }

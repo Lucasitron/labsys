@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatDate as formatarData } from '$lib/utils/format';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { NomeFunc, Projeto, ProjetoStatus } from '$lib/types/producao';
@@ -105,11 +106,6 @@
 		void invalidateAll();
 	}
 
-	function formatarData(iso?: string): string {
-		if (!iso) return '—';
-		const [a, m, d] = iso.slice(0, 10).split('-');
-		return d ? `${d}/${m}/${a}` : '—';
-	}
 
 	const tresCoisas = ['Código único', 'Tema descrito', 'Responsável (RGA) vinculado'];
 </script>

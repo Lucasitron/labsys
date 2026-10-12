@@ -6,7 +6,6 @@
 	import {
 		atualizarUsuario,
 		alterarStatus,
-		criarUsuario,
 		type UsuarioPayload
 	} from '$lib/api/configuracoes/usuarios';
 	import { toasts, toastError } from '$lib/stores/toast';
@@ -126,8 +125,7 @@
 	let busy = $state(false);
 
 	function abrirNovo(): void {
-		usuarioAlvo = null;
-		modalAberto = true;
+		void goto('/pessoas/novo');
 	}
 
 	function abrirEditar(usuario: Usuario): void {
@@ -136,15 +134,11 @@
 	}
 
 	async function salvarUsuario(payload: UsuarioPayload): Promise<void> {
+		if (!usuarioAlvo) return;
 		busy = true;
 		try {
-			if (usuarioAlvo) {
-				await atualizarUsuario(usuarioAlvo.id, payload);
-				toasts.success('Usuário atualizado com sucesso.');
-			} else {
-				await criarUsuario(payload);
-				toasts.success('Convite enviado ao usuário.');
-			}
+			await atualizarUsuario(usuarioAlvo.id, payload);
+			toasts.success('Usuário atualizado com sucesso.');
 			modalAberto = false;
 			usuarioAlvo = null;
 		} catch (err) {
@@ -184,7 +178,7 @@
 <div class="space-y-4">
 	<PageHeader
 		title="Usuários"
-		subtitle="Cadastro, convites e situação dos integrantes do FabLab."
+		subtitle="Situação e nível de acesso das contas do FabLab."
 	>
 		{#snippet children()}
 			<StatusBadge label="Restrito ao Admin" color="warn" />
@@ -194,7 +188,7 @@
 				onclick={abrirNovo}
 				class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-colors hover:bg-brandhi"
 			>
-				<Icon name="plus" class="h-4 w-4" /> Novo usuário
+				<Icon name="plus" class="h-4 w-4" /> Nova pessoa
 			</button>
 		{/snippet}
 	</PageHeader>
@@ -328,14 +322,14 @@
 						</span>
 						<p class="text-sm font-medium text-ink">Nenhum usuário cadastrado</p>
 						<p class="max-w-sm text-sm text-muted">
-							Crie o primeiro usuário para começar a gerir contas e convites.
+							Cadastre uma pessoa em Pessoas → Nova pessoa, marcando "Criar acesso".
 						</p>
 						<button
 							type="button"
 							onclick={abrirNovo}
 							class="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-colors hover:bg-brandhi"
 						>
-							<Icon name="plus" class="h-4 w-4" /> Novo usuário
+							<Icon name="plus" class="h-4 w-4" /> Nova pessoa
 						</button>
 					</div>
 				{/if}

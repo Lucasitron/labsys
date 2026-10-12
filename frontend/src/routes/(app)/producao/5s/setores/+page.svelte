@@ -1,8 +1,8 @@
 <script lang="ts">
+	import { formatDate as formatarData } from '$lib/utils/format';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { Cartao5S, NomeFunc, Setor5S } from '$lib/types/producao';
-	import { CARTAO_META } from '$lib/utils/producao-status';
 	import CartaoBadge from '$lib/components/producao/CartaoBadge.svelte';
 	import ModalSetor from '$lib/components/producao/ModalSetor.svelte';
 	import ModalChecklistSetor from '$lib/components/producao/ModalChecklistSetor.svelte';
@@ -104,11 +104,6 @@
 		void invalidateAll();
 	}
 
-	function formatarData(iso: string): string {
-		if (!iso) return '—';
-		const [a, m, d] = iso.slice(0, 10).split('-');
-		return d ? `${d}/${m}/${a}` : '—';
-	}
 
 	interface Query {
 		[key: string]: string | string[] | number | undefined;

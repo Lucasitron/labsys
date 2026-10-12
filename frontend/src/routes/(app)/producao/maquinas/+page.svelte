@@ -38,7 +38,6 @@
 	const totalMaquinas = $derived(maquinas.length);
 	const foraVerde = $derived(maquinas.filter((m) => m.cartao !== 'Verde').length);
 	const emManutencao = $derived(maquinas.filter((m) => m.status === 'Em manutenção').length);
-	const suspensas = $derived(maquinas.filter((m) => m.status === 'Suspensa').length);
 
 	const cartaoOptions = $derived(
 		CARTOES.map((c) => ({ id: c, label: CARTAO_META[c].label }))
@@ -184,7 +183,7 @@
 		{/snippet}
 	</PageHeader>
 
-	<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+	<div class="grid grid-cols-2 gap-3 lg:grid-cols-3">
 		<div class={kpiCls}>
 			<span class={kpiLabel}>Máquinas</span>
 			<p class={`${kpiValue} text-ink`}>{totalMaquinas}</p>
@@ -196,10 +195,6 @@
 		<div class={kpiCls}>
 			<span class={kpiLabel}>Em manutenção</span>
 			<p class={`${kpiValue} text-warn`}>{emManutencao}</p>
-		</div>
-		<div class={kpiCls}>
-			<span class={kpiLabel}>Suspensas</span>
-			<p class={`${kpiValue} text-danger`}>{suspensas}</p>
 		</div>
 	</div>
 

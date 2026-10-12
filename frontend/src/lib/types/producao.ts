@@ -1,20 +1,9 @@
-export type Tone = 'success' | 'warn' | 'danger' | 'brand' | 'muted' | 'ink';
+export type { Tone } from './ui';
+export type { Paginacao, Paginado } from './pagination';
 
 export interface NomeFunc {
 	id: string;
 	nome: string;
-}
-
-export interface Paginacao {
-	page: number;
-	pageSize: number;
-	totalItems: number;
-	totalPages: number;
-}
-
-export interface Paginado<T> {
-	dados: T[];
-	paginacao: Paginacao;
 }
 
 // ---- Unions de status/prioridade (strings PT servidas pelo backend) ----
@@ -23,13 +12,13 @@ export type ProjetoStatus = 'Planejado' | 'Em andamento' | 'Concluído' | 'Cance
 
 export type TarefaStatus = 'Pendente' | 'Em andamento' | 'Concluída' | 'Atrasada' | 'Bloqueada';
 
-export type Prioridade = 'Baixa' | 'Média' | 'Moderada' | 'Alta';
+export type Prioridade = 'Baixa' | 'Média' | 'Alta';
 
 export type KanbanColuna = 'Fila' | 'Produção' | 'Acabamento' | 'Pronto' | 'Entregue';
 
 export type Cartao5S = 'Verde' | 'Amarelo' | 'Vermelho';
 
-export type MaquinaStatus = 'Disponível' | 'Em manutenção' | 'Suspensa';
+export type MaquinaStatus = 'Disponível' | 'Em uso' | 'Em manutenção';
 
 export type ChamadoStatus = 'Aberto' | 'Atribuído' | 'Em andamento' | 'Resolvido' | 'Aguardando compra';
 
@@ -62,8 +51,6 @@ export type ChaveParametro5S =
 	| 'notaCartaoAmarelo'
 	| 'prazoPendGrave';
 
-export type TipoDocumentoProjeto = 'arquivo' | 'imagem' | 'link';
-
 // ---- Projetos ----
 
 export interface Projeto {
@@ -74,31 +61,9 @@ export interface Projeto {
 	descricao?: string;
 	responsavel: NomeFunc;
 	prazo: string;
+	dataInicio?: string;
 	status: ProjetoStatus;
 	progresso: number;
-}
-
-export interface ProjetoDocumento {
-	id: string;
-	tipo: TipoDocumentoProjeto;
-	nome?: string;
-	url: string;
-	criadoEm: string;
-}
-
-export interface MaterialProjeto {
-	item: string;
-	codigo: string;
-	quantidadeNecessaria: number;
-	disponivel: number;
-}
-
-export interface SaidaMaterial {
-	projetoId: string;
-	item: string;
-	codigo: string;
-	quantidade: number;
-	registradoEm: string;
 }
 
 // ---- Tarefas ----

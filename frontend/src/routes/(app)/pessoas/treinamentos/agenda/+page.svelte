@@ -53,7 +53,7 @@
 		carregando = true;
 		erro = null;
 
-		void listAgenda({}, fetch)
+		void listAgenda()
 			.then((res) => {
 				if (sinal.aborted) return;
 				itens = res.trainings;
@@ -68,7 +68,7 @@
 
 		carregandoDisp = true;
 		erroDisp = null;
-		void getDisponibilidade(fetch)
+		void getDisponibilidade()
 			.then((res) => {
 				if (!sinal.aborted) disponibilidade = res;
 			})
@@ -254,7 +254,7 @@
 	</div>
 
 	{#if erro && !carregando}
-		<ErrorBanner message="Não foi possível carregar a agenda" hint="Verifique sua conexão e tente novamente. Se persistir, contate o suporte." onRetry={tentarNovamente} />
+		<ErrorBanner message="Não foi possível carregar a agenda" hint={erro ?? 'Verifique sua conexão e tente novamente. Se persistir, contate o suporte.'} onRetry={tentarNovamente} />
 	{:else if carregando}
 		<div class="rounded-xl border border-border bg-surface p-4">
 			<TableSkeleton rows={5} columns={6} />

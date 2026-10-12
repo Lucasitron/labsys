@@ -1,6 +1,6 @@
 import type { UnreadCount } from './dashboard';
 
-export type Tone = 'success' | 'warn' | 'danger' | 'brand' | 'muted' | 'ink';
+export type { Tone } from './ui';
 
 export type NotificationType =
 	| 'encomenda'

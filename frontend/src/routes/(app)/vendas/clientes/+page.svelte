@@ -466,7 +466,7 @@
 											</div>
 										</div>
 									</td>
-									<td class="px-4 py-3 font-mono text-xs text-muted">{cliente.codigo}</td>
+									<td class="px-4 py-3 font-mono text-xs text-muted">{cliente.codigo || '—'}</td>
 									<td class="px-4 py-3">
 										<div class="flex max-w-56 flex-wrap gap-1">
 											{#each cliente.tags as tag (tag.id)}
@@ -551,7 +551,7 @@
 								<span class="min-w-0 flex-1">
 									<span class="block truncate text-sm font-medium text-ink">{cliente.nome}</span>
 									<span class="block truncate text-xs text-muted">{cliente.email}</span>
-									<span class="mt-0.5 block font-mono text-xs text-muted">{cliente.codigo}</span>
+									<span class="mt-0.5 block font-mono text-xs text-muted">{cliente.codigo || '—'}</span>
 									<span class="mt-2 flex flex-wrap items-center gap-1.5">
 										{#each cliente.tags as tag (tag.id)}
 											<TypeBadge tone={tagTone(tag.cor)} label={tag.nome} />

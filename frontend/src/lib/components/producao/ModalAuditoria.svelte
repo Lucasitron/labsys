@@ -1,10 +1,10 @@
 <script lang="ts">
+	import { errorMessage } from '$lib/utils/errors';
 	import { onMount } from 'svelte';
 	import type { Inspecao5S } from '$lib/types/producao';
 	import { notaToCartao, CARTAO_META } from '$lib/utils/producao-status';
 	import { concluirInspecao5S } from '$lib/api/producao/client';
-	import { ApiError, NetworkError } from '$lib/api/client';
-	import Modal from '$lib/components/ui/Modal.svelte';
+		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {
 		open: boolean;
@@ -49,22 +49,16 @@
 		selecionados = selecionados.map((v, i) => (i === idx ? conforme : v));
 	}
 
-	function mensagemErro(err: unknown): string {
-		if (err instanceof ApiError || err instanceof NetworkError) return err.message;
-		return 'Não foi possível concluir a auditoria.';
-	}
 
 	async function concluir(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
 		enviando = true;
 		erro = '';
 		try {
-			const atualizada = await concluirInspecao5S(inspecao.id, {
-				itens: selecionados.map((conforme, idx) => ({ s: idx + 1, conforme }))
-			});
+			const atualizada = await concluirInspecao5S();
 			onConcluida?.(atualizada);
 		} catch (err) {
-			erro = mensagemErro(err);
+			erro = errorMessage(err, 'Não foi possível concluir a auditoria.');
 		} finally {
 			enviando = false;
 		}
@@ -154,8 +148,9 @@
 			type="submit"
 			form="modal-auditoria-form"
 			data-testid="aud-concluir"
-			disabled={enviando || itens.length === 0}
-			class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white shadow-lg shadow-brand/20 transition hover:bg-brandhi disabled:cursor-not-allowed disabled:opacity-50"
+			disabled
+			title="Contrato pendente (🟡) — sem par no backend"
+			class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white shadow-lg shadow-brand/20 transition disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			{enviando ? 'Concluindo…' : 'Concluir auditoria'}
 		</button>

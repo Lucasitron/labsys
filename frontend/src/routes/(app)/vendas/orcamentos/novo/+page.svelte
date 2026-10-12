@@ -77,7 +77,7 @@
 	let sugerirEdicao = $state(false);
 
 	function aplicarOrigem(orc: Orcamento): void {
-		origemCodigo = orc.codigo;
+		origemCodigo = orc.codigo ?? '';
 		clienteSel = { id: orc.cliente.id, nome: orc.cliente.nome };
 		itens = (orc.itens ?? []).map((it) => ({
 			descricao: it.descricao,

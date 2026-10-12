@@ -1,15 +1,9 @@
-import { get } from 'svelte/store';
-import { auth } from '$lib/stores/auth';
 import type { Paginacao, Paginado } from '$lib/types/producao';
+import { PADRAO_TAMANHO_PAGINA, paginarClient, totalDePaginas } from '$lib/utils/pagination';
 
 export type { Paginacao, Paginado };
-
-export const PADRAO_TAMANHO_PAGINA = 10;
-
-export function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
+export { bearer } from '$lib/api/bearer';
+export { PADRAO_TAMANHO_PAGINA, paginarClient, totalDePaginas };
 
 type QueryValue = string | number | undefined | string[];
 
@@ -56,10 +50,55 @@ export function filtrosDaUrl(url: URL, chaves: readonly string[]): Record<string
 	return filtros;
 }
 
-export function totalDePaginas(totalItems: number, pageSize: number): number {
-	if (!Number.isInteger(totalItems) || !Number.isInteger(pageSize) || pageSize <= 0) return 0;
-	return Math.max(1, Math.ceil(totalItems / pageSize));
+// Back serve listas como `{data:[...]}` (ResourceCollection) — desembrulha p/ array.
+
+export function unwrapLista<T>(res: T[] | { data: T[] } | null | undefined): T[] {
+	if (Array.isArray(res)) return res;
+	if (res && Array.isArray((res as { data?: T[] }).data)) {
+		return (res as { data: T[] }).data;
+	}
+	return [];
 }
+
+// O back pode devolver Paginado (dados), `{data}` ou array puro.
+export function paraPaginado<T>(
+	res: Paginado<T> | T[] | { data: T[] } | null | undefined,
+	page = 1,
+	pageSize = PADRAO_TAMANHO_PAGINA
+): Paginado<T> {
+	if (res && !Array.isArray(res) && Array.isArray((res as Paginado<T>).dados)) {
+		return res as Paginado<T>;
+	}
+	return paginarClient(unwrapLista(res as T[] | { data: T[] }), page, pageSize);
+}
+
+// Mapper UPPER (back) → Title (exibição/filtro).
+export const STATUS_PROJETO_UPPER: Record<string, string> = {
+	PLANEJADO: 'Planejado',
+	EM_ANDAMENTO: 'Em andamento',
+	CONCLUIDO: 'Concluído',
+	CANCELADO: 'Cancelado'
+};
+
+export const STATUS_TAREFA_UPPER: Record<string, string> = {
+	PENDENTE: 'Pendente',
+	EM_ANDAMENTO: 'Em andamento',
+	CONCLUIDA: 'Concluída',
+	ATRASADA: 'Atrasada',
+	BLOQUEADA: 'Bloqueada'
+};
+
+export const PRIORIDADE_UPPER: Record<string, string> = {
+	BAIXA: 'Baixa',
+	MEDIA: 'Média',
+	ALTA: 'Alta'
+};
+
+export const MAQUINA_STATUS_UPPER: Record<string, string> = {
+	DISPONIVEL: 'Disponível',
+	EM_USO: 'Em uso',
+	MANUTENCAO: 'Em manutenção'
+};
 
 export function paginadoVazio<T>(): Paginado<T> {
 	return {
@@ -92,7 +131,6 @@ export function mostrarDeAte<T>(paginas: Paginado<T>): string {
 export * from './resumo';
 export * from './projetos';
 export * from './tarefas';
-export * from './kanban';
 export * from './maquinas';
 export * from './setores-5s';
 export * from './inspecoes-5s';
@@ -100,4 +138,3 @@ export * from './pendencias-5s';
 export * from './ranking-5s';
 export * from './penalidades-5s';
 export * from './mesas';
-export * from './parametros-5s';

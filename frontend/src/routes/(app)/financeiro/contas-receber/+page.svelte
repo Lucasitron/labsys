@@ -114,7 +114,7 @@
 	}
 
 	function clienteDe(l: Lancamento): string {
-		return l.observacao?.trim() ? (l.observacao as string) : l.categoria.nome;
+		return l.observacao?.trim() ? (l.observacao as string) : (l.categoria.nome ?? categorias.find((c) => c.id === l.categoria.id)?.nome ?? l.categoria.id);
 	}
 
 	function referenciaDe(l: Lancamento): string {
@@ -431,13 +431,13 @@
 												type="button"
 												data-testid="cr-receber"
 												onclick={() => pedirRecebimento(l)}
-												aria-label={`Registrar recebimento de ${l.codigo}`}
+												aria-label={`Registrar recebimento de ${l.codigo ?? l.id}`}
 												class="rounded-md border border-success/30 bg-success/10 px-2.5 py-1.5 text-xs font-medium text-success transition hover:bg-success/20"
 											>
 												Receber
 											</button>
 											<RowActions
-												label={`Ações de ${l.codigo}`}
+												label={`Ações de ${l.codigo ?? l.id}`}
 												actions={[
 													{ id: 'detalhe', label: 'Ver detalhe', icon: 'eye' },
 													{ id: 'recebimento', label: 'Registrar recebimento', icon: 'check' }
@@ -484,7 +484,7 @@
 							<button
 								type="button"
 								onclick={() => abrirDetalhe(l)}
-								aria-label={`Ver ${l.codigo}`}
+								aria-label={`Ver ${l.codigo ?? l.id}`}
 								class="min-w-0 flex-1 text-left"
 							>
 								<span class="block truncate text-sm font-medium text-ink">{clienteDe(l)}</span>
@@ -512,13 +512,13 @@
 								type="button"
 								data-testid="cr-receber"
 								onclick={() => pedirRecebimento(l)}
-								aria-label={`Registrar recebimento de ${l.codigo}`}
+								aria-label={`Registrar recebimento de ${l.codigo ?? l.id}`}
 								class="rounded-md border border-success/30 bg-success/10 px-2.5 py-1.5 text-xs font-medium text-success transition hover:bg-success/20"
 							>
 								Receber
 							</button>
 							<RowActions
-								label={`Ações de ${l.codigo}`}
+								label={`Ações de ${l.codigo ?? l.id}`}
 								actions={[
 									{ id: 'detalhe', label: 'Ver detalhe', icon: 'eye' },
 									{ id: 'recebimento', label: 'Registrar recebimento', icon: 'check' }
@@ -568,7 +568,7 @@
 
 <Modal
 	open={detalhe !== null}
-	title={detalhe ? detalhe.codigo : 'Recebível'}
+	title={detalhe ? (detalhe.codigo ?? `#${detalhe.id}`) : 'Recebível'}
 	subtitle="Ficha da conta a receber"
 	onClose={() => (detalhe = null)}
 	width="sm"

@@ -285,37 +285,19 @@
 
 	let modalConcluir = $state(false);
 	let compraAlvo = $state<SolicitacaoCompra | null>(null);
-	let cpData = $state('');
-	let cpValor = $state<number | null>(null);
-	let cpNota = $state('');
 	let salvandoCompra = $state(false);
 
 	function abrirConcluir(c: SolicitacaoCompra): void {
 		compraAlvo = c;
-		cpData = hojeISO();
-		cpValor = null;
-		cpNota = '';
 		modalConcluir = true;
 	}
 
 	async function confirmarConcluir(): Promise<void> {
 		if (!compraAlvo) return;
-		if (!cpData) {
-			toasts.warn('Informe a data de conclusão.');
-			return;
-		}
-		if (cpValor === null || cpValor <= 0) {
-			toasts.warn('Informe o valor real maior que zero.');
-			return;
-		}
 		salvandoCompra = true;
 		try {
-			const retorno = await concluirCompra(compraAlvo.id, {
-				dataConclusao: cpData,
-				valorReal: cpValor,
-				notaFiscal: cpNota || undefined
-			});
-			toasts.success(`Compra concluída — saída ${retorno.lancamentoGerado} lançada.`);
+			await concluirCompra(compraAlvo.id);
+			toasts.success('Compra concluída.');
 			modalConcluir = false;
 			compraAlvo = null;
 			await invalidateAll();
@@ -978,32 +960,8 @@
 >
 	{#snippet children()}
 		<div class="space-y-3">
-			<div>
-				<label for="cus-cp-data" class="mb-1 block text-xs font-medium text-muted">
-					Data de conclusão <span class="text-danger">*</span>
-				</label>
-				<input
-					id="cus-cp-data"
-					type="date"
-					bind:value={cpData}
-					class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-				/>
-			</div>
-			<MoneyInput bind:value={cpValor} label="Valor real" />
-			<div>
-				<label for="cus-cp-nota" class="mb-1 block text-xs font-medium text-muted">
-					Nota fiscal
-				</label>
-				<input
-					id="cus-cp-nota"
-					type="text"
-					bind:value={cpNota}
-					placeholder="Opcional"
-					class="w-full rounded-md border border-border bg-elevated px-3 py-2.5 text-sm text-ink placeholder:text-muted/60 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
-				/>
-			</div>
-			<p class="rounded-lg border border-brand/30 bg-brand/10 px-3 py-2 text-xs text-brandhi">
-				A conclusão gera uma saída (lançamento) correspondente. Fluxo informativo, sem bloqueio.
+			<p class="text-sm text-muted">
+				Confirma a conclusão da compra? O backend só altera o status (sem gerar lançamento).
 			</p>
 		</div>
 	{/snippet}

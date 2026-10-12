@@ -16,7 +16,12 @@ export interface MenuItem {
 	path: string;
 	module: Module;
 	icon: MenuIcon;
-	children?: { label: string; path: string; canSee?: (user: User | null) => boolean }[];
+	children?: {
+		label: string;
+		path: string;
+		canSee?: (user: User | null) => boolean;
+		disabled?: boolean;
+	}[];
 }
 
 export const menuItems: MenuItem[] = [
@@ -26,7 +31,7 @@ export const menuItems: MenuItem[] = [
 			{ label: 'Pessoas', path: '/pessoas' },
 			{ label: 'Processo seletivo', path: '/pessoas/processo-seletivo' },
 			{ label: 'Registro de horas', path: '/pessoas/registro-horas' },
-			{ label: 'Treinamentos', path: '/pessoas/treinamentos' },
+			{ label: 'Treinamentos', path: '/pessoas/treinamentos', disabled: true },
 			{ label: 'Níveis & acesso', path: '/pessoas/niveis', canSee: isAdmin }
 		]
 	},
@@ -67,12 +72,13 @@ export const menuItems: MenuItem[] = [
 			{ label: 'Máquinas', path: '/producao/maquinas' },
 			{ label: '5S: Setores', path: '/producao/5s/setores', canSee: canSee5S },
 			{ label: '5S: Auditoria', path: '/producao/5s/auditoria', canSee: canSee5S },
-			{ label: '5S: Pendências', path: '/producao/5s/pendencias', canSee: canSee5S },
-			{ label: '5S: Ranking', path: '/producao/5s/ranking', canSee: canSee5S },
+			{ label: '5S: Pendências', path: '/producao/5s/pendencias', canSee: canSee5S, disabled: true },
+			{ label: '5S: Ranking', path: '/producao/5s/ranking', canSee: canSee5S, disabled: true },
 			{
 				label: '5S: Advertências',
 				path: '/producao/5s/advertencias',
-				canSee: canSeeAdvertencias
+				canSee: canSeeAdvertencias,
+				disabled: true
 			},
 			{ label: '5S: Mesas', path: '/producao/5s/mesas', canSee: canSee5S }
 		]

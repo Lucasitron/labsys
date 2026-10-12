@@ -66,9 +66,11 @@ export function canSeeMachines(user: User | null): boolean {
 export function canSee5S(user: User | null): boolean {
 	if (!user) return false;
 	if (user.role === 0) return true;
+	// Matriz: 5S = Visualizar p/ 1/2/3; Recrutando (4) não participa.
+	if (user.role === 4) return false;
 	if (user.roles?.producao === null) return false;
-	const access = user.roles?.producao;
-	return (access === 'view' || access === 'edit') && user.role >= 1 && user.role <= 2;
+	if (user.roles?.producao === 'view' || user.roles?.producao === 'edit') return true;
+	return user.role === 1 || user.role === 2 || user.role === 3;
 }
 
 export function isResponsavelAtribuido(

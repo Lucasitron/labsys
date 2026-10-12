@@ -177,7 +177,8 @@ const ENCOMENDA: Encomenda = {
 	previsao: '2026-12-31',
 	valorFinal: 500,
 	itensCount: 2,
-	createdBy: 'u9'
+	createdBy: 'u9',
+	versao: 1
 };
 
 const ORCAMENTO_BASE: Orcamento = {
@@ -340,7 +341,7 @@ describe('vendas-pages — Kanban de encomendas (moverKanban)', () => {
 	function dadosKanban() {
 		return {
 			user: null,
-			params: { status_kanban: '', search: '', clienteId: '' },
+			params: { status: '', search: '', clienteId: '' },
 			resultado: {
 				encomendas: [ENCOMENDA],
 				counts: { Produção: 0, Pronto: 0, Atrasadas: 0, 'Entregues no mês': 0 }
@@ -365,7 +366,7 @@ describe('vendas-pages — Kanban de encomendas (moverKanban)', () => {
 		await fireEvent.click(screen.getByText('Mover para Produção'));
 
 		await waitFor(() =>
-			expect(mocks.moverKanban).toHaveBeenCalledWith('e1', { statusKanban: 'Produção' })
+			expect(mocks.moverKanban).toHaveBeenCalledWith('e1', { statusKanban: 'Produção', versao: 1 })
 		);
 		expect(mocks.toastSuccess).toHaveBeenCalledWith('Encomenda EN-0001 movida para Produção.');
 		await waitFor(() => expect(mocks.invalidateAll).toHaveBeenCalled());

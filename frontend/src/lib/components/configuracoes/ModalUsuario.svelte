@@ -33,12 +33,10 @@
 	interface ErrosForm {
 		nome?: string;
 		email?: string;
-		telefone?: string;
 	}
 
 	let nome = $state('');
 	let email = $state('');
-	let telefone = $state('');
 	let nivel = $state<Nivel>(1);
 	let situacao = $state<SituacaoUsuario>('Pendente');
 	let tentou = $state(false);
@@ -47,7 +45,6 @@
 		if (open) {
 			nome = usuario?.nome ?? '';
 			email = usuario?.email ?? '';
-			telefone = usuario?.telefone ?? '';
 			nivel = usuario?.nivel ?? 1;
 			situacao = usuario?.situacao ?? 'Pendente';
 			tentou = false;
@@ -56,49 +53,35 @@
 
 	function validar(): ErrosForm {
 		const erros: ErrosForm = {};
+		if (!usuario) return erros;
 		if (!nome.trim()) erros.nome = 'Informe o nome.';
 		if (!email.trim()) {
 			erros.email = 'Informe o e-mail.';
-		} else if (!EMAIL_RE.test(email.trim())) {
+		} else if (!EMAIL_RE.test(email)) {
 			erros.email = 'E-mail inválido.';
-		}
-		const digitos = telefone.replace(/\D/g, '');
-		if (telefone.trim() && (digitos.length < 10 || digitos.length > 11)) {
-			erros.telefone = 'Informe DDD + número (10 ou 11 dígitos).';
 		}
 		return erros;
 	}
 
-	const erros = $derived(validar());
-	const invalido = $derived(Object.keys(erros).length > 0);
-
 	function salvar(event: SubmitEvent): void {
 		event.preventDefault();
 		tentou = true;
-		if (invalido) return;
-
-		onSave({
-			nome: nome.trim(),
-			email: email.trim(),
-			telefone: telefone.trim() || undefined,
-			nivel,
-			situacao
-		});
+		if (!usuario) return;
+		const erros = validar();
+		if (Object.keys(erros).length > 0) return;
+		onSave({ nome: nome.trim(), email: email.trim(), nivel, situacao });
 	}
 
 	const inputCls =
 		'w-full rounded-lg border border-border bg-elevated px-3 py-2.5 text-sm text-ink placeholder:text-muted/60 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40';
-
-	const criarAviso =
-		'Ao criar a conta, um convite é enviado por e-mail para definição de senha.';
 </script>
 
 {#if admin}
 	<div data-testid="cfg-user-modal">
 		<Modal
 			{open}
-			title={usuario ? 'Editar usuário' : 'Convidar usuário'}
-			subtitle="Conta, nível de acesso e situação"
+			title="Editar usuário"
+			subtitle="Situação e nível de acesso da conta"
 			{onClose}
 			width="md"
 		>
@@ -109,12 +92,12 @@
 						<input
 							type="text"
 							bind:value={nome}
-							placeholder="ex.: Maria Souza"
+							placeholder="Nome do usuário"
 							class={inputCls}
-							aria-label="Nome do usuário"
+							aria-label="Nome"
 						/>
-						{#if tentou && erros.nome}
-							<p class="mt-1 text-xs text-danger">{erros.nome}</p>
+						{#if tentou && validar().nome}
+							<p class="mt-1 text-xs text-danger">{validar().nome}</p>
 						{/if}
 					</label>
 
@@ -123,26 +106,12 @@
 						<input
 							type="email"
 							bind:value={email}
-							placeholder="nome@fablab.org"
+							placeholder="usuario@fablab.org"
 							class={inputCls}
-							aria-label="E-mail do usuário"
+							aria-label="E-mail"
 						/>
-						{#if tentou && erros.email}
-							<p class="mt-1 text-xs text-danger">{erros.email}</p>
-						{/if}
-					</label>
-
-					<label class="mt-4 block">
-						<span class="mb-1.5 block text-xs font-medium text-muted">Telefone</span>
-						<input
-							type="tel"
-							bind:value={telefone}
-							placeholder="(00) 00000-0000"
-							class={inputCls}
-							aria-label="Telefone do usuário"
-						/>
-						{#if tentou && erros.telefone}
-							<p class="mt-1 text-xs text-danger">{erros.telefone}</p>
+						{#if tentou && validar().email}
+							<p class="mt-1 text-xs text-danger">{validar().email}</p>
 						{/if}
 					</label>
 
@@ -166,27 +135,25 @@
 					</div>
 
 					<p class="mt-4 rounded-lg border border-border bg-elevated/40 px-3 py-2 text-[11px] text-muted">
-						{criarAviso}
+						Para criar um novo acesso, cadastre a pessoa em Pessoas → Nova pessoa, marcando
+						"Criar acesso".
 					</p>
 				</form>
 			{/snippet}
-
 			{#snippet footer()}
 				<button
 					type="button"
-					data-testid="cfg-user-cancel"
 					onclick={onClose}
-					class="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-border/40"
+					class="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-elevated/40"
 				>
 					Cancelar
 				</button>
 				<button
 					type="submit"
 					form="cfg-user-form"
-					data-testid="cfg-user-save"
-					class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brandhi"
+					class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brandhi"
 				>
-					{usuario ? 'Salvar alterações' : 'Enviar convite'}
+					Salvar
 				</button>
 			{/snippet}
 		</Modal>

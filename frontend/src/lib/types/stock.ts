@@ -1,6 +1,6 @@
 // ---- Primitivas e tipos de exibição (derivados client) ----
 
-export type Tone = 'success' | 'warn' | 'danger' | 'brand' | 'muted' | 'ink';
+export type { Tone } from './ui';
 
 export interface IdLabel {
 	id: string;
@@ -245,7 +245,7 @@ export interface BomResponse {
 	id: string;
 	idProdutoServico: string;
 	nome: string;
-	versao: string;
+	versao: number;
 	editavel: boolean;
 	itens: BomItemResponse[];
 }
@@ -258,7 +258,7 @@ export interface BomItemPayload {
 export interface CreateBomPayload {
 	idProdutoServico: string;
 	nome: string;
-	versao: string;
+	versao: number;
 	itens: BomItemPayload[];
 }
 

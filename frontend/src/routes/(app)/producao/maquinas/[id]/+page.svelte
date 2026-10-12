@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { formatDate as formatarData } from '$lib/utils/format';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { ChamadoStatus, Maquina, NomeFunc } from '$lib/types/producao';
 	import {
-		CARTAO_META,
 		CHAMADO_STATUS_META,
 		MAQUINA_STATUS_META,
 		PREVENTIVA_STATUS_META
@@ -13,7 +13,6 @@
 		atualizarStatusMaquina,
 		criarPreventivaMaquina
 	} from '$lib/api/producao/client';
-	import { ApiError, NetworkError } from '$lib/api/client';
 	import { toasts, toastError } from '$lib/stores/toast';
 	import { isResponsavelAtribuido } from '$lib/utils/permissions';
 	import { ABAS_MAQUINA } from './+page';
@@ -26,7 +25,6 @@
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	let { data }: PageProps = $props();
@@ -119,19 +117,12 @@
 		chamadoEnviando = true;
 		chamadoErro = '';
 		try {
-			await abrirChamadoMaquina(maquina.id, {
-				classificacao: chamadoClassificacao,
-				relato: chamadoRelato.trim(),
-				responsavelId: chamadoResponsavelId
-			});
+			await abrirChamadoMaquina();
 			toasts.success('Chamado aberto');
 			modalChamado = false;
 			await invalidateAll();
 		} catch (err) {
-			chamadoErro =
-				err instanceof ApiError || err instanceof NetworkError
-					? err.message
-					: 'Não foi possível abrir o chamado.';
+			chamadoErro = err instanceof Error ? err.message : 'Não foi possível abrir o chamado.';
 		} finally {
 			chamadoEnviando = false;
 		}
@@ -147,29 +138,26 @@
 		preventivaEnviando = true;
 		preventivaErro = '';
 		try {
-			await criarPreventivaMaquina(maquina.id, { dataProgramada: preventivaData });
+			await criarPreventivaMaquina();
 			toasts.success('Preventiva agendada');
 			modalPreventiva = false;
 			await invalidateAll();
 		} catch (err) {
-			preventivaErro =
-				err instanceof ApiError || err instanceof NetworkError
-					? err.message
-					: 'Não foi possível agendar a preventiva.';
+			preventivaErro = err instanceof Error ? err.message : 'Não foi possível agendar a preventiva.';
 		} finally {
 			preventivaEnviando = false;
 		}
 	}
 
-	async function alternarSuspensao(): Promise<void> {
+	async function alternarManutencao(): Promise<void> {
 		if (!maquina) return;
 		try {
-			if (maquina.status === 'Suspensa') {
+			if (maquina.status === 'Em manutenção') {
 				await atualizarStatusMaquina(maquina.id, { status: 'Disponível' });
 				toasts.success('Máquina liberada');
 			} else {
-				await atualizarStatusMaquina(maquina.id, { status: 'Suspensa' });
-				toasts.success('Máquina suspensa');
+				await atualizarStatusMaquina(maquina.id, { status: 'Em manutenção' });
+				toasts.success('Máquina em manutenção');
 			}
 			await invalidateAll();
 		} catch (err) {
@@ -181,11 +169,6 @@
 		modalNota = `Ação "${tipo}" depende de endpoint ainda pendente no backend (🟡). Fale com o Admin.`;
 	}
 
-	function formatarData(iso?: string): string {
-		if (!iso) return '—';
-		const [a, m, d] = iso.slice(0, 10).split('-');
-		return d ? `${d}/${m}/${a}` : '—';
-	}
 
 	function pendenteCompra(chamado: { status: ChamadoStatus; pendenteCompra?: boolean }): boolean {
 		return chamado.status === 'Aguardando compra' || chamado.pendenteCompra === true;
@@ -227,19 +210,20 @@
 					<button
 						type="button"
 						data-testid="maq-chamado"
-						onclick={() => (modalChamado = true)}
-						class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition hover:border-brand/50 hover:text-brandhi"
+						disabled
+						title="Contrato pendente (🟡) — sem par no backend"
+						class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-muted opacity-50 cursor-not-allowed transition"
 					>
 						<Icon name="alert-triangle" class="h-4 w-4" /> Abrir chamado
 					</button>
 					<button
 						type="button"
-						data-testid="maq-suspender"
-						onclick={() => void alternarSuspensao()}
+						data-testid="maq-manutencao"
+						onclick={() => void alternarManutencao()}
 						class="inline-flex items-center gap-1.5 rounded-lg bg-danger px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-danger/20 transition hover:bg-danger/90"
 					>
-						<Icon name={maquina.status === 'Suspensa' ? 'check' : 'warning'} class="h-4 w-4" />
-						{maquina.status === 'Suspensa' ? 'Liberar' : 'Suspender'}
+						<Icon name={maquina.status === 'Em manutenção' ? 'check' : 'warning'} class="h-4 w-4" />
+						{maquina.status === 'Em manutenção' ? 'Liberar' : 'Em manutenção'}
 					</button>
 				{/if}
 			{/snippet}

@@ -77,12 +77,12 @@ export interface ItemOrcamento {
 
 export interface Orcamento {
 	id: string;
-	codigo: string;
+	codigo?: string;
 	cliente: ClienteResumo;
 	valorTotal: number;
 	status: OrcamentoStatus;
 	validade: string;
-	qtdItens: number;
+	qtdItens?: number;
 	createdBy: string;
 	itens?: ItemOrcamento[];
 	observacoes?: string;
@@ -101,14 +101,16 @@ export type UpdateOrcamentoPayload = Partial<CreateOrcamentoPayload>;
 
 export interface Encomenda {
 	id: string;
-	codigo: string;
+	codigo?: string;
 	cliente: ClienteResumo;
+	clienteNome?: string;
 	statusKanban: KanbanStatus;
 	origem: OrdemOrigem;
 	previsao: string;
 	valorFinal: number;
-	itensCount: number;
+	itensCount?: number;
 	createdBy: string;
+	versao: number;
 }
 
 export interface CreateEncomendaPayload {
@@ -122,6 +124,7 @@ export interface CreateEncomendaPayload {
 
 export interface MoverKanbanPayload {
 	statusKanban: KanbanStatus;
+	versao: number;
 	observacao?: string;
 }
 
@@ -168,7 +171,6 @@ export interface RegistrarInteracaoPayload {
 	tipo: TipoInteracao;
 	descricao: string;
 	dataInteracao: string;
-	responsavelId?: string;
 }
 
 export interface TarefaMarketing {
@@ -297,7 +299,7 @@ export interface ListOrcamentosParams {
 }
 
 export interface ListEncomendasParams {
-	status_kanban?: KanbanStatus;
+	status?: KanbanStatus;
 	search?: string;
 	clienteId?: string;
 }

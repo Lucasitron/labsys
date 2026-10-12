@@ -196,22 +196,24 @@ describe('permissions', () => {
 			expect(canSee5S(u)).toBe(false);
 		});
 
-		it('Estagiário (role 3) não vê o 5S mesmo com grant', () => {
-			expect(canSee5S(user({ role: 3, roles: { producao: 'view' } }))).toBe(false);
-			expect(canSee5S(user({ role: 3, roles: { producao: 'edit' } }))).toBe(false);
+		it('Estagiário (role 3) vê o 5S (leitura) — matriz Lote 3', () => {
+			expect(canSee5S(user({ role: 3, roles: { producao: 'view' } }))).toBe(true);
+			expect(canSee5S(user({ role: 3, roles: { producao: 'edit' } }))).toBe(true);
+			expect(canSee5S(user({ role: 3 }))).toBe(true);
 		});
 
-		it('roles 1..2 com grant "view" ou "edit" veem o 5S', () => {
-			for (const role of [1, 2] as const) {
+		it('roles 1..3 com grant "view" ou "edit" veem o 5S', () => {
+			for (const role of [1, 2, 3] as const) {
 				expect(canSee5S(user({ role, roles: { producao: 'view' } }))).toBe(true);
 				expect(canSee5S(user({ role, roles: { producao: 'edit' } }))).toBe(true);
 			}
 		});
 
-		it('sem grant de produção não vê o 5S', () => {
-			expect(canSee5S(user({ role: 2 }))).toBe(false);
-			expect(canSee5S(user({ role: 1 }))).toBe(false);
-			expect(canSee5S(user({ role: 3 }))).toBe(false);
+		it('sem grant de produção, roles 1..3 veem o 5S (fallback da matriz); 4 não', () => {
+			expect(canSee5S(user({ role: 2 }))).toBe(true);
+			expect(canSee5S(user({ role: 1 }))).toBe(true);
+			expect(canSee5S(user({ role: 3 }))).toBe(true);
+			expect(canSee5S(user({ role: 4 }))).toBe(false);
 		});
 
 		it('roles.producao === null nega o 5S mesmo para role 1..3', () => {

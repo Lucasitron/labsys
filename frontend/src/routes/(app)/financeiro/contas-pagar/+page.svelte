@@ -124,12 +124,18 @@
 		void goto(`/financeiro/contas-pagar${window.location.search}`, { invalidateAll: true });
 	}
 
+	function categoriaNome(l: Lancamento): string {
+		return (
+			l.categoria.nome ?? categorias.find((c) => c.id === l.categoria.id)?.nome ?? l.categoria.id
+		);
+	}
 	function contaDe(l: Lancamento): string {
-		return l.observacao?.trim() ? (l.observacao as string) : l.categoria.nome;
+		return l.observacao?.trim() ? (l.observacao as string) : categoriaNome(l);
 	}
 
 	function referencia(l: Lancamento): string {
-		return l.idReferenciaExterna ? `${l.codigo} • REF ${l.idReferenciaExterna}` : l.codigo;
+		const cod = l.codigo ?? `#${l.id}`;
+		return l.idReferenciaExterna ? `${cod} • REF ${l.idReferenciaExterna}` : cod;
 	}
 
 	// ---- Modal: nova conta via componente compartilhado (tipo fixo Saída) ----
@@ -403,7 +409,7 @@
 										<p class="truncate font-medium text-ink">{contaDe(l)}</p>
 										<p class="font-mono text-xs text-muted">{referencia(l)}</p>
 									</td>
-									<td class="px-4 py-3 text-xs text-muted">{l.categoria.nome}</td>
+									<td class="px-4 py-3 text-xs text-muted">{l.categoria.nome ?? categorias.find((c) => c.id === l.categoria.id)?.nome ?? l.categoria.id}</td>
 									<td
 										class="px-4 py-3 font-mono text-xs tabular-nums {atrasado
 											? 'text-danger'
@@ -423,13 +429,13 @@
 												type="button"
 												data-testid="cp-pagar"
 												onclick={() => pedirPagamento(l)}
-												aria-label={`Registrar pagamento de ${l.codigo}`}
+												aria-label={`Registrar pagamento de ${l.codigo ?? l.id}`}
 												class="rounded-md border border-success/30 bg-success/10 px-2.5 py-1.5 text-xs font-medium text-success transition hover:bg-success/20"
 											>
 												Pagar
 											</button>
 											<RowActions
-												label={`Ações de ${l.codigo}`}
+												label={`Ações de ${l.codigo ?? l.id}`}
 												actions={[
 													{ id: 'detalhe', label: 'Ver detalhe', icon: 'eye' },
 													{ id: 'pagamento', label: 'Registrar pagamento', icon: 'check' }
@@ -471,7 +477,7 @@
 						<button
 							type="button"
 							onclick={() => abrirDetalhe(l)}
-							aria-label={`Ver ${l.codigo}`}
+							aria-label={`Ver ${l.codigo ?? l.id}`}
 							class="block w-full text-left"
 						>
 							<span class="block truncate text-sm font-medium text-ink">{contaDe(l)}</span>
@@ -481,7 +487,7 @@
 									? 'text-danger'
 									: 'text-muted'}"
 							>
-								Vence em {formatDateBR(l.dataVencimento)} · {l.categoria.nome}
+								Vence em {formatDateBR(l.dataVencimento)} · {l.categoria.nome ?? categorias.find((c) => c.id === l.categoria.id)?.nome ?? l.categoria.id}
 							</span>
 							<span class="mt-2 flex flex-wrap items-center gap-1.5">
 								<StatusBadge label={st.label} color={st.color} />
@@ -495,13 +501,13 @@
 								type="button"
 								data-testid="cp-pagar"
 								onclick={() => pedirPagamento(l)}
-								aria-label={`Registrar pagamento de ${l.codigo}`}
+								aria-label={`Registrar pagamento de ${l.codigo ?? l.id}`}
 								class="rounded-md border border-success/30 bg-success/10 px-2.5 py-1.5 text-xs font-medium text-success transition hover:bg-success/20"
 							>
 								Pagar
 							</button>
 							<RowActions
-								label={`Ações de ${l.codigo}`}
+								label={`Ações de ${l.codigo ?? l.id}`}
 								actions={[
 									{ id: 'detalhe', label: 'Ver detalhe', icon: 'eye' },
 									{ id: 'pagamento', label: 'Registrar pagamento', icon: 'check' }
@@ -549,7 +555,7 @@
 
 <Modal
 	open={detalhe !== null}
-	title={detalhe ? detalhe.codigo : 'Conta'}
+	title={detalhe ? (detalhe.codigo ?? `#${detalhe.id}`) : 'Conta'}
 	subtitle="Ficha da conta a pagar"
 	onClose={() => (detalhe = null)}
 	width="sm"
@@ -578,7 +584,7 @@
 				</div>
 				<div class="flex items-center justify-between gap-2">
 					<dt class="text-xs text-muted">Categoria</dt>
-					<dd class="text-ink">{detalhe.categoria.nome}</dd>
+					<dd class="text-ink">{detalhe ? categoriaNome(detalhe) : '—'}</dd>
 				</div>
 				<div class="flex items-center justify-between gap-2">
 					<dt class="text-xs text-muted">Vencimento</dt>

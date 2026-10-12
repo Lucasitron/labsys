@@ -1,15 +1,11 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 
 const TAMANHO_MINIMO = 8;
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
-// TODO contrato 🟡: endpoint assumido — PUT /auth/senha
+// Contrato real (Laravel): PUT /auth/senha (Bearer)
+// body { senhaAtual, novaSenha, confirmacaoSenha } → { mensagem }.
 export async function alterarSenha(
 	atual: string,
 	nova: string,
@@ -25,6 +21,6 @@ export async function alterarSenha(
 	await apiFetch<void>('/auth/senha', {
 		method: 'PUT',
 		headers: bearer(),
-		body: JSON.stringify({ senhaAtual: atual, novaSenha: nova })
+		body: JSON.stringify({ senhaAtual: atual, novaSenha: nova, confirmacaoSenha: confirmacao })
 	});
 }

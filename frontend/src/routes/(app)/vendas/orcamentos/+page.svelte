@@ -4,6 +4,7 @@
 	import { get } from 'svelte/store';
 	import { auth } from '$lib/stores/auth';
 	import type { Orcamento } from '$lib/types/vendas';
+	import { duplicarOrcamento } from '$lib/api/vendas/orcamentos';
 	import { canEditVendas } from '$lib/utils/permissions';
 	import { formatNumber } from '$lib/utils/format';
 	import { formatDateBR, formatMoneyBRL } from '$lib/utils/vendas-format';
@@ -131,8 +132,24 @@
 		void goto(`/vendas/orcamentos/${id}`);
 	}
 
-	function duplicarIndisponivel(): void {
-		toasts.warn('Duplicação indisponível — backend pendente (D-2).');
+	let duplicandoId = $state<string | null>(null);
+
+	async function duplicar(orcamento: Orcamento): Promise<void> {
+		if (duplicandoId) return;
+		if (!canEditVendas(usuario, { createdBy: orcamento.createdBy })) {
+			toasts.warn('Somente o criador ou Admin pode duplicar este orçamento.');
+			return;
+		}
+		duplicandoId = orcamento.id;
+		try {
+			const copia = await duplicarOrcamento(orcamento.id);
+			toasts.success(`Orçamento ${copia.codigo ?? copia.id} duplicado.`);
+			await goto(`/vendas/orcamentos/${copia.id}`);
+		} catch (err) {
+			toasts.danger(err instanceof Error ? err.message : 'Não foi possível duplicar.');
+		} finally {
+			duplicandoId = null;
+		}
 	}
 
 	let sugerirAlvo = $state<Orcamento | null>(null);
@@ -141,7 +158,7 @@
 		if (acao === 'ver') abrirOrcamento(orcamento.id);
 		else if (acao === 'editar') abrirOrcamento(orcamento.id);
 		else if (acao === 'sugerir') sugerirAlvo = orcamento;
-		else if (acao === 'duplicar') duplicarIndisponivel();
+		else if (acao === 'duplicar') void duplicar(orcamento);
 	}
 
 	const temProxima = $derived(orcamentos.length >= params.pageSize);
@@ -321,7 +338,7 @@
 									onclick={() => abrirOrcamento(orcamento.id)}
 									class="cursor-pointer border-b border-border transition last:border-0 hover:bg-elevated/40"
 								>
-									<td class="px-4 py-3 font-mono text-xs text-muted">{orcamento.codigo}</td>
+									<td class="px-4 py-3 font-mono text-xs text-muted">{orcamento.codigo ?? `#${orcamento.id}`}</td>
 									<td class="px-4 py-3">
 										<div class="flex min-w-0 items-center gap-3">
 											<Avatar name={orcamento.cliente.nome} size="sm" tone="brand" />
@@ -329,7 +346,7 @@
 										</div>
 									</td>
 									<td class="px-4 py-3 text-right font-mono text-sm tabnums text-ink">
-										{formatNumber(orcamento.qtdItens)}
+										{orcamento.qtdItens !== undefined ? formatNumber(orcamento.qtdItens) : '—'}
 									</td>
 									<td class="px-4 py-3 text-right font-mono text-sm tabnums text-ink">
 										{formatMoneyBRL(orcamento.valorTotal)}
@@ -342,7 +359,7 @@
 									</td>
 									<td class="px-4 py-3 text-right" onclick={(e) => e.stopPropagation()}>
 										<RowActions
-											label={`Ações do orçamento ${orcamento.codigo}`}
+											label={`Ações do orçamento ${orcamento.codigo ?? orcamento.id}`}
 											actions={[
 												{ id: 'ver', label: 'Ver', icon: 'eye' },
 												{ id: 'editar', label: 'Editar', icon: 'pencil', hidden: !podeEditar },
@@ -422,7 +439,7 @@
 
 {#if sugerirAlvo}
 	<SolicitarEdicaoModal
-		alvo={{ tipo: 'OC', id: sugerirAlvo.id, nome: sugerirAlvo.codigo }}
+		alvo={{ tipo: 'OC', id: sugerirAlvo.id, nome: sugerirAlvo.codigo ?? `#${sugerirAlvo.id}` }}
 		onClose={() => (sugerirAlvo = null)}
 	/>
 {/if}

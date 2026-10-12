@@ -4,6 +4,7 @@
 	import { get } from 'svelte/store';
 	import { auth } from '$lib/stores/auth';
 	import { createEncomenda } from '$lib/api/vendas/encomendas';
+	import { duplicarOrcamento } from '$lib/api/vendas/orcamentos';
 	import { ApiError } from '$lib/api/client';
 	import { canEditVendas } from '$lib/utils/permissions';
 	import { toUserMessage } from '$lib/utils/errors';
@@ -58,8 +59,24 @@
 		return `vencido há ${formatNumber(Math.abs(dias))} ${Math.abs(dias) === 1 ? 'dia' : 'dias'}`;
 	}
 
-	function duplicarIndisponivel(): void {
-		toasts.warn('Duplicação indisponível — backend pendente (D-2).');
+	let duplicando = $state(false);
+
+	async function duplicar(): Promise<void> {
+		if (!orcamento || duplicando) return;
+		if (!canEditVendas(usuario, { createdBy: orcamento.createdBy })) {
+			toasts.warn('Somente o criador ou Admin pode duplicar este orçamento.');
+			return;
+		}
+		duplicando = true;
+		try {
+			const copia = await duplicarOrcamento(id);
+			toasts.success(`Orçamento ${copia.codigo ?? copia.id} duplicado.`);
+			await goto(`/vendas/orcamentos/${copia.id}`);
+		} catch (err) {
+			toasts.danger(toUserMessage(err).message);
+		} finally {
+			duplicando = false;
+		}
 	}
 
 	let sugerirAberto = $state(false);
@@ -78,7 +95,7 @@
 		convertendo = true;
 		try {
 			const encomenda = await createEncomenda({ idOrcamento: id });
-			toasts.success(`Encomenda ${encomenda.codigo} criada na Fila.`);
+			toasts.success(`Encomenda ${encomenda.codigo ?? encomenda.id} criada na Fila.`);
 			await invalidateAll();
 		} catch (err) {
 			if (err instanceof ApiError && err.status === 403) {
@@ -100,7 +117,7 @@
 				id: 'status-atual',
 				tone: meta.color,
 				title: `Status atual: ${orcamento.status}`,
-				body: `Orçamento ${orcamento.codigo} de ${formatMoneyBRL(orcamento.valorTotal)}.`,
+				body: `Orçamento ${orcamento.codigo ?? id} de ${formatMoneyBRL(orcamento.valorTotal)}.`,
 				meta: `Validade ${dataBR(orcamento.validade)}`
 			}
 		];
@@ -118,7 +135,7 @@
 </script>
 
 <svelte:head>
-	<title>{orcamento ? `${orcamento.codigo} — Orçamentos` : 'Orçamento — FabLab'}</title>
+	<title>{orcamento ? `${orcamento.codigo ?? `#${id}`} — Orçamentos` : 'Orçamento — FabLab'}</title>
 </svelte:head>
 
 <div class="space-y-4">
@@ -149,7 +166,7 @@
 					</button>
 				{/if}
 				<RowActions
-					label={`Ações do orçamento ${orcamento.codigo}`}
+					label={`Ações do orçamento ${orcamento.codigo ?? id}`}
 					actions={[
 						...(orcamento.encomendaId
 							? [{ id: 'ver-encomenda', label: 'Ver encomenda', icon: 'eye' as const }]
@@ -157,7 +174,7 @@
 						{ id: 'duplicar', label: 'Duplicar', icon: 'duplicate' }
 					]}
 					onSelect={(acao) => {
-						if (acao === 'duplicar') duplicarIndisponivel();
+						if (acao === 'duplicar') void duplicar();
 						else if (acao === 'ver-encomenda' && orcamento.encomendaId)
 							void goto(`/vendas/encomendas/${orcamento.encomendaId}`);
 					}}
@@ -201,7 +218,7 @@
 				<div class="min-w-0">
 					<div class="flex flex-wrap items-center gap-2">
 						<h1 class="font-mono text-2xl font-semibold tracking-tight text-ink">
-							{orcamento.codigo}
+							{orcamento.codigo ?? `#${id}`}
 						</h1>
 						<StatusBadge label={meta.label} color={meta.color} />
 					</div>
@@ -282,7 +299,7 @@
 			<div class="rounded-xl border border-border bg-elevated p-4">
 				<p class="text-xs text-muted">Itens</p>
 				<p class="mt-1 font-mono text-2xl font-semibold tabnums text-ink">
-					{formatNumber(orcamento.qtdItens)}
+					{orcamento.qtdItens !== undefined ? formatNumber(orcamento.qtdItens) : '—'}
 				</p>
 				<p class="mt-0.5 text-xs text-muted">no orçamento</p>
 			</div>
@@ -411,7 +428,7 @@
 
 {#if sugerirAberto && orcamento}
 	<SolicitarEdicaoModal
-		alvo={{ tipo: 'OC', id, nome: orcamento.codigo }}
+		alvo={{ tipo: 'OC', id, nome: orcamento.codigo ?? `#${id}` }}
 		onClose={() => (sugerirAberto = false)}
 	/>
 {/if}

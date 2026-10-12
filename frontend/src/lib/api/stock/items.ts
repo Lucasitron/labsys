@@ -16,7 +16,12 @@ export interface ListarItensParams {
 }
 
 function withStatus(item: StockItem): StockItem {
-	return { ...item, status: deriveItemStatus(item.quantidadeAtual, item.estoqueMinimo) };
+	const coerced: StockItem = {
+		...item,
+		quantidadeAtual: Number(item.quantidadeAtual),
+		estoqueMinimo: Number(item.estoqueMinimo)
+	};
+	return { ...coerced, status: deriveItemStatus(coerced.quantidadeAtual, coerced.estoqueMinimo) };
 }
 
 export async function listarItens(

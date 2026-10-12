@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { apiErrorMessage } from '$lib/utils/errors';
 	import { onMount } from 'svelte';
 	import type { NomeFunc, Projeto, ProjetoStatus } from '$lib/types/producao';
 	import { atualizarProjeto, criarProjeto } from '$lib/api/producao/client';
-	import { ApiError, NetworkError } from '$lib/api/client';
-	import Modal from '$lib/components/ui/Modal.svelte';
+		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {
 		open: boolean;
@@ -18,8 +18,8 @@
 	const statuses: ProjetoStatus[] = ['Planejado', 'Em andamento', 'Concluído', 'Cancelado'];
 
 	let nome = $state('');
-	let cliente = $state('');
 	let responsavelId = $state('');
+	let dataInicio = $state('');
 	let prazo = $state('');
 	let descricao = $state('');
 	let status = $state<ProjetoStatus>('Planejado');
@@ -31,8 +31,8 @@
 	$effect(() => {
 		if (open) {
 			nome = projeto?.nome ?? '';
-			cliente = projeto?.cliente ?? '';
 			responsavelId = projeto?.responsavel?.id ?? '';
+			dataInicio = projeto?.dataInicio ?? new Date().toISOString().slice(0, 10);
 			prazo = projeto?.prazo ?? '';
 			descricao = projeto?.descricao ?? '';
 			status = projeto?.status ?? 'Planejado';
@@ -50,10 +50,6 @@
 
 	const titulo = $derived(editando ? `Editar projeto · ${projeto?.codigo ?? ''}` : 'Novo projeto');
 
-	function mensagemErro(err: unknown): string {
-		if (err instanceof ApiError || err instanceof NetworkError) return err.message;
-		return 'Não foi possível salvar o projeto.';
-	}
 
 	async function salvar(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
@@ -62,10 +58,10 @@
 		try {
 			const payload = {
 				nome: nome.trim(),
-				cliente: cliente.trim() || undefined,
 				descricao: descricao.trim() || undefined,
-				responsavelId,
-				prazo,
+				dataInicio,
+				dataFimPrevista: prazo || undefined,
+				idResponsavel: responsavelId,
 				status
 			};
 			const salvo = editando
@@ -73,7 +69,7 @@
 				: await criarProjeto({ ...payload, status: 'Planejado' });
 			onSalvo?.(salvo);
 		} catch (err) {
-			erro = mensagemErro(err);
+			erro = apiErrorMessage(err, 'Não foi possível salvar o projeto.');
 		} finally {
 			enviando = false;
 		}
@@ -106,20 +102,9 @@
 				/>
 			</label>
 
-			<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-				<label class="block">
-					<span class={labelCls}>Cliente</span>
-					<input
-						type="text"
-						bind:value={cliente}
-						maxlength="120"
-						placeholder="Escola, empresa, interno…"
-						class={inputCls}
-					/>
-				</label>
-
-				<label class="block">
-					<span class={labelCls}>Responsável *</span>
+		<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+			<label class="block">
+				<span class={labelCls}>Responsável *</span>
 					<select bind:value={responsavelId} required class={inputCls}>
 						<option value="" disabled>Selecione o responsável…</option>
 						{#each responsaveis as r (r.id)}
@@ -134,8 +119,13 @@
 
 			<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<label class="block">
-					<span class={labelCls}>Fim previsto *</span>
-					<input type="date" bind:value={prazo} required class={inputCls} />
+					<span class={labelCls}>Início *</span>
+					<input type="date" bind:value={dataInicio} required class={inputCls} />
+				</label>
+
+				<label class="block">
+					<span class={labelCls}>Fim previsto</span>
+					<input type="date" bind:value={prazo} class={inputCls} />
 				</label>
 
 				{#if editando}
@@ -178,7 +168,7 @@
 			type="submit"
 			form="modal-projeto-form"
 			data-testid={editando ? 'proj-save' : 'proj-novo'}
-			disabled={enviando || nome.trim().length === 0 || responsavelId === '' || prazo === ''}
+			disabled={enviando || nome.trim().length === 0 || responsavelId === '' || dataInicio === ''}
 			class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white shadow-lg shadow-brand/20 transition hover:bg-brandhi disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			{enviando ? 'Salvando…' : editando ? 'Salvar alterações' : 'Criar projeto'}

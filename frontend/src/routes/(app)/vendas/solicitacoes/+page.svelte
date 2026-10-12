@@ -130,7 +130,7 @@
 		} catch (err) {
 			if (err instanceof ApiError && err.status === 403) {
 				toasts.warn('Sem permissão para esta ação.');
-			} else if (err instanceof ApiError && err.status === 400) {
+			} else if (err instanceof ApiError && err.status === 422) {
 				erroMotivo = 'Informe o motivo da rejeição.';
 			} else {
 				toasts.danger(toUserMessage(err).message);

@@ -24,7 +24,7 @@ export interface TarefasParams {
 }
 
 export const STATUS_TAREFA = ['Pendente', 'Em andamento', 'Concluída', 'Atrasada', 'Bloqueada'] as const;
-export const PRIORIDADES = ['Baixa', 'Média', 'Moderada', 'Alta'] as const;
+export const PRIORIDADES = ['Baixa', 'Média', 'Alta'] as const;
 
 function lerParametros(url: URL): TarefasParams {
 	return {
@@ -57,7 +57,13 @@ export const load: PageLoad = async ({ url, fetch }) => {
 
 	try {
 		tarefas = await obterTarefas(
-			{ page: params.page, pageSize: params.pageSize },
+			{
+				page: params.page,
+				pageSize: params.pageSize,
+				status: params.status,
+				prioridade: params.prioridade,
+				responsavel: params.responsavel
+			},
 			fetch
 		);
 	} catch (err) {

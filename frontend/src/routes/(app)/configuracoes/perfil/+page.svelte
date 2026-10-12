@@ -2,11 +2,9 @@
 	import { goto } from '$app/navigation';
 	import { get } from 'svelte/store';
 	import type { PageProps } from './$types';
-	import type { Perfil } from '$lib/types/configuracoes';
 	import type { Role } from '$lib/types/auth';
 	import type { Tone } from '$lib/types/stock';
 	import { auth } from '$lib/stores/auth';
-	import { updatePerfil } from '$lib/api/configuracoes/perfil';
 	import { alterarSenha } from '$lib/api/configuracoes/senha';
 	import { toasts, toastError } from '$lib/stores/toast';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
@@ -88,26 +86,6 @@
 		telefone = perfil.telefone ?? '';
 		funcao = perfil.funcao ?? '';
 		perfilTentou = false;
-	}
-
-	async function salvarPerfil(): Promise<void> {
-		perfilTentou = true;
-		if (Object.keys(erroPerfilDerivado).length > 0) return;
-
-		const dados: Perfil = {
-			nome: nome.trim(),
-			email: email.trim(),
-			telefone: telefone.trim() || null,
-			funcao: funcao.trim() || null,
-			avatar: perfil?.avatar ?? null
-		};
-
-		try {
-			await updatePerfil(dados);
-			toasts.success('Perfil atualizado com sucesso.');
-		} catch (err) {
-			toastError(err, 'Não foi possível salvar o perfil.');
-		}
 	}
 
 	let senhaAtual = $state('');
@@ -305,11 +283,13 @@
 						</label>
 					</div>
 					<div class="mt-5 flex items-center justify-end gap-3 border-t border-border pt-4">
-						<p class="mr-auto text-xs text-muted">Salve para enviar ao servidor.</p>
+						<p class="mr-auto text-xs text-muted">
+							Edição de perfil indisponível no momento (sem endpoint no servidor).
+						</p>
 						<button
 							type="button"
-							onclick={salvarPerfil}
-							disabled={!perfilSujo}
+							disabled
+							title="Edição de perfil indisponível no momento"
 							data-testid="cfg-profile-save"
 							class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-colors hover:bg-brandhi disabled:cursor-not-allowed disabled:opacity-50"
 						>

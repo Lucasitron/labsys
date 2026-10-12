@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatDate as formatarData } from '$lib/utils/format';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import { SITUACOES } from './+page';
@@ -6,7 +7,7 @@
 	import { MESA_AUDITORIA_META, MESA_STATUS_META } from '$lib/utils/producao-status';
 	import { registrarAuditoriaMesa } from '$lib/api/producao/client';
 	import { ApiError, NetworkError } from '$lib/api/client';
-	import { toastError, toasts } from '$lib/stores/toast';
+	import { toasts } from '$lib/stores/toast';
 	import ModalMesa from '$lib/components/producao/ModalMesa.svelte';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
@@ -125,11 +126,6 @@
 		void invalidateAll();
 	}
 
-	function formatarData(iso?: string | null): string {
-		if (!iso) return '—';
-		const [a, m, d] = iso.slice(0, 10).split('-');
-		return d ? `${d}/${m}/${a}` : '—';
-	}
 
 	interface Query {
 		[key: string]: string | string[] | number | undefined;
