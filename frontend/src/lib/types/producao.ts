@@ -51,8 +51,6 @@ export type ChaveParametro5S =
 	| 'notaCartaoAmarelo'
 	| 'prazoPendGrave';
 
-export type TipoDocumentoProjeto = 'arquivo' | 'imagem' | 'link';
-
 // ---- Projetos ----
 
 export interface Projeto {
@@ -66,29 +64,6 @@ export interface Projeto {
 	dataInicio?: string;
 	status: ProjetoStatus;
 	progresso: number;
-}
-
-export interface ProjetoDocumento {
-	id: string;
-	tipo: TipoDocumentoProjeto;
-	nome?: string;
-	url: string;
-	criadoEm: string;
-}
-
-export interface MaterialProjeto {
-	item: string;
-	codigo: string;
-	quantidadeNecessaria: number;
-	disponivel: number;
-}
-
-export interface SaidaMaterial {
-	projetoId: string;
-	item: string;
-	codigo: string;
-	quantidade: number;
-	registradoEm: string;
 }
 
 // ---- Tarefas ----

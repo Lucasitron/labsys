@@ -114,14 +114,6 @@ export function criarTarefa(payload: CriarTarefaPayload): Promise<Tarefa> {
 	});
 }
 
-export function atualizarTarefa(id: string, payload: Partial<CriarTarefaPayload>): Promise<Tarefa> {
-	return apiFetch<Tarefa>(`${BASE}/${id}`, {
-		method: 'PUT',
-		headers: bearer(),
-		body: JSON.stringify(payload)
-	});
-}
-
 export function moverTarefa(id: string, payload: MoverTarefaPayload): Promise<Tarefa> {
 	const status = TAREFA_STATUS_PARA_UPPER[payload.status];
 	if (!status) {
@@ -134,13 +126,6 @@ export function moverTarefa(id: string, payload: MoverTarefaPayload): Promise<Ta
 		headers: bearer(),
 		body: JSON.stringify(body)
 	});
-}
-
-// Rotas inexistentes no backend (F41): gateadas com mensagem, sem mapear no vazio.
-export function apontarHorasTarefa(): Promise<never> {
-	return Promise.reject(
-		new Error('Apontar horas na tarefa indisponível — sem par no backend (Lote 3).')
-	);
 }
 
 export function atribuirTarefa(): Promise<never> {

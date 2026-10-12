@@ -156,7 +156,9 @@
 			<button
 				type="button"
 				data-testid="aud-nomear"
-				class="flex items-center gap-2 bg-elevated hover:bg-elevated/70 border border-border rounded-md px-3 py-2 text-sm transition"
+				disabled
+				title="Contrato pendente (🟡) — sem par no backend"
+				class="flex items-center gap-2 bg-elevated border border-border rounded-md px-3 py-2 text-sm opacity-50 cursor-not-allowed transition"
 				onclick={() => abrirNomear(null)}
 			>
 				Nomear auditor
@@ -299,7 +301,9 @@
 											<button
 												type="button"
 												data-testid="aud-concluir"
-												class="text-brand hover:text-brandhi text-xs font-medium transition"
+												disabled
+												title="Contrato pendente (🟡) — sem par no backend"
+												class="text-muted text-xs font-medium opacity-50 cursor-not-allowed transition"
 												onclick={() => abrirAuditar(inspecao)}
 											>
 												Auditar
@@ -310,7 +314,9 @@
 										{#if data.canAuditar5S && inspecao.status !== 'Concluída'}
 											<button
 												type="button"
-												class="text-muted hover:text-ink text-xs transition"
+												disabled
+												title="Contrato pendente (🟡) — sem par no backend"
+												class="text-muted text-xs opacity-50 cursor-not-allowed transition"
 												onclick={() => abrirNomear(inspecao)}
 											>
 												Nomear

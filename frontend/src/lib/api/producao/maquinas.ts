@@ -32,22 +32,6 @@ export interface AtualizarStatusMaquinaPayload {
 	status: MaquinaStatus;
 }
 
-export interface RegistrarUsoMaquinaPayload {
-	idFuncionario: string;
-	dataInicio?: string;
-	observacao?: string;
-	// Legado sem par no backend (mantido p/ compat de chamada; não enviado).
-	receita?: string;
-	membroId?: string;
-	inicioEm?: string;
-}
-
-export interface EncerrarUsoMaquinaPayload {
-	idUso: string;
-	dataFim?: string;
-	observacao?: string;
-}
-
 export interface RawMaquina {
 	id: number | string;
 	nome: string;
@@ -118,41 +102,6 @@ export function atualizarStatusMaquina(id: string, payload: AtualizarStatusMaqui
 	});
 }
 
-export function registrarUsoMaquina(id: string, payload: RegistrarUsoMaquinaPayload): Promise<Maquina> {
-	const idFuncionario = Number(payload.idFuncionario ?? payload.membroId);
-	if (!Number.isInteger(idFuncionario)) {
-		throw new Error('Informe o funcionário para iniciar o uso da máquina.');
-	}
-	const body: Record<string, unknown> = { idFuncionario };
-	const dataInicio = payload.dataInicio ?? payload.inicioEm;
-	if (dataInicio) body['dataInicio'] = dataInicio;
-	if (payload.observacao) body['observacao'] = payload.observacao;
-	return apiFetch<Maquina>(`${BASE}/${id}/uso`, {
-		method: 'POST',
-		headers: bearer(),
-		body: JSON.stringify(body)
-	});
-}
-
-export function encerrarUsoMaquina(id: string, payload: EncerrarUsoMaquinaPayload): Promise<Maquina> {
-	const body: Record<string, unknown> = {};
-	if (payload.dataFim) body['dataFim'] = payload.dataFim;
-	if (payload.observacao) body['observacao'] = payload.observacao;
-	return apiFetch<Maquina>(`${BASE}/${id}/uso/${encodeURIComponent(payload.idUso)}/fim`, {
-		method: 'PUT',
-		headers: bearer(),
-		body: JSON.stringify(body)
-	});
-}
-
-export async function obterHistoricoMaquina(
-	id: string,
-	fetchFn: typeof fetch = fetch
-): Promise<Maquina[]> {
-	const res = await apiFetch<Maquina[] | { data: Maquina[] }>(`${BASE}/${id}/historico`, { headers: bearer() }, fetchFn);
-	return unwrapLista(res);
-}
-
 // Sem par no backend (F42, Lote 3): gateados com mensagem, sem mapear no vazio.
 export function abrirChamadoMaquina(): Promise<never> {
 	return Promise.reject(
@@ -171,11 +120,5 @@ export async function obterPreventivasDaMaquina(): Promise<Preventiva[]> {
 export function criarPreventivaMaquina(): Promise<never> {
 	return Promise.reject(
 		new Error('Preventivas de máquina indisponíveis — sem par no backend (Lote 3).')
-	);
-}
-
-export function registrarHistoricoMaquina(): Promise<never> {
-	return Promise.reject(
-		new Error('Histórico manual indisponível — use início/fim de uso (GET histórico servido).')
 	);
 }

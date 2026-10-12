@@ -253,8 +253,9 @@
 				<button
 					type="submit"
 					data-testid="pend-resolver"
-					disabled={resolvendo}
-					class="mt-3 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white shadow-lg shadow-brand/20 transition hover:bg-brandhi disabled:cursor-not-allowed disabled:opacity-50"
+					disabled
+					title="Contrato pendente (🟡) — sem par no backend"
+					class="mt-3 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white shadow-lg shadow-brand/20 transition disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					{resolvendo ? 'Resolvendo…' : 'Marcar como resolvida'}
 				</button>
@@ -286,8 +287,9 @@
 				<button
 					type="submit"
 					data-testid="pend-penalidade"
-					disabled={registrando || motivo.trim().length === 0}
-					class="mt-3 rounded-md border border-warn/40 bg-warn/15 px-4 py-2 text-sm font-medium text-warn transition hover:bg-warn/20 disabled:cursor-not-allowed disabled:opacity-50"
+					disabled
+					title="Contrato pendente (🟡) — sem par no backend"
+					class="mt-3 rounded-md border border-warn/40 bg-warn/15 px-4 py-2 text-sm font-medium text-warn transition disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					{registrando ? 'Aplicando…' : 'Aplicar penalidade'}
 				</button>

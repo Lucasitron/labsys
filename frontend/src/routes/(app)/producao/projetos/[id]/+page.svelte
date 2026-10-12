@@ -5,7 +5,6 @@
 	import type { Projeto, Tarefa } from '$lib/types/producao';
 	import { PROJETO_STATUS_META, TAREFA_STATUS_META } from '$lib/utils/producao-status';
 	import { ABAS_PROJETO } from './+page';
-	import ModalSaidaProjeto from '$lib/components/producao/ModalSaidaProjeto.svelte';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
@@ -29,11 +28,9 @@
 	}
 
 	const projeto = $derived(data.projeto as Projeto | null);
-	const materiais = $derived(data.materiais);
 	const tarefas = $derived(data.tarefas as Tarefa[]);
 	const aba = $derived(data.aba);
 	const erroPagina = $derived(data.erroPagina);
-	const erroMateriais = $derived(data.erroMateriais);
 	const erroTarefas = $derived(data.erroTarefas);
 
 	const loading = $derived(projeto === null && erroPagina === null);
@@ -42,25 +39,14 @@
 		ABAS_PROJETO.map((a) => ({
 			id: a.id,
 			label: a.label,
-			count:
-				a.id === 'materiais'
-					? materiais.length || undefined
-					: a.id === 'tarefas'
-						? tarefas.length || undefined
-						: undefined
+			count: a.id === 'tarefas' ? tarefas.length || undefined : undefined
 		}))
 	);
 
-	let modalSaida = $state(false);
 	let modalNota = $state('');
 
 	function irParaAba(id: string): void {
 		void goto(`/producao/projetos/${projeto?.id ?? ''}?tab=${id}`, { invalidateAll: true });
-	}
-
-	function aoRegistrado(_saida: unknown): void {
-		modalSaida = false;
-		void invalidateAll();
 	}
 
 	function semContrato(tipo: string): void {
@@ -199,78 +185,28 @@
 				<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div>
 						<h2 class="text-sm font-semibold text-ink">Materiais do projeto</h2>
-						<p class="mt-1 text-xs text-muted">
+						<p class="mt-1 max-w-xl text-xs text-muted">
 							Quantidades necessárias vs. disponíveis e registro de saída de estoque.
 						</p>
 					</div>
-					{#if podeEditar(projeto) && materiais.length > 0}
-						<button
-							type="button"
-							data-testid="proj-materiais"
-							onclick={() => (modalSaida = true)}
-							class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition hover:bg-brandhi"
-						>
-							<Icon name="shopping-bag" class="h-4 w-4" /> Registrar saída
-						</button>
-					{/if}
+					<button
+						type="button"
+						disabled
+						title="Contrato pendente"
+						onclick={() => semContrato('saída de materiais')}
+						class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-muted"
+					>
+						<Icon name="shopping-bag" class="h-4 w-4" /> Registrar saída
+					</button>
 				</div>
 
-				{#if erroMateriais}
-					<ErrorBanner
-						message="Não foi possível carregar os materiais"
-						hint={erroMateriais}
-						onRetry={() => void goto(`/producao/projetos/${projeto.id}?tab=materiais`, { invalidateAll: true })}
-					/>
-				{:else if materiais.length === 0}
-					<div class="rounded-xl border border-border bg-surface">
-						<EmptyState
-							icon="cube"
-							title="Nenhum material vinculado"
-							description="Os materiais necessários aparecerão aqui quando forem cadastrados."
-						/>
-					</div>
-				{:else}
-					<div class="overflow-x-auto rounded-xl border border-border bg-surface">
-						<table class="w-full min-w-[560px]">
-							<thead class="border-b border-border bg-elevated/40">
-								<tr>
-									<th class={thCls}>Item</th>
-									<th class={thCls}>Código</th>
-									<th class={thCls}>Necessário</th>
-									<th class={thCls}>Disponível</th>
-									<th class="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-muted">Situação</th>
-								</tr>
-							</thead>
-							<tbody>
-								{#each materiais as material (material.codigo)}
-									{@const falta = material.quantidadeNecessaria > material.disponivel}
-									<tr class="border-b border-border last:border-0">
-										<td class={tdCls}>{material.item}</td>
-										<td class={`${tdCls} font-mono text-xs text-muted`}>{material.codigo}</td>
-										<td class={`${tdCls} tabular-nums`}>{material.quantidadeNecessaria}</td>
-										<td class={`${tdCls} tabular-nums`}>{material.disponivel}</td>
-										<td class="px-3 py-2 text-right">
-											<span
-												class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium {falta
-													? 'bg-danger/10 text-danger'
-													: 'bg-success/10 text-success'}"
-											>
-												<Icon name={falta ? 'alert-triangle' : 'check'} class="h-3 w-3" />
-												{falta ? 'Faltante' : 'Suficiente'}
-											</span>
-										</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
-
-					{#if !podeEditar(projeto)}
-						<p class="text-[11px] text-muted">
-							Ações de saída de material ficam disponíveis apenas para quem pode editar produção.
-						</p>
-					{/if}
-				{/if}
+				<div class="rounded-xl border border-border bg-surface p-3">
+					<p class="text-xs text-muted">
+						A leitura e a saída de materiais dependem do estoque
+						(<span class="font-mono">/estoque/boms</span>); o contrato de materiais por projeto está
+						pendente (🟡).
+					</p>
+				</div>
 			</section>
 
 		<!-- aba Tarefas -->
@@ -336,16 +272,6 @@
 				{/if}
 			</section>
 		{/if}
-	{/if}
-
-	{#if projeto}
-		<ModalSaidaProjeto
-			open={modalSaida}
-			projeto={{ id: projeto.id, codigo: projeto.codigo, nome: projeto.nome }}
-			materiais={materiais}
-			onClose={() => (modalSaida = false)}
-			onRegistrado={aoRegistrado}
-		/>
 	{/if}
 </div>
 

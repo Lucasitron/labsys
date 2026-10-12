@@ -157,27 +157,3 @@ export async function bulkAdicionarTag(
 		fetchFn
 	);
 }
-
-export async function vincularTag(
-	clienteId: string,
-	tagId: string,
-	fetchFn: typeof fetch = fetch
-): Promise<void> {
-	await apiFetch<void>(
-		`/vendas/clientes/${clienteId}/tags`,
-		{ method: 'POST', headers: bearer(), body: JSON.stringify({ tagId: Number(tagId) }) },
-		fetchFn
-	);
-}
-
-export async function desvincularTag(
-	clienteId: string,
-	tagId: string,
-	fetchFn: typeof fetch = fetch
-): Promise<void> {
-	await apiFetch<void>(
-		`/vendas/clientes/${clienteId}/tags/${tagId}`,
-		{ method: 'DELETE', headers: bearer() },
-		fetchFn
-	);
-}

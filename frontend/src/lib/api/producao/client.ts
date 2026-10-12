@@ -51,6 +51,7 @@ export function filtrosDaUrl(url: URL, chaves: readonly string[]): Record<string
 }
 
 // Back serve listas como `{data:[...]}` (ResourceCollection) — desembrulha p/ array.
+
 export function unwrapLista<T>(res: T[] | { data: T[] } | null | undefined): T[] {
 	if (Array.isArray(res)) return res;
 	if (res && Array.isArray((res as { data?: T[] }).data)) {
@@ -93,14 +94,6 @@ export const PRIORIDADE_UPPER: Record<string, string> = {
 	ALTA: 'Alta'
 };
 
-export const KANBAN_UPPER: Record<string, string> = {
-	FILA: 'Fila',
-	PRODUCAO: 'Produção',
-	ACABAMENTO: 'Acabamento',
-	PRONTO: 'Pronto',
-	ENTREGUE: 'Entregue'
-};
-
 export const MAQUINA_STATUS_UPPER: Record<string, string> = {
 	DISPONIVEL: 'Disponível',
 	EM_USO: 'Em uso',
@@ -138,7 +131,6 @@ export function mostrarDeAte<T>(paginas: Paginado<T>): string {
 export * from './resumo';
 export * from './projetos';
 export * from './tarefas';
-export * from './kanban';
 export * from './maquinas';
 export * from './setores-5s';
 export * from './inspecoes-5s';
@@ -146,4 +138,3 @@ export * from './pendencias-5s';
 export * from './ranking-5s';
 export * from './penalidades-5s';
 export * from './mesas';
-export * from './parametros-5s';

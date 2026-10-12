@@ -12,21 +12,6 @@ export type InspecaoFiltros = {
 	pageSize?: number;
 };
 
-export interface ItemInspecaoPayload {
-	idChecklist: string;
-	conforme: boolean;
-	observacao?: string;
-}
-
-export interface CriarInspecaoPayload {
-	idSetor: string;
-	idInspetor: string;
-	dataInspecao: string;
-	turno?: 'MANHA' | 'TARDE';
-	observacoes?: string;
-	itens: ItemInspecaoPayload[];
-}
-
 export interface RawInspecao {
 	id: number | string;
 	idSetor: number | string;
@@ -68,39 +53,6 @@ export async function obterInspecoes5S(
 ): Promise<Paginado<Inspecao5S>> {
 	const res = await apiFetch<RawInspecao[] | { data: RawInspecao[] }>(BASE, { headers: bearer() }, fetchFn);
 	return paraPaginado({ data: unwrapLista(res).map(mapInspecao) }, params.page, params.pageSize);
-}
-
-export function criarInspecao5S(payload: CriarInspecaoPayload): Promise<Inspecao5S> {
-	const idSetor = Number(payload.idSetor);
-	const idInspetor = Number(payload.idInspetor);
-	if (!Number.isInteger(idSetor)) throw new Error('Informe o setor da inspeção.');
-	if (!Number.isInteger(idInspetor)) throw new Error('Informe o inspetor da inspeção.');
-	if (!payload.dataInspecao) throw new Error('Informe a data da inspeção.');
-	if (!payload.itens || payload.itens.length === 0) {
-		throw new Error('Informe ao menos um item avaliado.');
-	}
-	const body: Record<string, unknown> = {
-		idSetor,
-		idInspetor,
-		dataInspecao: payload.dataInspecao,
-		turno: payload.turno ?? 'MANHA',
-		itens: payload.itens.map((i) => ({
-			idChecklist: Number(i.idChecklist),
-			conforme: i.conforme,
-			...(i.observacao ? { observacao: i.observacao } : {})
-		}))
-	};
-	if (payload.observacoes !== undefined) body['observacoes'] = payload.observacoes;
-	return apiFetch<Inspecao5S>(BASE, {
-		method: 'POST',
-		headers: bearer(),
-		body: JSON.stringify(body)
-	});
-}
-
-export async function obterInspecao5SPorId(id: string, fetchFn: typeof fetch = fetch): Promise<Inspecao5S> {
-	const raw = await apiFetch<RawInspecao>(`${BASE}/${id}`, { headers: bearer() }, fetchFn);
-	return mapInspecao(raw);
 }
 
 // Sem par no backend (F44, só POST/GET/GET{id}/DELETE): gateadas com mensagem.

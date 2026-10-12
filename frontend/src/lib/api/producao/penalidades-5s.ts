@@ -26,9 +26,3 @@ export function criarPenalidade5S(payload: CriarPenalidadePayload): Promise<Pena
 		new Error('Criar penalidade 5S indisponível — sem par no backend (Lote 3).')
 	);
 }
-
-export function marcarPenalidade5SCumprida(id: string): Promise<Penalidade5S> {
-	return Promise.reject(
-		new Error('Baixar penalidade 5S indisponível — sem par no backend (Lote 3).')
-	);
-}

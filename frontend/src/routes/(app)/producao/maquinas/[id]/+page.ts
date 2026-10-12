@@ -22,9 +22,7 @@ export const ABAS_MAQUINA: { id: AbaMaquina; label: string }[] = [
 	{ id: 'geral', label: 'Geral' },
 	{ id: 'documentacao', label: 'Documentação' },
 	{ id: 'receitas', label: 'Receitas' },
-	{ id: 'preflight', label: 'Pré-flight' },
-	{ id: 'manutencao', label: 'Manutenção' },
-	{ id: 'chamados', label: 'Chamados' }
+	{ id: 'preflight', label: 'Pré-flight' }
 ];
 
 function abaDaUrl(url: URL): AbaMaquina {

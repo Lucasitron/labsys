@@ -25,10 +25,6 @@ export async function obterPendencias5S(
 	throw new Error('Pendências 5S indisponíveis — sem par no backend (Lote 3).');
 }
 
-export async function obterPendencia5SPorId(id: string, fetchFn: typeof fetch = fetch): Promise<Pendencia5S> {
-	throw new Error('Pendência 5S indisponível — sem par no backend (Lote 3).');
-}
-
 export function resolverPendencia5S(id: string, payload: ResolverPendenciaPayload): Promise<Pendencia5S> {
 	return Promise.reject(
 		new Error('Resolver pendência 5S indisponível — sem par no backend (Lote 3).')

@@ -619,9 +619,9 @@ import { toastError, toasts } from '$lib/stores/toast';
 								<button
 									type="button"
 									data-testid="tar-atribuir"
-									onclick={() => void atribuir()}
-									disabled={novoResponsavelId === tarefa.responsavel.id}
-									class="shrink-0 rounded-md border border-border bg-surface px-3 text-sm font-medium text-ink transition hover:border-brand/50 hover:text-brandhi disabled:cursor-not-allowed disabled:opacity-40"
+									disabled
+									title="Contrato pendente (🟡) — sem par no backend"
+									class="shrink-0 rounded-md border border-border bg-surface px-3 text-sm font-medium text-muted opacity-50 cursor-not-allowed transition"
 								>
 									Atribuir
 								</button>
@@ -671,8 +671,9 @@ import { toastError, toasts } from '$lib/stores/toast';
 								<button
 									type="button"
 									data-testid="tar-resolver-pendencia"
-									onclick={() => void resolverPendencia()}
-									class="rounded-md bg-danger px-3 py-2 text-sm font-medium text-white transition hover:bg-danger/90"
+									disabled
+									title="Contrato pendente (🟡) — sem par no backend"
+									class="rounded-md bg-danger px-3 py-2 text-sm font-medium text-white opacity-50 cursor-not-allowed transition"
 								>
 									Resolver pendência
 								</button>

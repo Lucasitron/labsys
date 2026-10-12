@@ -25,26 +25,11 @@ export interface AdicionarChecklistPayload {
 	ativo?: boolean;
 }
 
-export interface AtualizarChecklistItemPayload {
-	item: string;
-	ativo?: boolean;
-}
-
 export interface AdicionarResponsavelPayload {
 	idFuncionario: string;
 	dataInicio: string;
 	dataFim?: string;
 	ativo?: boolean;
-}
-
-export interface AdicionarMaterialPayload {
-	idItem: string;
-	quantidade?: number;
-}
-
-export interface AdicionarSinalizacaoPayload {
-	tipo: string;
-	descricao?: string;
 }
 
 export interface RawSetor {
@@ -130,25 +115,6 @@ export function adicionarChecklistDoSetor(id: string, payload: AdicionarChecklis
 	});
 }
 
-export function atualizarChecklistDoSetor(
-	id: string,
-	idItem: string,
-	payload: AtualizarChecklistItemPayload
-): Promise<Setor5S> {
-	return apiFetch<Setor5S>(`${BASE}/${id}/checklist/${encodeURIComponent(idItem)}`, {
-		method: 'PUT',
-		headers: bearer(),
-		body: JSON.stringify(payload)
-	});
-}
-
-export function removerChecklistDoSetor(id: string, idItem: string): Promise<void> {
-	return apiFetch<void>(`${BASE}/${id}/checklist/${encodeURIComponent(idItem)}`, {
-		method: 'DELETE',
-		headers: bearer()
-	});
-}
-
 export function adicionarResponsavelDoSetor(
 	id: string,
 	payload: AdicionarResponsavelPayload
@@ -165,37 +131,4 @@ export function adicionarResponsavelDoSetor(
 		headers: bearer(),
 		body: JSON.stringify({ ...payload, idFuncionario })
 	});
-}
-
-export function adicionarMaterialDoSetor(id: string, payload: AdicionarMaterialPayload): Promise<Setor5S> {
-	return apiFetch<Setor5S>(`${BASE}/${id}/materiais`, {
-		method: 'POST',
-		headers: bearer(),
-		body: JSON.stringify({ ...payload, idItem: Number(payload.idItem) })
-	});
-}
-
-export function adicionarSinalizacaoDoSetor(
-	id: string,
-	payload: AdicionarSinalizacaoPayload
-): Promise<Setor5S> {
-	return apiFetch<Setor5S>(`${BASE}/${id}/sinalizacoes`, {
-		method: 'POST',
-		headers: bearer(),
-		body: JSON.stringify(payload)
-	});
-}
-
-// Sem par no backend (F43): gateada com mensagem, sem mapear no vazio.
-export function aprovarAlteracaoDoSetor(): Promise<never> {
-	return Promise.reject(
-		new Error('Aprovação de alteração indisponível — sem par no backend (Lote 3).')
-	);
-}
-
-// Legado sem par granular 1:1 (substituído pelas fns por item acima).
-export function atualizarResponsaveisDoSetor(): Promise<never> {
-	return Promise.reject(
-		new Error('Use a designação de responsável por período (sem par em lote no backend).')
-	);
 }

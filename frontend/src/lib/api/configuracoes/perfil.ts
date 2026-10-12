@@ -12,11 +12,3 @@ export async function getPerfil(fetchFn: typeof fetch = fetch): Promise<Perfil> 
 		avatar: null
 	};
 }
-
-// PUT /configuracoes/perfil não existe no back: edição gateada na tela
-// (sem contrato inventado).
-export function updatePerfil(): Promise<Perfil> {
-	return Promise.reject(
-		new Error('Edição de perfil indisponível: nenhum endpoint de atualização no momento.')
-	);
-}

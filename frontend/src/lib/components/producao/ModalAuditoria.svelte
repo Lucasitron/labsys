@@ -148,8 +148,9 @@
 			type="submit"
 			form="modal-auditoria-form"
 			data-testid="aud-concluir"
-			disabled={enviando || itens.length === 0}
-			class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white shadow-lg shadow-brand/20 transition hover:bg-brandhi disabled:cursor-not-allowed disabled:opacity-50"
+			disabled
+			title="Contrato pendente (🟡) — sem par no backend"
+			class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white shadow-lg shadow-brand/20 transition disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			{enviando ? 'Concluindo…' : 'Concluir auditoria'}
 		</button>

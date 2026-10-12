@@ -94,18 +94,6 @@ export function criarMesa(payload: CriarMesaPayload): Promise<Mesa5S> {
 	});
 }
 
-export async function obterMesaPorId(id: string, fetchFn: typeof fetch = fetch): Promise<Mesa5S> {
-	const raw = await apiFetch<RawProjetoMesa>(`${BASE}/${id}`, { headers: bearer() }, fetchFn);
-	return mapMesa(raw);
-}
-
-export function registrarEvolucaoMesa(id: string): Promise<Mesa5S> {
-	return apiFetch<Mesa5S>(`${BASE}/${id}/evolucao`, {
-		method: 'PUT',
-		headers: bearer()
-	});
-}
-
 export function registrarAuditoriaMesa(id: string, payload: AuditoriaMesaPayload): Promise<void> {
 	const body: Record<string, unknown> = {
 		idProjetoMesa: Number(id),
@@ -117,15 +105,4 @@ export function registrarAuditoriaMesa(id: string, payload: AuditoriaMesaPayload
 		headers: bearer(),
 		body: JSON.stringify(body)
 	});
-}
-
-export async function obterAuditoriasMesa(
-	id: string,
-	fetchFn: typeof fetch = fetch
-): Promise<{ resultado: string; data: string; acao?: string }[]> {
-	return await apiFetch<{ resultado: string; data: string; acao?: string }[]>(
-		`${AUDITORIAS}/${encodeURIComponent(id)}`,
-		{ headers: bearer() },
-		fetchFn
-	);
 }
