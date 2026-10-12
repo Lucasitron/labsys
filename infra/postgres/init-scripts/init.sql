@@ -1,19 +1,6 @@
--- FabLab — criação dos bancos por microsserviço (database-per-service).
--- Executado apenas na primeira inicialização do volume do PostgreSQL.
-
-CREATE DATABASE fablab_auth;
-CREATE DATABASE fablab_rh;
-CREATE DATABASE fablab_estoque;
-CREATE DATABASE fablab_vendas;
-CREATE DATABASE fablab_financeiro;
-CREATE DATABASE fablab_producao;
-CREATE DATABASE fablab_notification;
-
--- Concede acesso ao usuário aplicação em todos os bancos.
-GRANT ALL PRIVILEGES ON DATABASE fablab_auth        TO fablab;
-GRANT ALL PRIVILEGES ON DATABASE fablab_rh          TO fablab;
-GRANT ALL PRIVILEGES ON DATABASE fablab_estoque     TO fablab;
-GRANT ALL PRIVILEGES ON DATABASE fablab_vendas      TO fablab;
-GRANT ALL PRIVILEGES ON DATABASE fablab_financeiro  TO fablab;
-GRANT ALL PRIVILEGES ON DATABASE fablab_producao    TO fablab;
-GRANT ALL PRIVILEGES ON DATABASE fablab_notification TO fablab;
+-- FabLab (monólito): banco ÚNICO `fablab`, criado via POSTGRES_DB.
+-- Schemas/tabelas por módulo vêm das migrations do Laravel
+-- (`php artisan migrate --force` no boot do app, ver backend/docker-entrypoint.sh).
+-- O dono do banco já é POSTGRES_USER (plenos direitos) — sem GRANT extra.
+-- Este diretório existe como ponto de extensão p/ init futuro (ex.: extensions).
+SELECT 1;
