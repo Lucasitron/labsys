@@ -30,8 +30,8 @@ coverage
 *.key
 secrets/
 
-# ===== Documentação local (não versionada) =====
-docs/
+# ===== Documentação local (não versionada) — apenas a pasta `docs/` da raiz =====
+/docs/
 
 # ===== Java / Maven =====
 **/target/
