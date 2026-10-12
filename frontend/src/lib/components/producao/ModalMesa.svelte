@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { errorMessage } from '$lib/utils/errors';
 	import { onMount } from 'svelte';
 	import type { Mesa5S, NomeFunc, Projeto } from '$lib/types/producao';
 	import { criarMesa } from '$lib/api/producao/client';
-	import { ApiError, NetworkError } from '$lib/api/client';
-	import Modal from '$lib/components/ui/Modal.svelte';
+		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {
 		open: boolean;
@@ -40,11 +40,6 @@
 		return () => document.removeEventListener('keydown', onKey);
 	});
 
-	function mensagemErro(err: unknown): string {
-		if (err instanceof ApiError || err instanceof NetworkError) return err.message;
-		if (err instanceof Error) return err.message;
-		return 'Não foi possível criar a mesa.';
-	}
 
 	async function salvar(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
@@ -59,7 +54,7 @@
 			});
 			onCriada?.(mesa);
 		} catch (err) {
-			erro = mensagemErro(err);
+			erro = errorMessage(err, 'Não foi possível criar a mesa.');
 		} finally {
 			enviando = false;
 		}

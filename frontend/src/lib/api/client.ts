@@ -72,11 +72,32 @@ export async function apiFetch<T>(
 	fetchFn: typeof fetch = fetch,
 	retried = false
 ): Promise<T> {
+	const response = await apiFetchResponse(path, init, fetchFn, retried);
+	if (response.status === 204) return undefined as T;
+	const text = await response.text();
+	return (text ? JSON.parse(text) : undefined) as T;
+}
+
+export async function apiFetchBlob(
+	path: string,
+	init: RequestInit = {},
+	fetchFn: typeof fetch = fetch
+): Promise<Blob> {
+	return (await apiFetchResponse(path, init, fetchFn)).blob();
+}
+
+async function apiFetchResponse(
+	path: string,
+	init: RequestInit,
+	fetchFn: typeof fetch,
+	retried = false
+): Promise<Response> {
 	const controller = new AbortController();
 	const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
 	const headers = new Headers(init.headers);
-	if (!headers.has('Content-Type')) {
+	const isFormData = typeof FormData !== 'undefined' && init.body instanceof FormData;
+	if (!isFormData && !headers.has('Content-Type')) {
 		headers.set('Content-Type', 'application/json');
 	}
 
@@ -103,7 +124,7 @@ export async function apiFetch<T>(
 			refreshInFlight = null;
 			if (renewed) {
 				const retryInit: RequestInit = { ...init, headers: withRefreshedAuth(init, renewed) };
-				return apiFetch<T>(path, retryInit, fetchFn, true);
+				return apiFetchResponse(path, retryInit, fetchFn, true);
 			}
 		}
 
@@ -118,9 +139,7 @@ export async function apiFetch<T>(
 		throw apiError;
 	}
 
-	if (response.status === 204) return undefined as T;
-	const text = await response.text();
-	return (text ? JSON.parse(text) : undefined) as T;
+	return response;
 }
 
 async function readPayload(response: Response): Promise<ErrorPayload> {

@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import type {
 	FechamentoEncomenda,
 	CreateFechamentoPayload,
@@ -16,10 +15,6 @@ const CUSTOS = '/financeiro/custos-encomenda';
 const VALORES_HORA = '/financeiro/valores-hora';
 const OVERHEAD = '/financeiro/parametros-overhead';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 type Raw = Record<string, number | string | null | undefined>;
 

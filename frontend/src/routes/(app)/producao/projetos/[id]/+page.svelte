@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatDate as formatarData } from '$lib/utils/format';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { Projeto, Tarefa } from '$lib/types/producao';
@@ -67,11 +68,6 @@
 			`Ação "${tipo}" ainda não está disponível: o endpoint de contrato do backend está pendente (🟡). Fale com o Admin.`;
 	}
 
-	function formatarData(iso?: string): string {
-		if (!iso) return '—';
-		const [a, m, d] = iso.slice(0, 10).split('-');
-		return d ? `${d}/${m}/${a}` : '—';
-	}
 
 	const thCls = 'px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-muted';
 	const tdCls = 'px-3 py-2 text-sm text-ink';

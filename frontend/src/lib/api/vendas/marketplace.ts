@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import type {
 	ListMarketplaceParams,
 	MarketplaceResult,
@@ -9,10 +8,6 @@ import type {
 	RegistroMarketplace
 } from '$lib/types/vendas';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 // O back (MarketplaceResource) não devolve `encomenda{}` nem `createdBy`: guards + coerção.
 export interface RawMarketplace {

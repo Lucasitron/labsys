@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorMessage } from '$lib/utils/errors';
 	import { onMount } from 'svelte';
 	import type { NomeFunc, Setor5S } from '$lib/types/producao';
 	import {
@@ -6,8 +7,7 @@
 		atualizarSetor5S,
 		criarSetor5S
 	} from '$lib/api/producao/client';
-	import { ApiError, NetworkError } from '$lib/api/client';
-	import Modal from '$lib/components/ui/Modal.svelte';
+		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {
 		open: boolean;
@@ -52,11 +52,6 @@
 
 	const titulo = $derived(editando ? `Editar setor 5S · ${setor?.nome ?? ''}` : 'Novo setor 5S');
 
-	function mensagemErro(err: unknown): string {
-		if (err instanceof ApiError || err instanceof NetworkError) return err.message;
-		if (err instanceof Error) return err.message;
-		return 'Não foi possível salvar o setor.';
-	}
 
 	async function salvar(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
@@ -94,7 +89,7 @@
 				onSalvo?.(atualizado, true);
 			}
 		} catch (err) {
-			erro = mensagemErro(err);
+			erro = errorMessage(err, 'Não foi possível salvar o setor.');
 		} finally {
 			enviando = false;
 		}

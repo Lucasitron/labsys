@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { apiErrorMessage } from '$lib/utils/errors';
 	import { onMount } from 'svelte';
 	import type { MaterialProjeto, Projeto, SaidaMaterial } from '$lib/types/producao';
 	import { registrarSaidaMaterial } from '$lib/api/producao/client';
-	import { ApiError, NetworkError } from '$lib/api/client';
-	import Modal from '$lib/components/ui/Modal.svelte';
+		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {
 		open: boolean;
@@ -39,10 +39,6 @@
 	const material = $derived(materiais.find((m) => m.codigo === codigoSelecionado) ?? null);
 	const acimaDisponivel = $derived(material !== null && quantidade > material.disponivel);
 
-	function mensagemErro(err: unknown): string {
-		if (err instanceof ApiError || err instanceof NetworkError) return err.message;
-		return 'Não foi possível registrar a saída.';
-	}
 
 	async function salvar(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
@@ -57,7 +53,7 @@
 			});
 			onRegistrado?.(saida);
 		} catch (err) {
-			erro = mensagemErro(err);
+			erro = apiErrorMessage(err, 'Não foi possível registrar a saída.');
 		} finally {
 			enviando = false;
 		}

@@ -1,15 +1,9 @@
-import { get } from 'svelte/store';
-import { auth } from '$lib/stores/auth';
 import type { Paginacao, Paginado } from '$lib/types/producao';
+import { PADRAO_TAMANHO_PAGINA, paginarClient, totalDePaginas } from '$lib/utils/pagination';
 
 export type { Paginacao, Paginado };
-
-export const PADRAO_TAMANHO_PAGINA = 10;
-
-export function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
+export { bearer } from '$lib/api/bearer';
+export { PADRAO_TAMANHO_PAGINA, paginarClient, totalDePaginas };
 
 type QueryValue = string | number | undefined | string[];
 
@@ -56,11 +50,6 @@ export function filtrosDaUrl(url: URL, chaves: readonly string[]): Record<string
 	return filtros;
 }
 
-export function totalDePaginas(totalItems: number, pageSize: number): number {
-	if (!Number.isInteger(totalItems) || !Number.isInteger(pageSize) || pageSize <= 0) return 0;
-	return Math.max(1, Math.ceil(totalItems / pageSize));
-}
-
 // Back serve listas como `{data:[...]}` (ResourceCollection) — desembrulha p/ array.
 export function unwrapLista<T>(res: T[] | { data: T[] } | null | undefined): T[] {
 	if (Array.isArray(res)) return res;
@@ -68,18 +57,6 @@ export function unwrapLista<T>(res: T[] | { data: T[] } | null | undefined): T[]
 		return (res as { data: T[] }).data;
 	}
 	return [];
-}
-
-// Paginação/filtro client-side sobre a lista completa (precedente: estoque ItemsResult).
-export function paginarClient<T>(todos: T[], page = 1, pageSize = PADRAO_TAMANHO_PAGINA): Paginado<T> {
-	const totalItems = todos.length;
-	const size = pageSize > 0 ? pageSize : PADRAO_TAMANHO_PAGINA;
-	const totalPages = totalDePaginas(totalItems, size);
-	const atual = Math.min(Math.max(1, page), totalPages);
-	return {
-		dados: todos.slice((atual - 1) * size, atual * size),
-		paginacao: { page: atual, pageSize: size, totalItems, totalPages }
-	};
 }
 
 // O back pode devolver Paginado (dados), `{data}` ou array puro.

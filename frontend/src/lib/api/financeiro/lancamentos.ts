@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import {
 	periodoParaDatas,
 	STATUS_PARA_UPPER,
@@ -20,10 +19,6 @@ import type {
 
 const BASE = '/financeiro/lancamentos';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 export interface RawLancamento {
 	id: number | string;

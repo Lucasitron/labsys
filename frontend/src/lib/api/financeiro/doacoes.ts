@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import {
 	DOACAO_PARA_UPPER,
 	UPPER_PARA_DOACAO,
@@ -16,10 +15,6 @@ import type {
 
 const BASE = '/financeiro/doacoes-recursos';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 export interface RawDoacao {
 	id: number | string;

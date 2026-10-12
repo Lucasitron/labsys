@@ -44,3 +44,10 @@ export function relativeTime(iso: string, now = new Date()): string {
 export function formatNumber(value: number): string {
 	return new Intl.NumberFormat('pt-BR').format(value);
 }
+
+// Data ISO (YYYY-MM-DD[THH:MM:SS]) → dd/mm/aaaa, sem deslocamento de fuso.
+export function formatDate(iso?: string | null, fallback = '—'): string {
+	if (!iso) return fallback;
+	const [a, m, d] = iso.slice(0, 10).split('-');
+	return d ? `${d}/${m}/${a}` : fallback;
+}

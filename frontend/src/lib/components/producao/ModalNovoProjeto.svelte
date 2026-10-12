@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { apiErrorMessage } from '$lib/utils/errors';
 	import { onMount } from 'svelte';
 	import type { NomeFunc, Projeto, ProjetoStatus } from '$lib/types/producao';
 	import { atualizarProjeto, criarProjeto } from '$lib/api/producao/client';
-	import { ApiError, NetworkError } from '$lib/api/client';
-	import Modal from '$lib/components/ui/Modal.svelte';
+		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {
 		open: boolean;
@@ -50,10 +50,6 @@
 
 	const titulo = $derived(editando ? `Editar projeto · ${projeto?.codigo ?? ''}` : 'Novo projeto');
 
-	function mensagemErro(err: unknown): string {
-		if (err instanceof ApiError || err instanceof NetworkError) return err.message;
-		return 'Não foi possível salvar o projeto.';
-	}
 
 	async function salvar(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
@@ -73,7 +69,7 @@
 				: await criarProjeto({ ...payload, status: 'Planejado' });
 			onSalvo?.(salvo);
 		} catch (err) {
-			erro = mensagemErro(err);
+			erro = apiErrorMessage(err, 'Não foi possível salvar o projeto.');
 		} finally {
 			enviando = false;
 		}

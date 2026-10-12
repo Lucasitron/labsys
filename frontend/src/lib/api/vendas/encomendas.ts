@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import type {
 	CreateEncomendaPayload,
 	Encomenda,
@@ -10,10 +9,6 @@ import type {
 	MoverKanbanPayload
 } from '$lib/types/vendas';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 export interface RawEncomenda {
 	id: number | string;

@@ -1,6 +1,6 @@
 // ---- Primitivas e tipos de exibição (derivados client) ----
 
-export type Tone = 'success' | 'warn' | 'danger' | 'brand' | 'muted' | 'ink';
+export type { Tone } from './ui';
 
 export interface IdLabel {
 	id: string;

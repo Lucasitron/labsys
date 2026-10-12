@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { formatDate as formatarData } from '$lib/utils/format';
+	import { errorMessage } from '$lib/utils/errors';
 	import { onMount } from 'svelte';
 	import type { Pendencia5S, PenalidadeTipo } from '$lib/types/producao';
 	import {
@@ -78,16 +80,7 @@
 
 	const tiposPenalidade: PenalidadeTipo[] = ['Aviso', 'Advertência', 'Suspensão', 'Expulsão'];
 
-	function formatarData(iso: string): string {
-		if (!iso) return '—';
-		const [a, m, d] = iso.slice(0, 10).split('-');
-		return `${d}/${m}/${a}`;
-	}
 
-	function mensagemErro(err: unknown): string {
-		if (err instanceof Error && err.message) return err.message;
-		return 'Não foi possível concluir a operação.';
-	}
 
 	async function resolver(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
@@ -99,7 +92,7 @@
 			});
 			onResolvida?.(atualizada);
 		} catch (err) {
-			erro = mensagemErro(err);
+			erro = errorMessage(err, 'Não foi possível concluir a operação.');
 		} finally {
 			resolvendo = false;
 		}
@@ -116,7 +109,7 @@
 			});
 			onPenalidadeRegistrada?.(atualizada);
 		} catch (err) {
-			erro = mensagemErro(err);
+			erro = errorMessage(err, 'Não foi possível concluir a operação.');
 		} finally {
 			registrando = false;
 		}

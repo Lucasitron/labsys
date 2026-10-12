@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatDate as formatarData } from '$lib/utils/format';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { KanbanColuna, NomeFunc, Projeto, Tarefa, TarefaStatus } from '$lib/types/producao';
@@ -227,11 +228,6 @@ import { toastError, toasts } from '$lib/stores/toast';
 		void goto(navegar({ view: visao, page: 1 }));
 	}
 
-	function formatarData(iso?: string): string {
-		if (!iso) return '—';
-		const [a, m, d] = iso.slice(0, 10).split('-');
-		return d ? `${d}/${m}/${a}` : '—';
-	}
 
 	function aoDetalhar(t: Tarefa): void {
 		modalDetalhe = t as TarefaDetalhe;

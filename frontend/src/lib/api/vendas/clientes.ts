@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import type {
 	Cliente,
 	ClientesResult,
@@ -12,10 +11,6 @@ import type {
 	UpdateClientePayload
 } from '$lib/types/vendas';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 interface RawCliente {
 	id: number | string;

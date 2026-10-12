@@ -1,10 +1,10 @@
 <script lang="ts">
+	import { errorMessage } from '$lib/utils/errors';
 	import { onMount } from 'svelte';
 	import type { Inspecao5S } from '$lib/types/producao';
 	import { notaToCartao, CARTAO_META } from '$lib/utils/producao-status';
 	import { concluirInspecao5S } from '$lib/api/producao/client';
-	import { ApiError, NetworkError } from '$lib/api/client';
-	import Modal from '$lib/components/ui/Modal.svelte';
+		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {
 		open: boolean;
@@ -49,11 +49,6 @@
 		selecionados = selecionados.map((v, i) => (i === idx ? conforme : v));
 	}
 
-	function mensagemErro(err: unknown): string {
-		if (err instanceof ApiError || err instanceof NetworkError) return err.message;
-		if (err instanceof Error) return err.message;
-		return 'Não foi possível concluir a auditoria.';
-	}
 
 	async function concluir(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
@@ -63,7 +58,7 @@
 			const atualizada = await concluirInspecao5S();
 			onConcluida?.(atualizada);
 		} catch (err) {
-			erro = mensagemErro(err);
+			erro = errorMessage(err, 'Não foi possível concluir a auditoria.');
 		} finally {
 			enviando = false;
 		}

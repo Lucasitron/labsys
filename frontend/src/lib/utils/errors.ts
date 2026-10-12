@@ -30,8 +30,7 @@ const UNEXPECTED: UserMessage = {
 	hint: 'Tente novamente em instantes.'
 };
 
-export function toUserMessage(err: unknown): UserMessage {
-	if (err instanceof NetworkError) {
+export function toUserMessage(err: unknown): UserMessage {	if (err instanceof NetworkError) {
 		return NETWORK_ERROR;
 	}
 
@@ -49,4 +48,14 @@ export function toUserMessage(err: unknown): UserMessage {
 	}
 
 	return UNEXPECTED;
+}
+
+// Mensagem para modais: expõe a mensagem de qualquer Error (inclui ApiError/NetworkError).
+export function errorMessage(err: unknown, fallback: string): string {
+	return err instanceof Error && err.message ? err.message : fallback;
+}
+
+// Mensagem restrita a erros de API/rede; qualquer outro erro cai no fallback.
+export function apiErrorMessage(err: unknown, fallback: string): string {
+	return err instanceof ApiError || err instanceof NetworkError ? err.message : fallback;
 }

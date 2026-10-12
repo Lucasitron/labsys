@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatDate as formatarData } from '$lib/utils/format';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import { SITUACOES } from './+page';
@@ -125,11 +126,6 @@
 		void invalidateAll();
 	}
 
-	function formatarData(iso?: string | null): string {
-		if (!iso) return '—';
-		const [a, m, d] = iso.slice(0, 10).split('-');
-		return d ? `${d}/${m}/${a}` : '—';
-	}
 
 	interface Query {
 		[key: string]: string | string[] | number | undefined;

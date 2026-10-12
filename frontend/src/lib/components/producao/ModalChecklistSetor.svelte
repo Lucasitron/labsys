@@ -1,12 +1,12 @@
 <script lang="ts">
+	import { apiErrorMessage } from '$lib/utils/errors';
 	import { onMount } from 'svelte';
 	import type { Setor5S } from '$lib/types/producao';
 	import {
 		adicionarChecklistDoSetor,
 		obterSetor5SPorId
 	} from '$lib/api/producao/client';
-	import { ApiError, NetworkError } from '$lib/api/client';
-	import Modal from '$lib/components/ui/Modal.svelte';
+		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {
 		open: boolean;
@@ -58,10 +58,6 @@
 
 	const padroesCount = $derived(PADRAO_5S.length + itensLocal.length);
 
-	function mensagemErro(err: unknown): string {
-		if (err instanceof ApiError || err instanceof NetworkError) return err.message;
-		return 'Não foi possível salvar o checklist.';
-	}
 
 	async function salvar(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
@@ -85,7 +81,7 @@
 			const atualizado = await obterSetor5SPorId(setor.id);
 			onSalvo?.(atualizado, false);
 		} catch (err) {
-			erro = mensagemErro(err);
+			erro = apiErrorMessage(err, 'Não foi possível salvar o checklist.');
 		} finally {
 			enviando = false;
 		}

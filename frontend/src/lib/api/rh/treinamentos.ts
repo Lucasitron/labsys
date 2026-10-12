@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import type {
 	AvaliarTreinamentoPayload,
 	FinalTask,
@@ -12,10 +11,6 @@ import type {
 	TrainingStatus
 } from '$lib/types/rh';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 // Sem par no backend (só POST /treinamentos + /{id}/avaliacoes): gateadas com mensagem.
 export async function listTreinamentos(

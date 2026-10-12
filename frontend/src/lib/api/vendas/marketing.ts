@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import type {
 	CreateTarefaPayload,
 	ListTarefasParams,
@@ -11,10 +10,6 @@ import type {
 	UpdateTarefaPayload
 } from '$lib/types/vendas';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 // O back (TarefaResource) devolve `criadoPor` (sem `createdBy`): ler com alias.
 export interface RawTarefaMarketing {

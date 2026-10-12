@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import type {
 	CreatePessoaPayload,
 	Nivel,
@@ -13,10 +12,6 @@ import type {
 	UpdatePessoaPayload
 } from '$lib/types/rh';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 const STATUS_PARA_UPPER: Record<PersonStatus, string | null> = {
 	ativo: 'ATIVO',

@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { ApiError, apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import type {
 	CreateSolicitacaoPayload,
 	DecidirSolicitacaoPayload,
@@ -12,10 +11,6 @@ import type {
 	TipoSolicitacao
 } from '$lib/types/vendas';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 const TIPO_PARA_UPPER: Record<TipoSolicitacao, string> = {
 	'Alteração de dados': 'ALTERACAO_DADOS',

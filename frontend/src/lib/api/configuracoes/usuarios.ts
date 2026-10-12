@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import type { Nivel, Paginado, SituacaoUsuario, Usuario } from '$lib/types/configuracoes';
 
 export interface UsuarioPayload {
@@ -20,10 +19,6 @@ export interface UsuariosFiltros {
 	situacao?: SituacaoUsuario;
 }
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 const SITUACAO_PARA_UPPER: Record<SituacaoUsuario, string> = {
 	Ativo: 'ATIVO',

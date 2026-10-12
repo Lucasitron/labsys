@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatDate as formatarData } from '$lib/utils/format';
 	import { goto } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type { AlertaProducao, KpisProducao } from '$lib/types/producao';
@@ -22,11 +23,6 @@
 
 	const hasError = $derived(error !== null && resumo === null);
 
-	function formatarData(iso: string): string {
-		if (!iso) return '—';
-		const [a, m, d] = iso.slice(0, 10).split('-');
-		return d ? `${d}/${m}/${a}` : '—';
-	}
 
 	const ALERTA_TONES: Record<AlertaProducao['severidade'], string> = {
 		danger: 'border-danger/30 bg-danger/10 text-danger',

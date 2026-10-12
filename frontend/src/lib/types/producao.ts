@@ -1,20 +1,9 @@
-export type Tone = 'success' | 'warn' | 'danger' | 'brand' | 'muted' | 'ink';
+export type { Tone } from './ui';
+export type { Paginacao, Paginado } from './pagination';
 
 export interface NomeFunc {
 	id: string;
 	nome: string;
-}
-
-export interface Paginacao {
-	page: number;
-	pageSize: number;
-	totalItems: number;
-	totalPages: number;
-}
-
-export interface Paginado<T> {
-	dados: T[];
-	paginacao: Paginacao;
 }
 
 // ---- Unions de status/prioridade (strings PT servidas pelo backend) ----

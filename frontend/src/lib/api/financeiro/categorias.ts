@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import {
 	CATEGORIA_TIPO_PARA_UPPER,
 	UPPER_PARA_CATEGORIA_TIPO
@@ -9,10 +8,6 @@ import type { CategoriaFinanceira, CategoriaTipo, CreateCategoriaPayload } from 
 
 const BASE = '/financeiro/categorias';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 export interface RawCategoria {
 	id: number | string;

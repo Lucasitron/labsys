@@ -1,9 +1,9 @@
 <script lang="ts">
+import { apiErrorMessage } from '$lib/utils/errors';
 import { onMount } from 'svelte';
 import type { NomeFunc, Prioridade, Projeto, Tarefa } from '$lib/types/producao';
 	import { criarTarefa } from '$lib/api/producao/client';
-	import { ApiError, NetworkError } from '$lib/api/client';
-	import Modal from '$lib/components/ui/Modal.svelte';
+		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {
 		open: boolean;
@@ -48,10 +48,6 @@ import type { NomeFunc, Prioridade, Projeto, Tarefa } from '$lib/types/producao'
 		return () => document.removeEventListener('keydown', onKey);
 	});
 
-	function mensagemErro(err: unknown): string {
-		if (err instanceof ApiError || err instanceof NetworkError) return err.message;
-		return 'Não foi possível criar a tarefa.';
-	}
 
 	async function salvar(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
@@ -69,7 +65,7 @@ import type { NomeFunc, Prioridade, Projeto, Tarefa } from '$lib/types/producao'
 			});
 			onCriada?.(tarefa);
 		} catch (err) {
-			erro = mensagemErro(err);
+			erro = apiErrorMessage(err, 'Não foi possível criar a tarefa.');
 		} finally {
 			enviando = false;
 		}

@@ -1,13 +1,8 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import type { Module } from '$lib/types/auth';
 import type { Nivel, PermissaoMatriz, PermissaoNivel } from '$lib/types/configuracoes';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 const NOME_PARA_NIVEL: Record<string, Nivel> = {
 	ADMIN: 0,

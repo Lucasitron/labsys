@@ -1,6 +1,5 @@
-import { get } from 'svelte/store';
+import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { auth } from '$lib/stores/auth';
 import type {
 	FluxoCaixa,
 	Dre,
@@ -13,10 +12,6 @@ import type {
 
 const BASE = '/financeiro/relatorios';
 
-function bearer(): Record<string, string> {
-	const { token } = get(auth);
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 function periodoQuery(params: RelatorioPeriodoParams = {}): string {
 	const query = new URLSearchParams();
