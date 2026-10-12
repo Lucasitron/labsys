@@ -22,6 +22,15 @@ interface EstoqueContract
     public function baixarConsumo(array $itens, int $idReferencia): array;
 
     /**
+     * Custo de material consumido = Σ quantidade × último preço de compra por
+     * item (`entrada_estoque.valor_unitario`); `'0.00'` quando não há preço.
+     * Usado pelo Financeiro p/ custear a encomenda sem importar modelos do Estoque.
+     *
+     * @param  list<array{idItem:int,quantidadeConsumida:string|float|int}>  $itens
+     */
+    public function custoConsumo(array $itens): string;
+
+    /**
      * Empréstimos em aberto = ATIVO+ATRASADO (≡ `?status=ativos` E-7;
      * M8/Dashboard só invoca se Admin).
      */

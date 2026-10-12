@@ -30,6 +30,11 @@ class DefaultEstoqueContract implements EstoqueContract
         return array_map(fn ($saida) => (int) $saida->getKey(), $saidas);
     }
 
+    public function custoConsumo(array $itens): string
+    {
+        return $this->itens->custoConsumo($itens);
+    }
+
     public function emprestimosAbertos(): int
     {
         return Emprestimo::whereIn('status', [StatusEmprestimo::ATIVO, StatusEmprestimo::ATRASADO])->count();

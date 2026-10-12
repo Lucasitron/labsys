@@ -21,6 +21,7 @@ class ProducaoConcluidaListener implements ShouldQueue
     public function handle(ProducaoConcluidaEvent $event): void
     {
         try {
+            $this->custeio->registrarMateriais($event->idEncomenda, $event->itens);
             $this->custeio->calcularDoEvento($event->idEncomenda);
         } catch (\Throwable $e) {
             Log::warning("Falha ao processar producao.concluida.event: {$e->getMessage()}");

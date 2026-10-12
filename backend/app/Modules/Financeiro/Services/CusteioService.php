@@ -2,9 +2,12 @@
 
 namespace App\Modules\Financeiro\Services;
 
+use App\Modules\Estoque\Contracts\EstoqueContract;
 use App\Modules\Financeiro\Enums\StatusLancamento;
+use App\Modules\Financeiro\Enums\TipoCategoria;
 use App\Modules\Financeiro\Enums\TipoLancamento;
 use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Modules\Financeiro\Models\CategoriaFinanceira;
 use App\Modules\Financeiro\Models\CustoEncomenda;
 use App\Modules\Financeiro\Models\FechamentoEncomenda;
 use App\Modules\Financeiro\Models\HorasEncomenda;
@@ -24,9 +27,13 @@ class CusteioService
     /** Nível default para horas sem nível informado (premissa de MVP). */
     public const NIVEL_DEFAULT = 2;
 
+    /** Categoria DESPESA usada nos lançamentos automáticos de consumo de material. */
+    public const CATEGORIA_MATERIAIS = 'Materiais de produção';
+
     public function __construct(
         private ParametroService $parametros,
         private FinanceiroEventPublisher $publisher,
+        private EstoqueContract $estoque,
     ) {}
 
     public function calcular(int $idEncomenda, FinanceiroPrincipal $principal): CustoEncomenda
@@ -40,6 +47,53 @@ class CusteioService
     public function calcularDoEvento(int $idEncomenda): CustoEncomenda
     {
         return $this->executar($idEncomenda);
+    }
+
+    /**
+     * Registra o lançamento de SAIDA do material consumido (BOM) da encomenda,
+     * para que `executar()` o compute em `custo_materiais`. **Idempotente** por
+     * `id_referencia_externa` (retry/evento duplicado não duplica o lançamento);
+     * cria a categoria DESPESA sob demanda. Custo 0 (sem preço de compra) → nada grava.
+     *
+     * @param  list<array{idItem:int,quantidadeConsumida:string|float|int}>  $itens
+     */
+    public function registrarMateriais(int $idEncomenda, array $itens): void
+    {
+        if ($itens === []) {
+            return;
+        }
+
+        $referencia = (string) $idEncomenda;
+
+        $jaRegistrado = LancamentoFinanceiro::where('id_referencia_externa', $referencia)
+            ->where('tipo', TipoLancamento::SAIDA)
+            ->where('status', '!=', StatusLancamento::CANCELADO->value)
+            ->exists();
+
+        if ($jaRegistrado) {
+            return;
+        }
+
+        $total = $this->estoque->custoConsumo($itens);
+
+        if ((float) $total <= 0) {
+            return;
+        }
+
+        $categoria = CategoriaFinanceira::firstOrCreate(
+            ['nome' => self::CATEGORIA_MATERIAIS],
+            ['tipo' => TipoCategoria::DESPESA, 'descricao' => 'Custo de material consumido na produção (BOM)'],
+        );
+
+        LancamentoFinanceiro::create([
+            'id_categoria' => $categoria->getKey(),
+            'tipo' => TipoLancamento::SAIDA,
+            'valor' => $total,
+            'data_vencimento' => today()->toDateString(),
+            'status' => StatusLancamento::PENDENTE,
+            'id_referencia_externa' => $referencia,
+            'observacao' => "Consumo de materiais (BOM) — encomenda {$idEncomenda}",
+        ]);
     }
 
     private function executar(int $idEncomenda): CustoEncomenda

@@ -6,6 +6,7 @@ use App\Modules\Estoque\Enums\Categoria;
 use App\Modules\Estoque\Enums\TipoSaida;
 use App\Modules\Estoque\EstoquePrincipal;
 use App\Modules\Estoque\Events\EstoqueBaixoEvent;
+use App\Modules\Estoque\Models\EntradaEstoque;
 use App\Modules\Estoque\Models\Item;
 use App\Modules\Estoque\Models\Localizacao;
 use App\Modules\Estoque\Models\SaidaEstoque;
@@ -109,6 +110,31 @@ class ItemService
         }
 
         return $saidas;
+    }
+
+    /**
+     * Custo de material (BOM): Σ quantidade consumida × **último preço de
+     * compra** do item (`entrada_estoque.valor_unitario`). Sem entrada
+     * registrada o item custa 0 — nunca inventa preço.
+     *
+     * @param  list<array{idItem:int,quantidadeConsumida:string|float|int}>  $itens
+     */
+    public function custoConsumo(array $itens): string
+    {
+        $total = 0.0;
+
+        foreach ($itens as $consumo) {
+            $preco = EntradaEstoque::where('id_item', (int) $consumo['idItem'])
+                ->orderByDesc('data_entrada')
+                ->orderByDesc('id_entrada')
+                ->value('valor_unitario');
+
+            if ($preco !== null) {
+                $total += (float) $consumo['quantidadeConsumida'] * (float) $preco;
+            }
+        }
+
+        return number_format($total, 2, '.', '');
     }
 
     /** Consumo efetivo de um item (saída CONSUMO, nunca negativa). */

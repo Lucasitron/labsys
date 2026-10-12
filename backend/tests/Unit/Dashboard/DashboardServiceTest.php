@@ -84,6 +84,11 @@ class FakeEstoqueContract implements EstoqueContract
         return [];
     }
 
+    public function custoConsumo(array $itens): string
+    {
+        return '0.00';
+    }
+
     public function emprestimosAbertos(): int
     {
         return $this->abertos;

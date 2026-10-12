@@ -2,9 +2,16 @@
 
 namespace Tests\Feature\Financeiro;
 
+use App\Modules\Estoque\Enums\Categoria as CategoriaEstoque;
+use App\Modules\Estoque\Events\ProducaoConcluidaEvent as EstoqueProducaoConcluidaEvent;
+use App\Modules\Estoque\Models\EntradaEstoque;
+use App\Modules\Estoque\Models\Fornecedor;
+use App\Modules\Estoque\Models\Item;
 use App\Modules\Financeiro\Events\CustoCalculadoEvent;
+use App\Modules\Financeiro\Models\CustoEncomenda;
 use App\Modules\Financeiro\Models\FechamentoEncomenda;
 use App\Modules\Financeiro\Models\HorasEncomenda;
+use App\Modules\Financeiro\Models\LancamentoFinanceiro;
 use App\Modules\Financeiro\Services\CusteioService;
 use App\Modules\Financeiro\Services\FechamentoService;
 use Illuminate\Support\Facades\Event;
@@ -183,5 +190,91 @@ class FechamentoCusteioTest extends FinanceiroTestCase
             $this->assertStringContainsString('overhead', $e->getMessage());
         }
         $this->assertSame(0, \App\Modules\Financeiro\Models\CustoEncomenda::where('id_encomenda', 8)->count());
+    }
+
+    private function criarItemComPreco(string $preco): Item
+    {
+        $fornecedor = Fornecedor::create(['nome' => "Fornecedor {$preco}"]);
+        $item = Item::create([
+            'nome' => "Item {$preco}",
+            'categoria' => CategoriaEstoque::INSUMO,
+            'unidade_medida' => 'UN',
+            'quantidade_atual' => '100.00',
+            'estoque_minimo' => '0.00',
+            'versao' => 0,
+        ]);
+        EntradaEstoque::create([
+            'id_item' => $item->getKey(),
+            'id_fornecedor' => $fornecedor->getKey(),
+            'quantidade' => '10.00',
+            'valor_unitario' => $preco,
+            'valor_total' => '75.00',
+            'data_entrada' => today()->toDateString(),
+        ]);
+
+        return $item;
+    }
+
+    public function test_conclusao_producao_registra_material_por_referencia_e_custeia(): void
+    {
+        $headers = $this->headersAdmin();
+        $this->parametros($headers);
+        $this->postJson('/api/financeiro/fechamento-encomenda', $this->fechamentoPayload(10), $headers)
+            ->assertCreated();
+
+        $item = $this->criarItemComPreco('7.50');
+
+        // Produção concluída (fila sync): consome 4 × 7.50 = 30.00 de material.
+        event(new EstoqueProducaoConcluidaEvent(10, null, [
+            ['idItem' => $item->getKey(), 'quantidadeConsumida' => '4.00'],
+        ]));
+
+        // Lançamento automático de SAIDA, referenciado pela encomenda.
+        $this->assertDatabaseHas('financeiro.lancamento_financeiro', [
+            'id_referencia_externa' => '10',
+            'tipo' => 'SAIDA',
+            'valor' => '30.00',
+            'status' => 'PENDENTE',
+        ]);
+
+        // Custeio consumiu o lançamento como custo de material.
+        $custo = CustoEncomenda::where('id_encomenda', 10)->orderByDesc('id_custo')->firstOrFail();
+        $this->assertSame('30.00', (string) $custo->custo_materiais);
+        $this->assertSame('30.00', (string) $custo->custo_total);
+        $this->assertSame('970.00', (string) $custo->margem_lucro);
+    }
+
+    public function test_registrar_materiais_e_idempotente_e_ignora_item_sem_preco(): void
+    {
+        $headers = $this->headersAdmin();
+        $this->parametros($headers);
+        $this->postJson('/api/financeiro/fechamento-encomenda', $this->fechamentoPayload(11), $headers)
+            ->assertCreated();
+
+        $custeio = app(CusteioService::class);
+
+        // Item sem entrada registrada → custo 0 → nenhum lançamento.
+        $semPreco = Item::create([
+            'nome' => 'Item sem preço',
+            'categoria' => CategoriaEstoque::INSUMO,
+            'unidade_medida' => 'UN',
+            'quantidade_atual' => '100.00',
+            'estoque_minimo' => '0.00',
+            'versao' => 0,
+        ]);
+        $custeio->registrarMateriais(11, [['idItem' => $semPreco->getKey(), 'quantidadeConsumida' => '5.00']]);
+        $this->assertSame(0, LancamentoFinanceiro::where('id_referencia_externa', '11')->count());
+
+        // 5 × 2.00 = 10.00; reexecução (retry) não duplica.
+        $item = $this->criarItemComPreco('2.00');
+        $itens = [['idItem' => $item->getKey(), 'quantidadeConsumida' => '5.00']];
+        $custeio->registrarMateriais(11, $itens);
+        $custeio->registrarMateriais(11, $itens);
+
+        $this->assertSame(1, LancamentoFinanceiro::where('id_referencia_externa', '11')->count());
+        $this->assertDatabaseHas('financeiro.lancamento_financeiro', [
+            'id_referencia_externa' => '11',
+            'valor' => '10.00',
+        ]);
     }
 }
