@@ -141,6 +141,27 @@ describe('rh/api — pessoas', () => {
 		expect(chamada().init['body']).toBe(JSON.stringify({ nomeCompleto: 'Ana S.' }));
 	});
 
+	it("updatePessoa envia departamento vazio ('') para limpar o campo", async () => {
+		apiFetchMock.mockResolvedValue({ id: 1, nomeCompleto: 'Ana S.' });
+		const { updatePessoa } = await freshPessoas();
+
+		await updatePessoa('p1', { name: 'Ana S.', department: '' });
+
+		expect(chamada().init['body']).toBe(
+			JSON.stringify({ nomeCompleto: 'Ana S.', departamento: '' })
+		);
+	});
+
+	it('updatePessoa omite departamento quando a chave não é definida', async () => {
+		apiFetchMock.mockResolvedValue({ id: 1, nomeCompleto: 'Ana S.' });
+		const { updatePessoa } = await freshPessoas();
+
+		await updatePessoa('p1', { name: 'Ana S.' });
+
+		const body = JSON.parse(String(chamada().init['body'])) as Record<string, unknown>;
+		expect(body).not.toHaveProperty('departamento');
+	});
+
 	it("updatePessoa envia status numérico 2 para 'afastado' (RECRUTANDO no back)", async () => {
 		apiFetchMock.mockResolvedValue({ id: 1, nomeCompleto: 'Ana S.' });
 		const { updatePessoa, createPessoa } = await freshPessoas();

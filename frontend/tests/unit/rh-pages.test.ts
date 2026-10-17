@@ -477,6 +477,67 @@ describe('rh-pages — editar pessoa', () => {
 		);
 		await waitFor(() => expect(mocks.goto).toHaveBeenCalledWith('/pessoas/p1'));
 	});
+
+	it('admin provisiona acesso: payload inclui criarAcesso, email e senha', async () => {
+		auth.set({ user: ADMIN, token: 'tk', isAuthenticated: true });
+		mocks.updatePessoa.mockResolvedValueOnce(PESSOA_DETALHE);
+		render(EditarPage, { props: { data: dadosEditar(true), params: { id: 'p1' } } });
+
+		await waitFor(() =>
+			expect((screen.getByTestId('person-name') as HTMLInputElement).value).toBe('Ana Souza')
+		);
+
+		await fireEvent.click(screen.getByTestId('editar-criar-acesso'));
+		await fireEvent.input(screen.getByTestId('editar-acesso-email'), {
+			target: { value: 'acesso@fablab.org' }
+		});
+		await fireEvent.input(screen.getByTestId('editar-acesso-senha'), {
+			target: { value: 'segredo123' }
+		});
+		await fireEvent.click(screen.getByTestId('person-save'));
+
+		await waitFor(() =>
+			expect(mocks.updatePessoa).toHaveBeenCalledWith(
+				'p1',
+				expect.objectContaining({
+					criarAcesso: true,
+					email: 'acesso@fablab.org',
+					senha: 'segredo123'
+				})
+			)
+		);
+	});
+
+	it('bolsista (role 1) não vê a seção de provisionamento de acesso', async () => {
+		auth.set({ user: { ...ADMIN, id: 'u1', role: 1 }, token: 'tk', isAuthenticated: true });
+		render(EditarPage, { props: { data: dadosEditar(true), params: { id: 'p1' } } });
+
+		await waitFor(() =>
+			expect((screen.getByTestId('person-name') as HTMLInputElement).value).toBe('Ana Souza')
+		);
+		expect(screen.queryByTestId('editar-criar-acesso')).toBeNull();
+	});
+
+	it('limpar departamento envia department vazio (toPayload → departamento: "")', async () => {
+		auth.set({ user: ADMIN, token: 'tk', isAuthenticated: true });
+		mocks.updatePessoa.mockResolvedValueOnce(PESSOA_DETALHE);
+		render(EditarPage, { props: { data: dadosEditar(true), params: { id: 'p1' } } });
+
+		await waitFor(() =>
+			expect((screen.getByTestId('person-name') as HTMLInputElement).value).toBe('Ana Souza')
+		);
+
+		const dep = screen.getByTestId('person-department') as HTMLSelectElement;
+		await fireEvent.change(dep, { target: { value: '' } });
+		await fireEvent.click(screen.getByTestId('person-save'));
+
+		await waitFor(() =>
+			expect(mocks.updatePessoa).toHaveBeenCalledWith(
+				'p1',
+				expect.objectContaining({ department: '' })
+			)
+		);
+	});
 });
 
 describe('rh-pages — detalhe do treinamento', () => {

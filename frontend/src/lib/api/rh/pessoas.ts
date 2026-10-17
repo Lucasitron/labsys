@@ -114,7 +114,7 @@ function toPayload(
 	if (nivel) body['nivelAcesso'] = NIVEL_PARA_INT[nivel];
 
 	const departamento = payload.departamento ?? payload.department;
-	if (departamento) body['departamento'] = departamento;
+	if (departamento !== undefined) body['departamento'] = departamento;
 
 	if (payload.criarAcesso) {
 		body['criarAcesso'] = true;

@@ -53,6 +53,12 @@
 	let qualificacao = $state(0);
 	let inicializado = $state(false);
 
+	// Acesso (Auth) — provisionamento opcional (Admin)
+	let criarAcesso = $state(false);
+	let acessoEmail = $state('');
+	let acessoSenha = $state('');
+	let mostrarSenha = $state(false);
+
 	$effect(() => {
 		if (pessoa && !inicializado) {
 			nome = pessoa.name;
@@ -73,12 +79,27 @@
 	let erroTopo = $state<string | null>(null);
 	let erros = $state<Record<string, string>>({});
 
+	function gerarSenhaAleatoria(): void {
+		const alfabeto = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#';
+		const bytes = new Uint32Array(12);
+		crypto.getRandomValues(bytes);
+		acessoSenha = Array.from(bytes, (b) => alfabeto[b % alfabeto.length]).join('');
+		erros = { ...erros, acesso: '' };
+	}
+
 	function validar(): boolean {
 		const novos: Record<string, string> = {};
 		if (!nome.trim()) novos['nome'] = 'Informe o nome completo.';
 		if (!email.trim()) novos['email'] = 'Informe o e-mail.';
 		else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
 			novos['email'] = 'Informe um e-mail válido.';
+		if (criarAcesso) {
+			if (!acessoEmail.trim()) novos['acesso'] = 'Informe o e-mail de acesso.';
+			else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(acessoEmail.trim()))
+				novos['acesso'] = 'Informe um e-mail válido para o acesso.';
+			else if (acessoSenha && acessoSenha.length < 8)
+				novos['acesso'] = 'A senha deve ter ao menos 8 caracteres.';
+		}
 		erros = novos;
 		return Object.keys(novos).length === 0;
 	}
@@ -96,7 +117,7 @@
 			// os tipos B1 cobrem o núcleo (Partial<CreatePessoaPayload>).
 			const extras: Pick<UpdatePessoaPayload, 'dataAdmissao' | 'department' | 'shift' | 'status'> = {
 				...(admissao ? { dataAdmissao: admissao } : {}),
-				...(departamento ? { department: departamento } : {}),
+				department: departamento,
 				...(turno ? { shift: turno } : {}),
 				status
 			};
@@ -108,12 +129,22 @@
 				...(isAdmin(usuario) ? { nivel } : {}),
 				isInstrutor: ehInstrutor,
 				...(ehInstrutor && qualificacao > 0 ? { qualification: qualificacao } : {}),
-				...extras
+				...extras,
+				...(criarAcesso
+					? {
+							criarAcesso: true,
+							email: acessoEmail.trim(),
+							...(acessoSenha ? { senha: acessoSenha } : {})
+						}
+					: {})
 			});
 			toasts.success('Cadastro atualizado com sucesso.');
 			void goto(`/pessoas/${id}`);
 		} catch (err) {
-			if (err instanceof ApiError && err.status === 409) {
+			if (err instanceof ApiError && err.status === 422 && criarAcesso) {
+				erros = { ...erros, acesso: err.message };
+				erroTopo = 'Não foi possível provisionar o acesso. Ajuste o campo destacado.';
+			} else if (err instanceof ApiError && err.status === 409) {
 				erros = { ...erros, email: 'Este e-mail já está em uso por outra pessoa.' };
 				erroTopo = 'E-mail duplicado. Ajuste o campo destacado.';
 			} else {
@@ -385,19 +416,96 @@
 						</div>
 					</div>
 				</section>
+
+				{#if isAdmin(usuario)}
+					<section class="rounded-xl border border-border bg-surface p-5" aria-label="Acesso">
+						<h2 class="text-xs font-medium uppercase tracking-wide text-muted">Acesso</h2>
+						<p class="mt-1 text-xs text-muted">
+							Provisiona a credencial de login para esta pessoa. Sem senha, a conta é criada
+							como convite (pendente).
+						</p>
+						<label class="mt-3 flex cursor-pointer items-center gap-2.5 text-sm text-ink">
+							<input
+								type="checkbox"
+								data-testid="editar-criar-acesso"
+								bind:checked={criarAcesso}
+								class="h-4 w-4 rounded border-border bg-surface accent-brand"
+							/>
+							<span>Provisionar acesso ao sistema</span>
+						</label>
+
+						{#if criarAcesso}
+							<div class="mt-4 grid gap-4 sm:grid-cols-2">
+								<div>
+									<label for="editar-acesso-email" class={labelCls}>
+										E-mail de acesso <span class="text-danger" aria-hidden="true">*</span>
+									</label>
+									<input
+										id="editar-acesso-email"
+										type="email"
+										data-testid="editar-acesso-email"
+										bind:value={acessoEmail}
+										placeholder="nome@email.com"
+										autocomplete="email"
+										aria-invalid={!!erros['acesso']}
+										class="{inputCls} {erros['acesso'] ? inputErroCls : ''}"
+									/>
+									{#if erros['acesso']}
+										<p class="mt-1 text-xs text-danger" data-testid="editar-acesso-erro">
+											{erros['acesso']}
+										</p>
+									{/if}
+								</div>
+								<div>
+									<label for="editar-acesso-senha" class={labelCls}>Senha inicial</label>
+									<div class="flex gap-2">
+										<input
+											id="editar-acesso-senha"
+											type={mostrarSenha ? 'text' : 'password'}
+											data-testid="editar-acesso-senha"
+											bind:value={acessoSenha}
+											placeholder="Deixe vazio para enviar convite"
+											autocomplete="new-password"
+											class="{inputCls} font-mono"
+										/>
+										<button
+											type="button"
+											onclick={() => (mostrarSenha = !mostrarSenha)}
+											aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+											class="shrink-0 rounded-md border border-border bg-elevated px-3 text-muted transition hover:text-ink"
+										>
+											<Icon name="eye" class="h-4 w-4" />
+										</button>
+										<button
+											type="button"
+											onclick={gerarSenhaAleatoria}
+											class="shrink-0 rounded-md border border-border bg-elevated px-3 py-2 text-sm font-medium text-ink transition hover:border-brand/50 hover:text-brandhi"
+										>
+											Gerar
+										</button>
+									</div>
+									<p class="mt-1 text-xs text-muted">
+										Sem senha, a conta é criada como convite (pendente).
+									</p>
+								</div>
+							</div>
+						{/if}
+					</section>
+				{/if}
 			</fieldset>
 
 			<div class="flex items-start gap-3 rounded-xl border border-border bg-elevated/50 p-4">
 				<Icon name="lock" class="mt-0.5 h-4 w-4 shrink-0 text-muted" />
 				<p class="text-xs text-muted">
-					Credenciais de acesso não são alteradas aqui;
 					{#if isAdmin(usuario)}
-						níveis são geridos em
+						Como Admin, você pode provisionar acesso ao sistema nesta tela; credenciais
+						existentes não são alteradas aqui. Níveis são geridos em
 						<a href="/pessoas/niveis" class="font-medium text-brandhi hover:text-brand">
 							Níveis &amp; acesso (Admin)
 						</a>.
 					{:else}
-						níveis são geridos em Níveis &amp; acesso (Admin).
+						Credenciais de acesso não são alteradas aqui; níveis são geridos em Níveis &amp;
+						acesso (Admin).
 					{/if}
 				</p>
 			</div>
