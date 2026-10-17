@@ -267,6 +267,53 @@ class PessoasTest extends TestCase
         ]);
     }
 
+    public function test_update_com_departamento_vazio_limpa_o_vinculo(): void
+    {
+        $admin = $this->criarAdminRh();
+        $headers = $this->authHeader($admin['login'], Role::ADMIN);
+        $membro = $this->criarFuncionario(null, Role::BOLSISTA, ['departamento' => 'MECANICA']);
+
+        $this->putJson('/api/rh/pessoas/'.$membro['pessoa']->getKey(), [
+            'nomeCompleto' => $membro['pessoa']->nome_completo,
+            'matricula' => $membro['pessoa']->matricula,
+            'departamento' => '',
+        ], $headers)->assertOk();
+
+        $this->assertSame(
+            '',
+            (string) Funcionario::find($membro['funcionario']->getKey())->departamento,
+        );
+    }
+
+    public function test_update_com_departamento_vazio_sem_vinculo_nao_cria_funcionario(): void
+    {
+        $admin = $this->criarAdminRh();
+        $headers = $this->authHeader($admin['login'], Role::ADMIN);
+        $solta = $this->criarPessoa();
+
+        $this->putJson('/api/rh/pessoas/'.$solta->getKey(), [
+            'nomeCompleto' => $solta->nome_completo,
+            'matricula' => $solta->matricula,
+            'departamento' => '',
+        ], $headers)->assertOk();
+
+        $this->assertDatabaseMissing('rh.funcionario', ['id_pessoa' => (int) $solta->getKey()]);
+    }
+
+    public function test_cadastro_com_departamento_vazio_nao_cria_vinculo(): void
+    {
+        $admin = $this->criarAdminRh();
+        $headers = $this->authHeader($admin['login'], Role::ADMIN);
+
+        $res = $this->postJson('/api/rh/pessoas', [
+            'nomeCompleto' => 'Sem Vinculo',
+            'matricula' => 'MAT-SEM-VINCULO',
+            'departamento' => '',
+        ], $headers)->assertCreated();
+
+        $this->assertDatabaseMissing('rh.funcionario', ['id_pessoa' => (int) $res->json('id')]);
+    }
+
     public function test_update_bolsista_nao_pode_alterar_nivel(): void
     {
         $bolsista = $this->criarFuncionario(null, Role::BOLSISTA);

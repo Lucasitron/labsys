@@ -36,7 +36,7 @@ class PessoaService
      * `senha`/`nome_usuario`/`setor` (sem senha → convite).
      *
      * @param  array<string,mixed>  $dados
-     * @param  array{nivel_acesso?:?NivelAcesso,departamento?:?string}  $vinculo
+     * @param  array{nivel_acesso?:NivelAcesso,departamento?:string}  $vinculo
      * @param  array{criar?:bool,email?:?string,senha?:?string,nome_usuario?:?string,setor?:?string}  $acesso
      */
     public function cadastrar(array $dados, array $vinculo = [], array $acesso = []): Pessoa
@@ -50,6 +50,8 @@ class PessoaService
 
             $nivel = $vinculo['nivel_acesso'] ?? null;
             $departamento = $vinculo['departamento'] ?? null;
+            // Em branco == ausente: POST com departamento '' não cria vínculo.
+            $departamento = is_string($departamento) && trim($departamento) === '' ? null : $departamento;
             $criarAcesso = (bool) ($acesso['criar'] ?? false);
 
             if ($nivel !== null || $departamento !== null || $criarAcesso) {
@@ -170,7 +172,7 @@ class PessoaService
      * Nível e provisionamento exigem Admin; departamento acompanha o vínculo.
      *
      * @param  array<string,mixed>  $dados
-     * @param  array{nivel_acesso?:?NivelAcesso,departamento?:?string}  $vinculo
+     * @param  array{nivel_acesso?:NivelAcesso,departamento?:string}  $vinculo
      * @param  array{criar?:bool,email?:?string,senha?:?string,nome_usuario?:?string,setor?:?string}  $acesso
      */
     public function atualizar(int $id, array $dados, RhPrincipal $principal, array $vinculo = [], array $acesso = []): Pessoa
@@ -195,7 +197,8 @@ class PessoaService
             $pessoa->save();
 
             $nivel = $vinculo['nivel_acesso'] ?? null;
-            $departamento = $vinculo['departamento'] ?? null;
+            $temDepartamento = array_key_exists('departamento', $vinculo);
+            $departamento = $temDepartamento ? (string) $vinculo['departamento'] : null;
             $funcionario = Funcionario::where('id_pessoa', $id)->first();
 
             if ($nivel !== null) {
@@ -207,7 +210,7 @@ class PessoaService
                     $funcionario = app(FuncionarioService::class)->vincular([
                         'id_pessoa' => $id,
                         'nivel_acesso' => $nivel,
-                        'departamento' => $departamento,
+                        'departamento' => $temDepartamento ? $departamento : null,
                     ]);
                 } elseif ($funcionario->nivel_acesso !== $nivel) {
                     app(FuncionarioService::class)->alterarNivel((int) $funcionario->getKey(), $nivel, $principal);
@@ -215,14 +218,17 @@ class PessoaService
                 }
             }
 
-            if ($departamento !== null) {
+            if ($temDepartamento) {
                 if ($funcionario === null) {
-                    // Sem nível informado, vincula com o nível default.
-                    $funcionario = app(FuncionarioService::class)->vincular([
-                        'id_pessoa' => $id,
-                        'nivel_acesso' => NivelAcesso::BOLSISTA,
-                        'departamento' => $departamento,
-                    ]);
+                    // Sem nível informado, vincula com o nível default — desde que
+                    // haja departamento; '' apenas não cria vínculo.
+                    if (trim($departamento) !== '') {
+                        $funcionario = app(FuncionarioService::class)->vincular([
+                            'id_pessoa' => $id,
+                            'nivel_acesso' => NivelAcesso::BOLSISTA,
+                            'departamento' => $departamento,
+                        ]);
+                    }
                 } else {
                     $funcionario->departamento = $departamento;
                     $funcionario->save();
