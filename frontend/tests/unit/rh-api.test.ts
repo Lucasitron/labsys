@@ -1,7 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { writable } from 'svelte/store';
 
-const { apiFetchMock } = vi.hoisted(() => ({ apiFetchMock: vi.fn() }));
+const { apiFetchMock, ApiError } = vi.hoisted(() => {
+	class ApiError extends Error {
+		status: number;
+		code: string;
+		constructor(status: number, code: string, message: string) {
+			super(message);
+			this.name = 'ApiError';
+			this.status = status;
+			this.code = code;
+		}
+	}
+	return { apiFetchMock: vi.fn(), ApiError };
+});
 
 const authMock = writable<{ user: null; token: string | null; isAuthenticated: boolean }>({
 	user: null,
@@ -10,7 +22,8 @@ const authMock = writable<{ user: null; token: string | null; isAuthenticated: b
 });
 
 vi.mock('$lib/api/client', () => ({
-	apiFetch: apiFetchMock
+	apiFetch: apiFetchMock,
+	ApiError
 }));
 
 vi.mock('$lib/stores/auth', () => ({
@@ -239,6 +252,25 @@ describe('rh/api — horas', () => {
 		expect(chamada().path).toBe('/rh/horas/disponiveis');
 		expect(extrato.validadas).toBe(10.5);
 		expect(extrato.pendentes).toBe(0);
+	});
+
+	it('getHorasDisponiveis: 403 vira estado neutro "sem vínculo" (não propaga)', async () => {
+		apiFetchMock.mockRejectedValueOnce(new ApiError(403, 'FORBIDDEN', 'Acesso negado.'));
+		const { getHorasDisponiveis } = await freshHoras();
+
+		const extrato = await getHorasDisponiveis();
+
+		expect(extrato.semVinculo).toBe(true);
+		expect(extrato.validadas).toBe(0);
+		expect(extrato.pendentes).toBe(0);
+		expect(extrato.rejeitadas).toBe(0);
+	});
+
+	it('getHorasDisponiveis: outros erros continuam propagando', async () => {
+		apiFetchMock.mockRejectedValueOnce(new ApiError(500, 'INTERNAL', 'Erro inesperado.'));
+		const { getHorasDisponiveis } = await freshHoras();
+
+		await expect(getHorasDisponiveis()).rejects.toBeInstanceOf(ApiError);
 	});
 
 	it('nova modelagem: listApontamentos/createApontamento/validarApontamento (PUT …/validar)', async () => {

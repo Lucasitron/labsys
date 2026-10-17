@@ -520,6 +520,23 @@ describe('rh-pages — registro de horas (extrato backend)', () => {
 		expect(screen.getByText('Setembro de 2026')).toBeTruthy();
 	});
 
+	it('sem vínculo (403) mostra estado neutro e NÃO banner de erro', async () => {
+		mocks.getHorasDisponiveis.mockResolvedValue({
+			periodo: '',
+			validadas: 0,
+			pendentes: 0,
+			rejeitadas: 0,
+			semVinculo: true
+		});
+		render(HorasPage, { props: { data: { user: ADMIN, canEdit: true }, params: {} } });
+
+		await waitFor(() =>
+			expect(screen.getByText('Sem vínculo de funcionário — não há horas a exibir.')).toBeTruthy()
+		);
+		expect(screen.queryByText(/Extrato indisponível/)).toBeNull();
+		expect(screen.queryByText('Período do extrato')).toBeNull();
+	});
+
 	it('validar chama validarApontamento e refaz a lista', async () => {
 		mocks.validarApontamento.mockResolvedValue({ ...APONTAMENTO, status: 'validada' });
 		render(HorasPage, { props: { data: { user: ADMIN, canEdit: true }, params: {} } });

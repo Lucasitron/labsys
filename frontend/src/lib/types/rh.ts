@@ -171,6 +171,7 @@ export interface ExtratoMensalHoras {
 	validadas: number;
 	pendentes: number;
 	rejeitadas: number;
+	semVinculo?: boolean;
 }
 
 export interface HorasResult {

@@ -224,7 +224,9 @@
 		<section class="grid grid-cols-2 gap-4 lg:grid-cols-4" aria-label="Indicadores">
 			<div class="rounded-xl border border-border bg-elevated p-4">
 				<p class="text-xs text-muted">Horas validadas · {extrato?.periodo ?? 'mês'}</p>
-				{#if extrato}
+				{#if extrato?.semVinculo}
+					<p class="mt-1 text-xs text-muted">Sem vínculo de funcionário — não há horas a exibir.</p>
+				{:else if extrato}
 					<p class="mt-1 font-mono text-2xl font-semibold tabnums text-ink">
 						{new Intl.NumberFormat('pt-BR').format(extrato.validadas)}h
 					</p>

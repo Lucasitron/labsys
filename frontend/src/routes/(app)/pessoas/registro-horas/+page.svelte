@@ -334,6 +334,10 @@
 					</div>
 				{/each}
 			</div>
+		{:else if extrato?.semVinculo}
+			<p class="rounded-xl border border-border bg-elevated px-4 py-3 text-xs text-muted">
+				Sem vínculo de funcionário — não há horas a exibir.
+			</p>
 		{:else if extrato}
 			<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
 				<div class="rounded-xl border border-border bg-elevated p-4">

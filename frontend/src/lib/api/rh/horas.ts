@@ -1,5 +1,5 @@
 import { bearer } from '$lib/api/bearer';
-import { apiFetch } from '$lib/api/client';
+import { apiFetch, ApiError } from '$lib/api/client';
 import type {
 	ExtratoMensalHoras,
 	HoraApontamento,
@@ -156,11 +156,23 @@ export async function rejeitarHoras(
 export async function getHorasDisponiveis(
 	fetchFn: typeof fetch = fetch
 ): Promise<ExtratoMensalHoras> {
-	const raw = await apiFetch<{ idFuncionario?: number | string | null; totalHorasDisponiveis?: number | string | null }>(
-		'/rh/horas/disponiveis',
-		{ headers: bearer() },
-		fetchFn
-	);
+	let raw: {
+		idFuncionario?: number | string | null;
+		totalHorasDisponiveis?: number | string | null;
+	};
+	try {
+		raw = await apiFetch<{
+			idFuncionario?: number | string | null;
+			totalHorasDisponiveis?: number | string | null;
+		}>('/rh/horas/disponiveis', { headers: bearer() }, fetchFn);
+	} catch (err) {
+		// Endpoint "próprias": usuário sem vínculo de funcionário recebe 403.
+		// Tratado como estado neutro ("sem vínculo"), não como erro de tela.
+		if (err instanceof ApiError && err.status === 403) {
+			return { periodo: '', validadas: 0, pendentes: 0, rejeitadas: 0, semVinculo: true };
+		}
+		throw err;
+	}
 	// O back serve só o total validado não consolidado (sem quebra por status).
 	return {
 		periodo: '',
