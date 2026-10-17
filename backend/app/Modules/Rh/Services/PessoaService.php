@@ -176,6 +176,10 @@ class PessoaService
             $dados['cpf'] = $this->normalizarCpf($dados['cpf'], $id);
         }
 
+        if (array_key_exists('status', $dados) && $dados['status'] === null) {
+            unset($dados['status']);
+        }
+
         $pessoa->fill($dados);
         $pessoa->save();
 

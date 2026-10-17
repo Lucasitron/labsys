@@ -200,4 +200,24 @@ class PessoasTest extends TestCase
             ->assertOk()
             ->assertJsonPath('status', 'INATIVO');
     }
+
+    public function test_atualizar_sem_status_preserva_status_anterior(): void
+    {
+        $admin = $this->criarAdminRh();
+        $headers = $this->authHeader($admin['login'], Role::ADMIN);
+        $membro = $this->criarFuncionario(null, Role::BOLSISTA);
+        $membro['pessoa']->update(['status' => PessoaStatus::INATIVO]);
+
+        $this->putJson('/api/rh/pessoas/'.$membro['pessoa']->getKey(), [
+            'nomeCompleto' => 'Nome Atualizado',
+            'matricula' => $membro['pessoa']->matricula,
+        ], $headers)
+            ->assertOk()
+            ->assertJsonPath('status', 'INATIVO');
+
+        $this->assertSame(
+            PessoaStatus::INATIVO,
+            $membro['pessoa']->refresh()->status
+        );
+    }
 }
