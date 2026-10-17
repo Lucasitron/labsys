@@ -20,12 +20,12 @@ const STATUS_PARA_UPPER: Record<PersonStatus, string | null> = {
 	afastado: null
 };
 
-// O contrato aceita `status` como inteiro (PessoaStatus: 0 Ativo, 1 Inativo).
-// 'afastado' não tem par no backend → omitido.
+// O contrato aceita `status` como inteiro (PessoaStatus: 0 Ativo, 1 Inativo, 2 Recrutando).
+// O "afastado" do front corresponde ao RECRUTANDO do back (nomenclatura divergente).
 const STATUS_PARA_INT: Record<PersonStatus, number | null> = {
 	ativo: 0,
 	inativo: 1,
-	afastado: null
+	afastado: 2
 };
 
 const NIVEL_PARA_UPPER: Record<Nivel, string> = {

@@ -682,4 +682,47 @@ describe('rh-pages — guarda de níveis (load sem render)', () => {
 
 		expect(saida).toEqual({ canEdit: true });
 	});
+
+	it('bolsista (role 1) sem responsabilidade edita pessoas (EDIT_RULES.rh)', () => {
+		auth.set({ user: { ...ADMIN, id: 'u1', role: 1 }, token: 'tk', isAuthenticated: true });
+
+		const saida = pessoasLayoutLoad({ url: new URL('http://localhost/pessoas') }) as {
+			canEdit: boolean;
+		};
+
+		expect(saida).toEqual({ canEdit: true });
+	});
+
+	it('voluntário (role 2) sem responsabilidade edita pessoas (EDIT_RULES.rh)', () => {
+		auth.set({ user: { ...ADMIN, id: 'u2', role: 2 }, token: 'tk', isAuthenticated: true });
+
+		const saida = pessoasLayoutLoad({ url: new URL('http://localhost/pessoas') }) as {
+			canEdit: boolean;
+		};
+
+		expect(saida).toEqual({ canEdit: true });
+	});
+
+	it('recrutando (role 4) é redirecionado de /pessoas/niveis (admin-only)', () => {
+		auth.set({ user: { ...ADMIN, id: 'u4', role: 4 }, token: 'tk', isAuthenticated: true });
+
+		try {
+			pessoasLayoutLoad({ url: new URL('http://localhost/pessoas/niveis') });
+			expect.unreachable('deveria redirecionar recrutando para /pessoas');
+		} catch (e) {
+			const redirect = e as { status: number; location: string };
+			expect(redirect.status).toBe(303);
+			expect(redirect.location).toBe('/pessoas');
+		}
+	});
+
+	it('recrutando (role 4) não edita pessoas (canEdit false)', () => {
+		auth.set({ user: { ...ADMIN, id: 'u4', role: 4 }, token: 'tk', isAuthenticated: true });
+
+		const saida = pessoasLayoutLoad({ url: new URL('http://localhost/pessoas') }) as {
+			canEdit: boolean;
+		};
+
+		expect(saida).toEqual({ canEdit: false });
+	});
 });

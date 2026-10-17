@@ -141,6 +141,23 @@ describe('rh/api — pessoas', () => {
 		expect(chamada().init['body']).toBe(JSON.stringify({ nomeCompleto: 'Ana S.' }));
 	});
 
+	it("updatePessoa envia status numérico 2 para 'afastado' (RECRUTANDO no back)", async () => {
+		apiFetchMock.mockResolvedValue({ id: 1, nomeCompleto: 'Ana S.' });
+		const { updatePessoa, createPessoa } = await freshPessoas();
+
+		await updatePessoa('p1', { status: 'afastado' });
+		expect(chamada(0).init['body']).toBe(JSON.stringify({ status: 2 }));
+
+		await createPessoa({ name: 'Ana', status: 'afastado' });
+		expect(chamada(1).init['body']).toBe(JSON.stringify({ nomeCompleto: 'Ana', status: 2 }));
+
+		await updatePessoa('p1', { status: 'ativo' });
+		expect(chamada(2).init['body']).toBe(JSON.stringify({ status: 0 }));
+
+		await updatePessoa('p1', { status: 'inativo' });
+		expect(chamada(3).init['body']).toBe(JSON.stringify({ status: 1 }));
+	});
+
 	it('deletePessoa faz DELETE /rh/pessoas/{id}', async () => {
 		apiFetchMock.mockResolvedValue(undefined);
 		const { deletePessoa } = await freshPessoas();
