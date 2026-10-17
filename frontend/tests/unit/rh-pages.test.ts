@@ -432,6 +432,51 @@ describe('rh-pages — editar pessoa', () => {
 			expect.objectContaining({ name: 'Ana Souza' })
 		);
 	});
+
+	it('admin edita: payload de updatePessoa inclui nivel e seletor habilitado', async () => {
+		auth.set({ user: ADMIN, token: 'tk', isAuthenticated: true });
+		mocks.updatePessoa.mockResolvedValueOnce(PESSOA_DETALHE);
+		render(EditarPage, { props: { data: dadosEditar(true), params: { id: 'p1' } } });
+
+		await waitFor(() =>
+			expect((screen.getByTestId('person-name') as HTMLInputElement).value).toBe('Ana Souza')
+		);
+		const nivel = screen.getByTestId('person-level') as HTMLSelectElement;
+		expect(nivel.disabled).toBe(false);
+
+		await fireEvent.click(screen.getByTestId('person-save'));
+
+		await waitFor(() =>
+			expect(mocks.updatePessoa).toHaveBeenCalledWith(
+				'p1',
+				expect.objectContaining({ name: 'Ana Souza', nivel: 'bolsista' })
+			)
+		);
+	});
+
+	it('bolsista (role 1) edita: payload NÃO inclui nivel e seletor fica desabilitado', async () => {
+		auth.set({ user: { ...ADMIN, id: 'u1', role: 1 }, token: 'tk', isAuthenticated: true });
+		mocks.updatePessoa.mockResolvedValueOnce(PESSOA_DETALHE);
+		render(EditarPage, { props: { data: dadosEditar(true), params: { id: 'p1' } } });
+
+		await waitFor(() =>
+			expect((screen.getByTestId('person-name') as HTMLInputElement).value).toBe('Ana Souza')
+		);
+		const nivel = screen.getByTestId('person-level') as HTMLSelectElement;
+		expect(nivel.disabled).toBe(true);
+		expect(screen.getByText('Somente Admin altera o nível')).toBeTruthy();
+
+		await fireEvent.click(screen.getByTestId('person-save'));
+
+		await waitFor(() => expect(mocks.updatePessoa).toHaveBeenCalledTimes(1));
+		const [, payload] = mocks.updatePessoa.mock.calls[0]!;
+		expect(payload).not.toHaveProperty('nivel');
+		expect(mocks.updatePessoa).toHaveBeenCalledWith(
+			'p1',
+			expect.objectContaining({ name: 'Ana Souza' })
+		);
+		await waitFor(() => expect(mocks.goto).toHaveBeenCalledWith('/pessoas/p1'));
+	});
 });
 
 describe('rh-pages — detalhe do treinamento', () => {

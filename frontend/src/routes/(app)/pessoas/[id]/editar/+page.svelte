@@ -105,7 +105,7 @@
 				matricula: pessoa?.matricula ?? '',
 				email: email.trim(),
 				...(telefone.trim() ? { phone: telefone.trim() } : {}),
-				nivel,
+				...(isAdmin(usuario) ? { nivel } : {}),
 				isInstrutor: ehInstrutor,
 				...(ehInstrutor && qualificacao > 0 ? { qualification: qualificacao } : {}),
 				...extras
@@ -295,11 +295,21 @@
 					<div class="mt-4 grid gap-4 sm:grid-cols-2">
 						<div>
 							<label for="editar-nivel" class={labelCls}>Nível de acesso</label>
-							<select id="editar-nivel" data-testid="person-level" bind:value={nivel} class={inputCls}>
+							<select
+								id="editar-nivel"
+								data-testid="person-level"
+								bind:value={nivel}
+								disabled={!isAdmin(usuario)}
+								title={!isAdmin(usuario) ? 'Somente Admin altera o nível' : undefined}
+								class={inputCls}
+							>
 								{#each NIVEL_OPCOES as opt (opt.id)}
 									<option value={opt.id}>{opt.label}</option>
 								{/each}
 							</select>
+							{#if !isAdmin(usuario)}
+								<p class="mt-1 text-xs text-muted">Somente Admin altera o nível</p>
+							{/if}
 						</div>
 						<div>
 							<label for="editar-departamento" class={labelCls}>Departamento</label>
