@@ -90,7 +90,13 @@ class PessoaController
 
     public function update(PessoaRequest $request, int $id): JsonResponse
     {
-        $pessoa = $this->pessoas->atualizar($id, $this->dados($request), $this->principal($request));
+        $pessoa = $this->pessoas->atualizar(
+            $id,
+            $this->dados($request),
+            $this->principal($request),
+            $this->vinculo($request),
+            $this->acesso($request),
+        );
 
         return response()->json((new PessoaResource($pessoa))->toArray($request));
     }

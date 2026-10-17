@@ -77,4 +77,23 @@ class SeederTest extends TestCase
         $this->assertNotSame($admin->id_user, (int) $nova->getKey());
         $this->assertTrue(Login::where('id_user', (int) $nova->getKey())->exists());
     }
+
+    /**
+     * O admin precisa de vínculo de funcionário: `historico_nivel.id_admin_alterou`
+     * é NOT NULL FK→funcionario e o autor da alteração de nível exige vínculo.
+     */
+    public function test_seed_cria_funcionario_admin(): void
+    {
+        config()->set('auth.seed.enabled', true);
+
+        (new AuthSeeder)->run();
+
+        $admin = Login::where('email', 'admin@fablab.org')->firstOrFail();
+
+        $this->assertDatabaseHas('rh.funcionario', [
+            'id_pessoa' => $admin->id_user,
+            'nivel_acesso' => NivelAcesso::ADMIN->value,
+            'departamento' => 'Administrativo',
+        ]);
+    }
 }

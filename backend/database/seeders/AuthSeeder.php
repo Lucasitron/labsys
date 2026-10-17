@@ -6,7 +6,9 @@ use App\Modules\Auth\Enums\Role;
 use App\Modules\Auth\Enums\SituacaoUsuario;
 use App\Modules\Auth\Models\Login;
 use App\Modules\Auth\Models\UserPermission;
+use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Enums\PessoaStatus;
+use App\Modules\Rh\Models\Funcionario;
 use App\Modules\Rh\Models\Pessoa;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -18,6 +20,10 @@ use Illuminate\Support\Facades\Hash;
  * C-01: cria também a `rh.pessoa` do admin com `id == login.id_user`, honrando a
  * invariante `pessoa.id == id_user`. Sem isso, a primeira pessoa cadastrada (id=1)
  * colidiria com o login do admin (id_user=1) no provisionamento de acesso.
+ *
+ * O admin recebe também o vínculo de funcionário (nível ADMIN): sem ele,
+ * `FuncionarioService::alterarNivel` falha — `historico_nivel.id_admin_alterou` é
+ * NOT NULL FK→funcionario e o autor precisa de vínculo.
  */
 class AuthSeeder extends Seeder
 {
@@ -38,6 +44,15 @@ class AuthSeeder extends Seeder
             'contato' => (string) env('AUTH_SEED_EMAIL', 'admin@fablab.org'),
             'status' => PessoaStatus::ATIVO,
         ]);
+
+        // Vínculo do admin (idempotente): necessário p/ alterarNivel gravar histórico.
+        if (! Funcionario::where('id_pessoa', (int) $pessoa->getKey())->exists()) {
+            Funcionario::create([
+                'id_pessoa' => (int) $pessoa->getKey(),
+                'nivel_acesso' => NivelAcesso::ADMIN,
+                'departamento' => 'Administrativo',
+            ]);
+        }
 
         $login = Login::create([
             'id_user' => (int) $pessoa->getKey(),

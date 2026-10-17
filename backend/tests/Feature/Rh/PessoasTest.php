@@ -4,7 +4,10 @@ namespace Tests\Feature\Rh;
 
 use App\Modules\Auth\Enums\Role;
 use App\Modules\Auth\Models\Login;
+use App\Modules\Auth\Models\UserPermission;
 use App\Modules\Rh\Enums\PessoaStatus;
+use App\Modules\Rh\Models\Funcionario;
+use App\Modules\Rh\Models\HistoricoNivel;
 use App\Modules\Rh\Models\Pessoa;
 use Tests\TestCase;
 
@@ -219,5 +222,101 @@ class PessoasTest extends TestCase
             PessoaStatus::INATIVO,
             $membro['pessoa']->refresh()->status
         );
+    }
+
+    public function test_update_admin_altera_nivel_grava_historico_e_espelha_role(): void
+    {
+        $admin = $this->criarAdminRh();
+        $headers = $this->authHeader($admin['login'], Role::ADMIN);
+        $membro = $this->criarFuncionario(null, Role::BOLSISTA);
+
+        $this->putJson('/api/rh/pessoas/'.$membro['pessoa']->getKey(), [
+            'nomeCompleto' => $membro['pessoa']->nome_completo,
+            'matricula' => $membro['pessoa']->matricula,
+            'nivelAcesso' => Role::VOLUNTARIO->value,
+        ], $headers)->assertOk();
+
+        $this->assertSame(
+            Role::VOLUNTARIO->value,
+            Funcionario::find($membro['funcionario']->getKey())->nivel_acesso->value,
+        );
+        $this->assertSame(1, HistoricoNivel::where('id_funcionario', $membro['funcionario']->getKey())->count());
+
+        // Espelho no RBAC do Auth (id_pessoa == id_user).
+        $this->assertSame(
+            Role::VOLUNTARIO,
+            UserPermission::where('id_user', $membro['pessoa']->getKey())->where('active', true)->first()?->role,
+        );
+    }
+
+    public function test_update_admin_altera_departamento(): void
+    {
+        $admin = $this->criarAdminRh();
+        $headers = $this->authHeader($admin['login'], Role::ADMIN);
+        $membro = $this->criarFuncionario(null, Role::BOLSISTA);
+
+        $this->putJson('/api/rh/pessoas/'.$membro['pessoa']->getKey(), [
+            'nomeCompleto' => $membro['pessoa']->nome_completo,
+            'matricula' => $membro['pessoa']->matricula,
+            'departamento' => 'MECANICA',
+        ], $headers)->assertOk();
+
+        $this->assertDatabaseHas('rh.funcionario', [
+            'id_pessoa' => (int) $membro['pessoa']->getKey(),
+            'departamento' => 'MECANICA',
+        ]);
+    }
+
+    public function test_update_bolsista_nao_pode_alterar_nivel(): void
+    {
+        $bolsista = $this->criarFuncionario(null, Role::BOLSISTA);
+        $alvo = $this->criarFuncionario(null, Role::BOLSISTA);
+        $nomeOriginal = $alvo['pessoa']->nome_completo;
+
+        $this->putJson('/api/rh/pessoas/'.$alvo['pessoa']->getKey(), [
+            'nomeCompleto' => 'Escalada',
+            'matricula' => $alvo['pessoa']->matricula,
+            'nivelAcesso' => Role::ADMIN->value,
+        ], $this->authHeader($bolsista['login'], Role::BOLSISTA))
+            ->assertForbidden();
+
+        // A transação reverte também o núcleo.
+        $this->assertSame($nomeOriginal, $alvo['pessoa']->refresh()->nome_completo);
+        $this->assertSame(
+            Role::BOLSISTA->value,
+            Funcionario::find($alvo['funcionario']->getKey())->nivel_acesso->value,
+        );
+    }
+
+    public function test_update_provisiona_acesso_e_rejeita_duplicado(): void
+    {
+        $admin = $this->criarAdminRh();
+        $headers = $this->authHeader($admin['login'], Role::ADMIN);
+        $alvo = $this->criarPessoa();
+
+        $this->putJson('/api/rh/pessoas/'.$alvo->getKey(), [
+            'nomeCompleto' => $alvo->nome_completo,
+            'matricula' => $alvo->matricula,
+            'nivelAcesso' => Role::BOLSISTA->value,
+            'criarAcesso' => true,
+            'email' => 'novo@fablab.org',
+            'senha' => 'senha1234',
+        ], $headers)->assertOk();
+
+        $this->assertDatabaseHas('auth.login', [
+            'id_user' => (int) $alvo->getKey(),
+            'email' => 'novo@fablab.org',
+        ]);
+
+        // Segundo provisionamento para o mesmo id_user → 422 (já existe acesso).
+        $this->putJson('/api/rh/pessoas/'.$alvo->getKey(), [
+            'nomeCompleto' => $alvo->nome_completo,
+            'matricula' => $alvo->matricula,
+            'criarAcesso' => true,
+            'email' => 'outro@fablab.org',
+            'senha' => 'senha1234',
+        ], $headers)->assertStatus(422);
+
+        $this->assertDatabaseMissing('auth.login', ['email' => 'outro@fablab.org']);
     }
 }

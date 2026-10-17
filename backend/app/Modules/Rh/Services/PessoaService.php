@@ -16,6 +16,7 @@ use App\Modules\Rh\Models\ProcessoSeletivo;
 use App\Modules\Rh\Policies\RhPolicy;
 use App\Modules\Rh\RhPrincipal;
 use App\Modules\Rh\Rules\CpfRule;
+use App\Shared\Exceptions\ForbiddenException;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -163,27 +164,90 @@ class PessoaService
         return $pessoa;
     }
 
-    public function atualizar(int $id, array $dados, RhPrincipal $principal): Pessoa
+    /**
+     * Atualiza o núcleo e, opcionalmente, vínculo (nível/departamento) e acesso
+     * (provisionamento), numa única transação — mesmo contrato de `cadastrar`.
+     * Nível e provisionamento exigem Admin; departamento acompanha o vínculo.
+     *
+     * @param  array<string,mixed>  $dados
+     * @param  array{nivel_acesso?:?NivelAcesso,departamento?:?string}  $vinculo
+     * @param  array{criar?:bool,email?:?string,senha?:?string,nome_usuario?:?string,setor?:?string}  $acesso
+     */
+    public function atualizar(int $id, array $dados, RhPrincipal $principal, array $vinculo = [], array $acesso = []): Pessoa
     {
-        $pessoa = $this->obter($id);
-        RhPolicy::exigeAcessoAPessoa($principal, (int) $pessoa->getKey());
+        return DB::transaction(function () use ($id, $dados, $principal, $vinculo, $acesso): Pessoa {
+            $pessoa = $this->obter($id);
+            RhPolicy::exigeAcessoAPessoa($principal, (int) $pessoa->getKey());
 
-        if (isset($dados['matricula'])) {
-            $this->exigeMatriculaLivre($dados['matricula'], $id);
-        }
+            if (isset($dados['matricula'])) {
+                $this->exigeMatriculaLivre($dados['matricula'], $id);
+            }
 
-        if (array_key_exists('cpf', $dados)) {
-            $dados['cpf'] = $this->normalizarCpf($dados['cpf'], $id);
-        }
+            if (array_key_exists('cpf', $dados)) {
+                $dados['cpf'] = $this->normalizarCpf($dados['cpf'], $id);
+            }
 
-        if (array_key_exists('status', $dados) && $dados['status'] === null) {
-            unset($dados['status']);
-        }
+            if (array_key_exists('status', $dados) && $dados['status'] === null) {
+                unset($dados['status']);
+            }
 
-        $pessoa->fill($dados);
-        $pessoa->save();
+            $pessoa->fill($dados);
+            $pessoa->save();
 
-        return $pessoa->refresh();
+            $nivel = $vinculo['nivel_acesso'] ?? null;
+            $departamento = $vinculo['departamento'] ?? null;
+            $funcionario = Funcionario::where('id_pessoa', $id)->first();
+
+            if ($nivel !== null) {
+                if (! $principal->isAdmin()) {
+                    throw new ForbiddenException('Alteração de nível restrita a Admin');
+                }
+
+                if ($funcionario === null) {
+                    $funcionario = app(FuncionarioService::class)->vincular([
+                        'id_pessoa' => $id,
+                        'nivel_acesso' => $nivel,
+                        'departamento' => $departamento,
+                    ]);
+                } elseif ($funcionario->nivel_acesso !== $nivel) {
+                    app(FuncionarioService::class)->alterarNivel((int) $funcionario->getKey(), $nivel, $principal);
+                    $funcionario->refresh();
+                }
+            }
+
+            if ($departamento !== null) {
+                if ($funcionario === null) {
+                    // Sem nível informado, vincula com o nível default.
+                    $funcionario = app(FuncionarioService::class)->vincular([
+                        'id_pessoa' => $id,
+                        'nivel_acesso' => NivelAcesso::BOLSISTA,
+                        'departamento' => $departamento,
+                    ]);
+                } else {
+                    $funcionario->departamento = $departamento;
+                    $funcionario->save();
+                }
+            }
+
+            if ((bool) ($acesso['criar'] ?? false)) {
+                if (! $principal->isAdmin()) {
+                    throw new ForbiddenException('Provisionamento de acesso restrito a Admin');
+                }
+
+                $nivelAcesso = $nivel ?? $funcionario?->nivel_acesso ?? NivelAcesso::BOLSISTA;
+
+                app(AuthContract::class)->provisionarAcesso(
+                    $id,
+                    (string) $acesso['email'],
+                    Role::from($nivelAcesso->value),
+                    $acesso['nome_usuario'] ?? null,
+                    $acesso['senha'] ?? null,
+                    $acesso['setor'] ?? null,
+                );
+            }
+
+            return $pessoa->refresh();
+        });
     }
 
     /** Detalhe agregado (abas). Sem vínculo, blocos agregados degradam p/ vazio. */
