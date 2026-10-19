@@ -1,110 +1,70 @@
 # labSys — Sistema de Gestão FabLab
 
-Sistema gerencial completo para um Fab Lab / Makerspace. Microsserviços em **Java 21 + Spring Boot 3.x**, frontend **SvelteKit + TypeScript + Tailwind CSS**, infraestrutura com **PostgreSQL**, **RabbitMQ**, **Spring Cloud Gateway** e **Eureka**. Ambiente local (Ubuntu Server + Docker Compose + Tailscale).
+Sistema gerencial (ERP) para um Fab Lab / Makerspace: **um monólito modular em PHP/Laravel (MVC)**
+no backend e uma **SPA em SvelteKit** no frontend, sobre **PostgreSQL** único com schema por módulo.
+Execução local/servidor (Ubuntu + Docker Compose + Tailscale). Sem nuvem, sem microsserviços.
 
-## Visão Geral da Arquitetura
+## Arquitetura
 
 ```
-                        ┌──────────────┐
-   Cliente (SPA) ─────▶ │  Nginx/HTTPS  │
-                        └──────┬───────┘
-                               │
-                        ┌──────▼───────┐
-                        │  Gateway      │  (8080)
-                        └──────┬───────┘
-                               │
-                       ┌───────▼────────┐
-                       │   Eureka        │  (8761) — Service Registry
-                       └───────┬────────┘
-                               │
-   ┌────────┬─────────┬────────┼────────┬─────────┬──────────┐
-   ▼        ▼         ▼        ▼        ▼         ▼          ▼
- Auth      RH      Estoque   Vendas  Financeiro Produção   Notification
- (8081)   (8082)    (8083)   (8084)   (8085)    (8086)      (8087)
-   │        │         │        │        │         │          │
-   └─────── Postgres (5432) ────┴─── RabbitMQ (5672) ────────┘
+   Cliente (SPA SvelteKit)
+            │  HTTP  /api  (Bearer token)
+            ▼
+   ┌───────────────────────────────┐
+   │  backend/  — Laravel 12 (:8080)│
+   │  módulos: Auth · Rh · Estoque  │
+   │  Vendas · Financeiro · Producao│
+   │  Notification · Dashboard      │
+   └───────────────┬───────────────┘
+                   ▼
+      PostgreSQL `fablab` (schema por módulo)
 ```
 
-## Microsserviços
+- **Comunicação:** dentro do processo — chamada direta ao `Contract` do módulo dono; assíncrono por
+  `Event`/`Listener`/`Job` do Laravel (fila `database`). Sem Eureka, Gateway ou banco por serviço.
+- **Front:** `frontend/` (SvelteKit + TypeScript + Tailwind, `adapter-node`), fala com **um** endpoint
+  `/api`. `VITE_API_BASE_URL` **deve incluir `/api`**.
 
-| Serviço | Diretório | Porta | Responsabilidade |
-| :--- | :--- | :--- | :--- |
-| Discovery Service | `discovery-service/` | 8761 | Service Registry (Eureka) |
-| Gateway Service | `gateway-service/` | 8080 | Roteamento, balanceamento, segurança na borda |
-| Auth & Identity | `auth-service/` | 8081 | Autenticação, JWT, RBAC, acesso RFID |
-| Pessoas & RH | `rh-service/` | 8082 | Pessoas, processo seletivo, ponto, horas, LMS |
-| Estoque & Suprimentos | `estoque-service/` | 8083 | Insumos, ferramentas, fornecedores, BOM, empréstimos |
-| Vendas & CRM | `vendas-service/` | 8084 | Clientes, orçamentos, Kanban, marketplace, CRM |
-| Financeiro | `financeiro-service/` | 8085 | Fluxo de caixa, custos (Job Order Costing) |
-| Produção & Projetos | `producao-service/` | 8086 | Projetos, tarefas, máquinas, 5S, Kanban de encomendas |
-| Notification | `notification-service/` | 8087 | E-mails e notificações transversais (RabbitMQ) |
-
-## Estrutura do Repositório
+## Estrutura do repositório
 
 ```
 labSys/
-├── docs/                       # Documentação técnica (Bounded Contexts + specs)
-├── discovery-service/          # Eureka Server
-├── gateway-service/            # Spring Cloud Gateway
-├── auth-service/               # Auth & Identity
-├── rh-service/                 # Pessoas & RH
-├── estoque-service/            # Estoque & Suprimentos
-├── vendas-service/             # Vendas & CRM
-├── financeiro-service/         # Financeiro
-├── producao-service/           # Produção & Projetos
-├── notification-service/       # Notification
-├── frontend/                   # SPA SvelteKit + TS + Tailwind
-└── infra/                      # Docker Compose, Nginx, PostgreSQL, RabbitMQ
+├── backend/            # monólito modular Laravel (PHP 8.3) — porta 8080
+├── frontend/           # SPA SvelteKit
+├── infra/              # Docker Compose, Nginx, entrypoint
+├── docs/               # documentação local (não versionada): contract, mockups, archive
+└── .opencode/          # specs, estado vivo e agentes (pipeline multiagente)
 ```
 
-## Pré-requisitos
+> Diretórios `*-service/` restantes são resquícios do scaffold Java antigo (não fazem parte do alvo).
 
-*   Java 21 (JDK)
-*   Maven 3.9+
-*   Node.js 20+ e npm
-*   Docker + Docker Compose
+## Como executar
 
-## Como Executar
+```sh
+# 1) infraestrutura (Postgres + app + worker + scheduler)
+docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up -d
 
-1.  Subir a infraestrutura base:
+# 2) frontend
+cd frontend && npm ci
+VITE_API_BASE_URL=http://localhost:8080/api npm run dev
+```
 
-    ```sh
-    docker compose -f infra/docker-compose.yml up -d
-    ```
-
-2.  Iniciar o Discovery Service:
-
-    ```sh
-    cd discovery-service && mvn spring-boot:run
-    ```
-
-3.  Iniciar os demais serviços (cada um em terminal/guia próprio):
-
-    ```sh
-    cd gateway-service && mvn spring-boot:run
-    cd auth-service && mvn spring-boot:run
-    # ... rh, estoque, vendas, financeiro, producao, notification
-    ```
-
-4.  Iniciar o frontend:
-
-    ```sh
-    cd frontend && npm install && npm run dev
-    ```
+- App: `http://localhost:8080/api` · Front: `http://localhost:5173`
+- Admin de desenvolvimento (seed): `admin` / `admin123` — **dev-only**.
 
 ## Git Flow
 
-Branches principais: `main` (produção), `testing` (homologação), `development` (dev ativo).
-
-*   Nunca commitar direto em `main` ou `testing`.
-*   Trabalhar em `development` ou em `feature/*`, `bugfix/*`, `hotfix/*`.
-*   Ao concluir uma etapa: PR para `development` → merge → `testing` → `main`.
-*   Commits seguem **Conventional Commits** (`feat`, `fix`, `docs`, `chore`, `test`, `security`, ...).
+`main` (produção) · `testing` (homologação) · `development` (merge-only) → `dev/backend` + `dev/frontend`.
+Nunca commitar direto em `main`/`testing`/`development`; commits de back e front são separados.
+Detalhes em [`docs/GITFLOW.md`](docs/GITFLOW.md).
 
 ## Documentação
 
-*   Bounded Contexts e specs técnicas: [`docs/`](docs/)
-*   Infraestrutura: [`infra/docs/`](infra/docs/) (ARCHITECTURE, DEPLOY, RUNBOOK)
+- **Estado e linha do tempo:** `.opencode/specs/system/STATUS.md`
+- **Arquitetura / convenções / RBAC / agentes:** `.opencode/specs/system/`
+- **Contrato Backend × Frontend:** [`docs/contract.gap.md`](docs/contract.gap.md)
+- **Mockups por módulo:** `docs/mokups/`
+- **Histórico (arquivado):** `docs/_archive/2026-10-19/`
 
 ## Licença
 

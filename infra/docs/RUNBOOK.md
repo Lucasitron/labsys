@@ -1,67 +1,95 @@
-# Runbook — Operação do FabLab
+# Runbook — Operação do FabLab (monólito Laravel)
 
-Guia rápido para operação e troubleshooting do ambiente.
+Guia rápido de operação e troubleshooting. Visão de infra: [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
-## Comandos de Rotina
+> Atalho: defina `DC="docker compose -f infra/docker-compose.yml -f infra/docker-compose.<env>.yml"`
+> (`<env>` = `dev` | `testing` | `prod`) e use `$DC` abaixo.
 
-```sh
-# Subir/parar infra base
-docker compose -f infra/docker-compose.yml up -d
-docker compose -f infra/docker-compose.yml down
-
-# Subir stack dev completa
-docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up --build -d
-
-# Logs de um serviço
-docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml logs -f auth
-
-# Status
-docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml ps
-```
-
-## Verificação de Saúde
+## Comandos de rotina
 
 ```sh
-curl -s http://localhost:8761/actuator/health        # Eureka
-curl -s http://localhost:8080/actuator/health        # Gateway
-curl -s http://localhost:8081/actuator/health        # Auth
-curl -s http://localhost:8082/actuator/health        # RH
-curl -s http://localhost:5432/...
-curl -s -u fablab:fablab http://localhost:15672/api/overview  # RabbitMQ
+# Subir/parar stack
+$DC up -d --build        # dev/testing (build). prod: sem --build
+$DC down                 # para (mantém volume)
+$DC down -v              # RESET: remove dados/volume (cuidado!)
+
+# Status e logs
+$DC ps
+$DC logs -f app
+$DC logs -f worker
+
+# Artisan dentro do container (migrate é automático no entrypoint; aqui é p/ tarefas avulsas)
+$DC exec app php artisan about
+$DC exec app php artisan migrate:status
+$DC exec app php artisan queue:restart      # sinaliza workers após deploy
+$DC exec app php artisan tinker
 ```
 
-Debounce de subida: **Eureka** deve responder primeiro; os clientes sobem em
-seguida. Se um serviço não aparece no dashboard do Eureka, verifique
-`EUREKA_URI` e os logs.
+## Verificação de saúde
 
-## Problemas Comuns
+```sh
+curl -fsS http://<host>:8080/up                # health da API (Laravel)
+$DC ps                                          # app/worker/scheduler UP
+docker compose ... exec -T postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+```
 
-### Serviço não registra no Eureka
-1. Eureka está `UP`? (`curl localhost:8761/actuator/health`)
-2. A variável `EUREKA_URI` aponta para `http://discovery:8761/eureka` (rede Docker)?
-3. Nos logs do serviço consta erro de conexão com Eureka?
+Critérios: `app` saudável (`/up`), `worker` consumindo a fila `jobs`, `scheduler` rodando.
 
-### Flyway falha na subida
-1. Confirmar que o banco do serviço existe (ver `infra/postgres/init-scripts/init.sql`).
-2. Corrigir a migration e subir novamente. Flyway bloqueia estado inconsistente.
+## Problemas comuns
 
-### RabbitMQ: fila não consome eventos
-1. Verificar exchange/queue em `definitions.json` e o nome do evento publicado.
-2. Conferir usuário/senha e `RABBITMQ_HOST`.
+### `app` não sobe / reinicia
+1. Postgres acessível? (`pg_isready`; o entrypoint aguarda até ~60s).
+2. `APP_KEY`/`JWT_SECRET` definidos? (o boot faz **fail-fast** sem eles).
+3. Logs: `$DC logs app` (erros de migration/seed aparecem aqui).
+
+### Migração falha no boot
+1. `$DC exec app php artisan migrate:status` — veja a pendente.
+2. Se for dado incompatível (ex.: duplicados em `auth.login.id_user`), ver §"Migração auth v9".
+3. Corrija a migração e suba de novo (o entrypoint reaplica).
+
+### Fila não consome
+1. `QUEUE_CONNECTION=database` e tabela `jobs` existe (criada nas migrações base).
+2. Reinicie o worker: `$DC restart worker` (ou `queue:restart` após deploy de código).
+3. Logs: `$DC logs worker`.
+
+### Agendamentos não rodam
+1. `scheduler` está UP? (roda `schedule:run` a cada 60s).
+2. Logs: `$DC logs scheduler`.
 
 ### Porta ocupada
-O serviço está mapeado para sua porta padrão (8081 a 8087). Altere a variável
-`PORT` no serviço/nosso compose e o `server.port` correspondente.
+Altere o mapeamento em `infra/docker-compose.dev.yml` (`app` publica `8080:8080`); em prod, o Nginx
+aponta para `app:8080`.
 
-## Reset do Ambiente
+## Migração `auth v9` (backfill/dedup `login.id_user`)
+
+A migração `auth v9a` executa **automaticamente** no primeiro boot (arquiva credenciais duplicadas
+em `auth.login_dedup_backup` e remove; a `auth v9` cria a UNIQUE `uk_login_id_user`). Em banco sem
+duplicados é no-op.
 
 ```sh
-docker compose -f infra/docker-compose.yml down -v   # remove dados (cuidado!)
-docker compose -f infra/docker-compose.yml up -d     # recria bancos/vhosts
+# Auditoria read-only (recomendado ANTES do deploy)
+$DC exec app php artisan auth:dedup-login-id-user
+
+# Verificação pós-deploy
+$DC exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c \
+"select conname from pg_constraint where conname='uk_login_id_user';
+ select count(*) from auth.login_dedup_backup;
+ select id_user,count(*) from auth.login group by id_user having count(*)>1;"
+
+# Rollback do banco (reverte v9 depois v9a)
+$DC exec app php artisan migrate:rollback --step=2 --force
 ```
 
-## Contatos e Alertas
+Procedimento completo (backup, dry-run, comunicação aos afetados): `.opencode/state/auth-v9-backfill-plan.md`.
 
-*   Healthchecks periódicos no Gateway devem acionar alertas (futuro: Prometheus/Grafana).
-*   Notificações de falha de envio de e-mail são retidas no Notification Service
-    (`status = PENDENTE`) para reenvio manual.
+## Reset do ambiente
+
+```sh
+$DC down -v      # remove o volume postgres-data (perde dados)
+$DC up -d        # recria banco/vhost; o entrypoint migra do zero
+```
+
+## Contatos e alertas
+
+*   Healthcheck de `/up` pode alimentar alertas (futuro: Prometheus/Grafana).
+*   Notificações de e-mail com falha ficam `PENDENTE` (módulo Notification) para reenvio.

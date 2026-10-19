@@ -1,4 +1,0 @@
-logging:
-  level:
-    com.fablab.auth: DEBUG
-    org.springframework.security: INFO
