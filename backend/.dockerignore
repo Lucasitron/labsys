@@ -1,0 +1,15 @@
+# Build da imagem do monólito: código sim, segredo/lixo não.
+# (.env local NUNCA entra na imagem publicada em ghcr.io.)
+.env
+.env.*
+!.env.example
+/vendor/
+/node_modules/
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+.phpunit.result.cache
+/tests/
+/.git/
+/.github/

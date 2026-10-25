@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Modules\Rh\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+/** PUT funcionarios/{id}/nivel + PATCH niveis/{id}/membros — campo único `nivel`. Admin. */
+class AlterarNivelRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /** @return array<string, mixed> */
+    public function rules(): array
+    {
+        return [
+            'nivel' => ['required', 'integer', 'min:0', 'max:4'],
+        ];
+    }
+}
