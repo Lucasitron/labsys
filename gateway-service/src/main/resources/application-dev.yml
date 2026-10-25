@@ -1,4 +1,0 @@
-logging:
-  level:
-    com.fablab: DEBUG
-    org.springframework.cloud.gateway: DEBUG

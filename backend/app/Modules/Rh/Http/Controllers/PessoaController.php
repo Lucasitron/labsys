@@ -90,7 +90,13 @@ class PessoaController
 
     public function update(PessoaRequest $request, int $id): JsonResponse
     {
-        $pessoa = $this->pessoas->atualizar($id, $this->dados($request), $this->principal($request));
+        $pessoa = $this->pessoas->atualizar(
+            $id,
+            $this->dados($request),
+            $this->principal($request),
+            $this->vinculo($request),
+            $this->acesso($request),
+        );
 
         return response()->json((new PessoaResource($pessoa))->toArray($request));
     }
@@ -115,15 +121,21 @@ class PessoaController
         ];
     }
 
-    /** @return array{nivel_acesso?:?NivelAcesso,departamento?:?string} */
+    /** @return array{nivel_acesso?:NivelAcesso,departamento?:string} */
     private function vinculo(PessoaRequest $request): array
     {
-        $nivelRaw = $request->input('nivelAcesso');
+        $vinculo = [];
 
-        return array_filter([
-            'nivel_acesso' => $nivelRaw !== null ? NivelAcesso::from((int) $nivelRaw) : null,
-            'departamento' => $request->input('departamento'),
-        ], fn ($valor) => $valor !== null);
+        if ($request->filled('nivelAcesso')) {
+            $vinculo['nivel_acesso'] = NivelAcesso::from((int) $request->input('nivelAcesso'));
+        }
+
+        // Presença da chave == intenção de (re)definir; '' == limpar o departamento.
+        if ($request->has('departamento')) {
+            $vinculo['departamento'] = (string) ($request->input('departamento') ?? '');
+        }
+
+        return $vinculo;
     }
 
     /** @return array{criar?:bool,email?:?string,senha?:?string,nome_usuario?:?string,setor?:?string} */
