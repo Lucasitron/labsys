@@ -10,6 +10,7 @@
 	import { nivelMeta, personStatusMeta } from '$lib/utils/rh-status';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
+	import { isEmail } from '$lib/utils/validation';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
@@ -91,11 +92,11 @@
 		const novos: Record<string, string> = {};
 		if (!nome.trim()) novos['nome'] = 'Informe o nome completo.';
 		if (!email.trim()) novos['email'] = 'Informe o e-mail.';
-		else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+		else if (!isEmail(email.trim()))
 			novos['email'] = 'Informe um e-mail válido.';
 		if (criarAcesso) {
 			if (!acessoEmail.trim()) novos['acesso'] = 'Informe o e-mail de acesso.';
-			else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(acessoEmail.trim()))
+			else if (!isEmail(acessoEmail.trim()))
 				novos['acesso'] = 'Informe um e-mail válido para o acesso.';
 			else if (acessoSenha && acessoSenha.length < 8)
 				novos['acesso'] = 'A senha deve ter ao menos 8 caracteres.';

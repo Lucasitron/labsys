@@ -20,6 +20,7 @@
 	import { psStageMeta } from '$lib/utils/rh-status';
 	import { isTutor, isAdmin } from '$lib/utils/permissions';
 	import { toasts } from '$lib/stores/toast';
+	import { isEmail } from '$lib/utils/validation';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
@@ -257,7 +258,7 @@
 		if (!nomeInsc.trim()) novos['nome'] = 'Informe o nome completo.';
 		if (!matriculaInsc.trim()) novos['matricula'] = 'Informe a matrícula.';
 		if (!emailInsc.trim()) novos['email'] = 'Informe o e-mail.';
-		else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInsc.trim()))
+		else if (!isEmail(emailInsc.trim()))
 			novos['email'] = 'Informe um e-mail válido.';
 		if (ehAdmin && !tutorIdInsc) novos['tutor'] = 'Selecione o tutor responsável.';
 		errosInsc = novos;

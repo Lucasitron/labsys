@@ -10,6 +10,7 @@
 	import { canEditVendas } from '$lib/utils/permissions';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
+	import { isEmail } from '$lib/utils/validation';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import RadioCards from '$lib/components/ui/RadioCards.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -201,7 +202,7 @@
 		if (!somenteDigitos(documento)) novos['documento'] = `Informe o ${tipo === 'pf' ? 'CPF' : 'CNPJ'}.`;
 		else if (!docValido) novos['documento'] = `${tipo === 'pf' ? 'CPF' : 'CNPJ'} inválido.`;
 		if (!email.trim()) novos['email'] = 'Informe o e-mail.';
-		else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+		else if (!isEmail(email.trim()))
 			novos['email'] = 'Informe um e-mail válido.';
 		if (somenteDigitos(telefone).length < 10) novos['telefone'] = 'Informe um telefone válido com DDD.';
 		if (cep && somenteDigitos(cep).length !== 8) novos['cep'] = 'CEP deve ter 8 dígitos.';

@@ -10,6 +10,7 @@
 	import { isAdmin } from '$lib/utils/permissions';
 	import { errorMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
+	import { isEmail } from '$lib/utils/validation';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
@@ -68,7 +69,7 @@
 		if (!matricula.trim()) novos['matricula'] = 'Informe a matrícula.';
 		if (criarAcesso) {
 			if (!email.trim()) novos['email'] = 'Informe o e-mail de acesso.';
-			else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+			else if (!isEmail(email.trim()))
 				novos['email'] = 'Informe um e-mail válido.';
 		}
 		if (criarAcesso && senha && senha.length < 8)

@@ -13,6 +13,7 @@
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import { isEmail } from '$lib/utils/validation';
 
 	let { data }: PageProps = $props();
 
@@ -38,8 +39,6 @@
 		3: 'warn',
 		4: 'danger'
 	};
-
-	const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 	let nome = $state('');
 	let email = $state('');
@@ -71,7 +70,7 @@
 		if (!nome.trim()) erros.nome = 'Informe o nome completo.';
 		if (!email.trim()) {
 			erros.email = 'Informe o e-mail institucional.';
-		} else if (!EMAIL_RE.test(email.trim())) {
+		} else if (!isEmail(email.trim())) {
 			erros.email = 'E-mail inválido.';
 		}
 		return erros;

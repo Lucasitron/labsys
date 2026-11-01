@@ -11,6 +11,7 @@
 	import { listOrcamentos } from '$lib/api/vendas/orcamentos';
 	import { listEncomendas } from '$lib/api/vendas/encomendas';
 	import { canEditVendas } from '$lib/utils/permissions';
+	import { isEmail } from '$lib/utils/validation';
 	import { toUserMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
 	import { formatMoneyBRL, formatDateBR, maskDocumento } from '$lib/utils/vendas-format';
@@ -85,9 +86,7 @@
 		return digitos ? `tel:+${digitos}` : '';
 	}
 
-	const emailValido = $derived(
-		cliente ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cliente.email.trim()) : false
-	);
+	const emailValido = $derived(isEmail(cliente?.email ?? ''));
 	const telefoneDigitos = $derived(cliente ? cliente.telefone.replace(/\D/g, '') : '');
 
 	const abas = [

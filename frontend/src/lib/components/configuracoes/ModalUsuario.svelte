@@ -3,6 +3,7 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import type { UsuarioPayload } from '$lib/api/configuracoes/usuarios';
 	import type { Nivel, SituacaoUsuario, Usuario } from '$lib/types/configuracoes';
+	import { isEmail } from '$lib/utils/validation';
 
 	interface Props {
 		open: boolean;
@@ -13,8 +14,6 @@
 	}
 
 	let { open, admin, usuario = null, onClose, onSave }: Props = $props();
-
-	const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 	const niveis = [
 		{ id: '0', label: 'Admin (nível 0)' },
@@ -57,7 +56,7 @@
 		if (!nome.trim()) erros.nome = 'Informe o nome.';
 		if (!email.trim()) {
 			erros.email = 'Informe o e-mail.';
-		} else if (!EMAIL_RE.test(email)) {
+		} else if (!isEmail(email)) {
 			erros.email = 'E-mail inválido.';
 		}
 		return erros;
