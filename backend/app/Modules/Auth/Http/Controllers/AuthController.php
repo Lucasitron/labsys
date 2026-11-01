@@ -29,7 +29,7 @@ class AuthController
 
     public function logout(Request $request): JsonResponse
     {
-        $token = $request->input('token') ?? $this->bearer($request);
+        $token = $request->input('token') ?? $request->bearerToken();
         $this->auth->logout($token);
 
         return response()->json(['message' => 'Logout realizado com sucesso']);
@@ -70,14 +70,10 @@ class AuthController
             $request->input('senhaAtual'),
             $request->input('novaSenha'),
             $request->input('confirmacaoSenha'),
-            $this->bearer($request),
+            $request->bearerToken(),
         );
 
         return response()->json(['mensagem' => 'Senha alterada com sucesso']);
     }
 
-    private function bearer(Request $request): ?string
-    {
-        return $request->bearerToken();
-    }
 }

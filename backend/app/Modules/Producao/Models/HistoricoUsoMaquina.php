@@ -3,7 +3,6 @@
 namespace App\Modules\Producao\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /** Registro de uso de máquina (producao.historico_uso_maquina). */
 class HistoricoUsoMaquina extends Model
@@ -29,8 +28,4 @@ class HistoricoUsoMaquina extends Model
         'horas_uso' => 'decimal:2',
     ];
 
-    public function maquina(): BelongsTo
-    {
-        return $this->belongsTo(Maquina::class, 'id_maquina', 'id_maquina');
-    }
 }

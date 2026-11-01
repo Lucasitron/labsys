@@ -36,13 +36,6 @@ class CusteioService
         private EstoqueContract $estoque,
     ) {}
 
-    public function calcular(int $idEncomenda, FinanceiroPrincipal $principal): CustoEncomenda
-    {
-        FinanceiroPolicy::exigeAdmin($principal);
-
-        return $this->executar($idEncomenda);
-    }
-
     /** Variante para o listener de produção concluída (sem principal: sistema). */
     public function calcularDoEvento(int $idEncomenda): CustoEncomenda
     {

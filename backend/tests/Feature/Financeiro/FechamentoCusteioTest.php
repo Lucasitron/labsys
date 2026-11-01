@@ -134,9 +134,7 @@ class FechamentoCusteioTest extends FinanceiroTestCase
         $headers = $this->headersAdmin();
         $this->cenarioCusteio($headers);
 
-        $custo = app(CusteioService::class)->calcular(
-            7, \App\Modules\Financeiro\FinanceiroPrincipal::from($this->criarAdmin()),
-        );
+        $custo = app(CusteioService::class)->calcularDoEvento(7);
 
         // Materiais 150.00 + mão de obra (5×20 + 3×12.50 = 137.50) + overhead (8×2 = 16.00).
         $this->assertSame('150.00', (string) $custo->custo_materiais);
@@ -158,11 +156,6 @@ class FechamentoCusteioTest extends FinanceiroTestCase
     public function test_custeio_sem_precondicao_falha_orientativo_sem_persistir(): void
     {
         $headers = $this->headersAdmin();
-        $principal = function () {
-            $admin = $this->criarAdmin();
-
-            return \App\Modules\Financeiro\FinanceiroPrincipal::from($admin);
-        };
 
         // Sem valor/hora vigente → 422 orientativo, sem persistir parcial.
         $this->postJson('/api/financeiro/fechamento-encomenda', $this->fechamentoPayload(8), $headers)
@@ -172,7 +165,7 @@ class FechamentoCusteioTest extends FinanceiroTestCase
             'horas' => '2.00', 'data_registro' => '2026-09-01',
         ]);
         try {
-            app(CusteioService::class)->calcular(8, $principal());
+            app(CusteioService::class)->calcularDoEvento(8);
             $this->fail('Deveria falhar sem valor/hora');
         } catch (\App\Shared\Exceptions\ConfiguracaoInvalidaException $e) {
             $this->assertStringContainsString('nível', $e->getMessage());
@@ -184,7 +177,7 @@ class FechamentoCusteioTest extends FinanceiroTestCase
             'nivelAcesso' => 2, 'valorHora' => '10.00', 'dataVigencia' => today()->toDateString(),
         ], $headers)->assertCreated();
         try {
-            app(CusteioService::class)->calcular(8, $principal());
+            app(CusteioService::class)->calcularDoEvento(8);
             $this->fail('Deveria falhar sem overhead');
         } catch (\App\Shared\Exceptions\ConfiguracaoInvalidaException $e) {
             $this->assertStringContainsString('overhead', $e->getMessage());

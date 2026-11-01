@@ -4,7 +4,6 @@ namespace App\Modules\Producao\Models;
 
 use App\Modules\Producao\Enums\StatusProjetoMesa;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /** Auditoria de projeto de mesa (producao.auditoria_projeto_mesa). Espelha o status. */
 class AuditoriaProjetoMesa extends Model
@@ -28,8 +27,4 @@ class AuditoriaProjetoMesa extends Model
         'resultado' => StatusProjetoMesa::class,
     ];
 
-    public function projetoMesa(): BelongsTo
-    {
-        return $this->belongsTo(ProjetoMesa::class, 'id_projeto_mesa', 'id_projeto_mesa');
-    }
 }

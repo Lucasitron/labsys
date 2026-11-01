@@ -4,7 +4,6 @@ namespace App\Modules\Producao\Models;
 
 use App\Modules\Producao\Enums\TipoAdvertencia;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /** Advertência de membro (producao.advertencia_membro). Contador sequencial por membro. */
 class AdvertenciaMembro extends Model
@@ -31,8 +30,4 @@ class AdvertenciaMembro extends Model
         'contador' => 'integer',
     ];
 
-    public function inspecao(): BelongsTo
-    {
-        return $this->belongsTo(Inspecao5S::class, 'id_inspecao', 'id_inspecao');
-    }
 }

@@ -7,7 +7,6 @@ use App\Modules\Estoque\Enums\Categoria;
 use App\Modules\Estoque\EstoquePrincipal;
 use App\Modules\Estoque\Http\Requests\ItemRequest;
 use App\Modules\Estoque\Http\Resources\ItemResource;
-use App\Modules\Estoque\Http\Resources\SaidaResource;
 use App\Modules\Estoque\Services\ItemService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
