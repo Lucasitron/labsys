@@ -13,10 +13,6 @@ export const prerender = false;
 
 const TABS_VALIDAS: CusteioTab[] = ['fechamentos', 'custos', 'valores', 'compras'];
 
-export interface CusteioState {
-	tab: CusteioTab;
-}
-
 export const load: PageLoad = async ({ url, fetch }) => {
 	const bruta = (url.searchParams.get('tab') ?? '').trim();
 	const tab: CusteioTab = (TABS_VALIDAS as string[]).includes(bruta)

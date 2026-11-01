@@ -41,15 +41,6 @@ export function tamanhoDaPaginaDaUrl(
 	return lerNumero(url, 'pageSize', fallback, max);
 }
 
-export function filtrosDaUrl(url: URL, chaves: readonly string[]): Record<string, string[]> {
-	const filtros: Record<string, string[]> = {};
-	for (const chave of chaves) {
-		const valores = url.searchParams.getAll(chave);
-		if (valores.length > 0) filtros[chave] = valores;
-	}
-	return filtros;
-}
-
 // Back serve listas como `{data:[...]}` (ResourceCollection) — desembrulha p/ array.
 
 export function unwrapLista<T>(res: T[] | { data: T[] } | null | undefined): T[] {
@@ -99,34 +90,6 @@ export const MAQUINA_STATUS_UPPER: Record<string, string> = {
 	EM_USO: 'Em uso',
 	MANUTENCAO: 'Em manutenção'
 };
-
-export function paginadoVazio<T>(): Paginado<T> {
-	return {
-		dados: [],
-		paginacao: {
-			page: 1,
-			pageSize: PADRAO_TAMANHO_PAGINA,
-			totalItems: 0,
-			totalPages: totalDePaginas(0, PADRAO_TAMANHO_PAGINA)
-		}
-	};
-}
-
-export function paginaSeguinte<T>(paginas: Paginado<T>): number | null {
-	return paginas.paginacao.page < paginas.paginacao.totalPages ? paginas.paginacao.page + 1 : null;
-}
-
-export function paginaAnterior<T>(paginas: Paginado<T>): number | null {
-	return paginas.paginacao.page > 1 ? paginas.paginacao.page - 1 : null;
-}
-
-export function mostrarDeAte<T>(paginas: Paginado<T>): string {
-	const { page, pageSize, totalItems } = paginas.paginacao;
-	if (totalItems === 0) return '0';
-	const inicio = (page - 1) * pageSize + 1;
-	const fim = Math.min(page * pageSize, totalItems);
-	return `${inicio}–${fim} de ${totalItems}`;
-}
 
 export * from './resumo';
 export * from './projetos';

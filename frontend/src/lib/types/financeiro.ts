@@ -94,13 +94,6 @@ export interface RegistrarPagamentoPayload {
 	observacao?: string;
 }
 
-export interface TotaisContas {
-	mes: number;
-	vencidas: number;
-	pagasMes: number;
-	proximos30d: number;
-}
-
 export interface DoacaoRecurso {
 	id: string;
 	tipo: TipoDoacao;
@@ -216,16 +209,6 @@ export interface ConcluirCompraPayload {
 export interface ConcluirCompraResult {
 	status: CompraStatus;
 	lancamentoGerado?: string;
-}
-
-export interface ResumoFinanceiro {
-	saldoCaixa: number;
-	aReceber: number;
-	inadimplentes: number;
-	aPagar: number;
-	vencem7d: number;
-	custoMedio: number;
-	margemMedia: number;
 }
 
 export interface FluxoCaixaLinha {

@@ -22,11 +22,6 @@ export interface User {
 	responsibilities?: Partial<Record<Module, string[]>>;
 }
 
-export interface LoginRequest {
-	username: string;
-	password: string;
-}
-
 // Corpo real exigido pelo backend Laravel (POST /api/auth/login):
 // email OU nomeUsuario obrigatório + senha.
 export interface BackendLoginBody {

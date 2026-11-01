@@ -202,12 +202,6 @@ export interface MovementsResult {
 	filters: MovementFilters;
 }
 
-export interface ItemMovementsResult {
-	summary: MovementSummary;
-	movements: Movement[];
-	pagination: PageInfo;
-}
-
 // ---- Empréstimos (backend EmprestimoResponse) ----
 
 export interface Emprestimo {
@@ -261,8 +255,6 @@ export interface CreateBomPayload {
 	versao: number;
 	itens: BomItemPayload[];
 }
-
-export type UpdateBomPayload = Partial<CreateBomPayload>;
 
 export interface RegistrarConsumoPayload {
 	itens: { idItem: string; quantidade: number }[];

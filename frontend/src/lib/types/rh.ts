@@ -261,14 +261,6 @@ export interface AvaliarTreinamentoPayload {
 	groupId?: string;
 }
 
-export interface AtribuirTarefaFinalPayload {
-	title: string;
-	description?: string;
-	groupId?: string;
-	modelo?: string;
-	dataConclusao: string;
-}
-
 export interface TreinamentosResult {
 	trainings: Treinamento[];
 }

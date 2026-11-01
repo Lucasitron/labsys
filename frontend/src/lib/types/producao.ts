@@ -38,8 +38,6 @@ export type PenalidadeStatus = 'Ativa' | 'Cumprida';
 
 export type SituacaoMesas = 'Aprovada' | 'Pendente';
 
-export type MesaStatus = SituacaoMesas;
-
 export type MesaAuditoriaResultado = 'ATIVO' | 'ABANDONADO';
 
 export type ChaveParametro5S =
@@ -82,17 +80,6 @@ export interface Tarefa {
 }
 
 // ---- Kanban de encomendas ----
-
-export interface KanbanItem {
-	id: string;
-	codigo: string;
-	titulo: string;
-	coluna: KanbanColuna;
-	cliente?: string;
-	prioridade?: Prioridade;
-	prazo?: string;
-	responsavel?: NomeFunc | null;
-}
 
 export type ContagemKanban = Record<KanbanColuna, number>;
 
@@ -202,13 +189,6 @@ export interface RankingItem {
 	cartao: Cartao5S;
 	top1: boolean;
 	semanaLivre: boolean;
-}
-
-export interface Parametro5S {
-	id: string;
-	chave: ChaveParametro5S;
-	valor: number | string | boolean;
-	descricao?: string;
 }
 
 // ---- Mesas de projeto ----

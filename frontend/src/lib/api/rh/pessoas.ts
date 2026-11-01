@@ -204,5 +204,4 @@ export async function deletePessoa(id: string, fetchFn: typeof fetch = fetch): P
 	await apiFetch<void>(`/rh/pessoas/${id}`, { method: 'DELETE', headers: bearer() }, fetchFn);
 }
 
-export { searchPeople } from '$lib/api/rh';
-export type { PersonOption } from '$lib/api/rh';
+
