@@ -2,7 +2,7 @@
 
 namespace App\Modules\Financeiro\Services;
 
-use App\Modules\Financeiro\Events\CompraSolicitadaEvent;
+use App\Events\CompraSolicitadaEvent;
 use App\Modules\Financeiro\Events\CustoCalculadoEvent;
 use App\Modules\Financeiro\Events\LancamentoVencidoEvent;
 use Illuminate\Support\Facades\Log;
@@ -32,7 +32,7 @@ final class FinanceiroEventPublisher
 
     public function compraSolicitada(int $id): void
     {
-        $this->publicar(fn () => event(new CompraSolicitadaEvent($id, null)), 'compra.solicitada');
+        $this->publicar(fn () => event(new CompraSolicitadaEvent(idCompra: $id)), 'compra.solicitada');
     }
 
     private function publicar(callable $dispatch, string $nome): void

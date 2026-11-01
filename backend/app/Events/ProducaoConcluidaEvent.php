@@ -1,19 +1,16 @@
 <?php
 
-namespace App\Modules\Producao\Events;
+namespace App\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
 
-/** Produção concluída → Estoque (baixa) e Financeiro (custeio). Nome preservado. */
 class ProducaoConcluidaEvent
 {
     use Dispatchable;
 
     public const NAME = 'producao.concluida.event';
 
-    /**
-     * @param list<array{idItem:int,quantidadeConsumida:string}> $itens BOM final
-     */
+    /** @param list<array{idItem:int,quantidadeConsumida:string}> $itens */
     public function __construct(
         public readonly int $idEncomenda,
         public readonly ?int $idProdutoServico,

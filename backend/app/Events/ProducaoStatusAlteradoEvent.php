@@ -1,29 +1,34 @@
 <?php
 
-namespace App\Modules\Producao\Events;
+namespace App\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
 
-/** Mudança de coluna do Kanban → Vendas (sync) e Notification. Nome preservado. */
 class ProducaoStatusAlteradoEvent
 {
     use Dispatchable;
 
     public const NAME = 'producao.status.alterado.event';
 
+    public readonly string $statusVendas;
+
     public function __construct(
         public readonly int $idEncomenda,
         public readonly string $statusNovo,
-        public readonly ?int $idUsuario,
+        public readonly ?int $idUsuario = null,
         public readonly ?string $observacao = null,
-    ) {}
+        ?string $statusVendas = null,
+    ) {
+        $this->statusVendas = $statusVendas ?? $statusNovo;
+    }
 
-    /** @return array{idEncomenda:int,statusNovo:string,idUsuario:?int,observacao:?string} */
+    /** @return array{idEncomenda:int,statusNovo:string,statusVendas:string,idUsuario:?int,observacao:?string} */
     public function payload(): array
     {
         return [
             'idEncomenda' => $this->idEncomenda,
             'statusNovo' => $this->statusNovo,
+            'statusVendas' => $this->statusVendas,
             'idUsuario' => $this->idUsuario,
             'observacao' => $this->observacao,
         ];

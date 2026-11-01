@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Financeiro;
 
+use App\Events\ProducaoConcluidaEvent;
 use App\Modules\Estoque\Enums\Categoria as CategoriaEstoque;
-use App\Modules\Estoque\Events\ProducaoConcluidaEvent as EstoqueProducaoConcluidaEvent;
 use App\Modules\Estoque\Models\EntradaEstoque;
 use App\Modules\Estoque\Models\Fornecedor;
 use App\Modules\Estoque\Models\Item;
@@ -218,9 +218,9 @@ class FechamentoCusteioTest extends FinanceiroTestCase
         $item = $this->criarItemComPreco('7.50');
 
         // Produção concluída (fila sync): consome 4 × 7.50 = 30.00 de material.
-        event(new EstoqueProducaoConcluidaEvent(10, null, [
+        event(new ProducaoConcluidaEvent(10, null, [
             ['idItem' => $item->getKey(), 'quantidadeConsumida' => '4.00'],
-        ]));
+        ], today()->toDateString()));
 
         // Lançamento automático de SAIDA, referenciado pela encomenda.
         $this->assertDatabaseHas('financeiro.lancamento_financeiro', [

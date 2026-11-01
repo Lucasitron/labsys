@@ -3,10 +3,10 @@
 namespace App\Shared\Exceptions;
 
 /** Conflito de estado/versão (lock otimista, duplicidade semântica) → 409. */
-class ConflitoException extends \RuntimeException
+class ConflitoException extends ApiException
 {
     public function __construct(string $message = 'Conflito de estado')
     {
-        parent::__construct($message);
+        parent::__construct($message, 409);
     }
 }

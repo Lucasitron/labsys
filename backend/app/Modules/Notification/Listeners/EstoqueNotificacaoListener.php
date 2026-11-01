@@ -2,7 +2,7 @@
 
 namespace App\Modules\Notification\Listeners;
 
-use App\Modules\Estoque\Events\CompraSolicitadaEvent;
+use App\Events\CompraSolicitadaEvent;
 use App\Modules\Estoque\Events\EmprestimoAtrasadoEvent;
 use App\Modules\Estoque\Events\EstoqueBaixoEvent;
 use App\Modules\Notification\Services\NotificationDispatchService;
@@ -50,6 +50,9 @@ class EstoqueNotificacaoListener implements ShouldQueue
 
     public function handleCompraSolicitada(CompraSolicitadaEvent $event): void
     {
+        if ($event->idEntrada === null) {
+            return;
+        }
         try {
             $this->dispatch->notificarAdmins(
                 'estoque',

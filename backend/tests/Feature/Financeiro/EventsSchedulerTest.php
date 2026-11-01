@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Financeiro;
 
-use App\Modules\Estoque\Events\ProducaoConcluidaEvent;
-use App\Modules\Financeiro\Events\CompraSolicitadaEvent;
+use App\Events\ProducaoConcluidaEvent;
+use App\Events\CompraSolicitadaEvent;
 use App\Modules\Financeiro\Events\CustoCalculadoEvent;
 use App\Modules\Financeiro\Events\LancamentoVencidoEvent;
 use App\Modules\Financeiro\Models\CustoEncomenda;
@@ -68,7 +68,7 @@ class EventsSchedulerTest extends FinanceiroTestCase
         $this->postJson('/api/financeiro/fechamento-encomenda', $this->fechamentoPayload(33), $headers)
             ->assertCreated();
 
-        event(new ProducaoConcluidaEvent(33, null, []));
+        event(new ProducaoConcluidaEvent(33, null, [], today()->toDateString()));
 
         $custo = CustoEncomenda::where('id_encomenda', 33)->first();
         $this->assertNotNull($custo);
@@ -76,7 +76,7 @@ class EventsSchedulerTest extends FinanceiroTestCase
         $this->assertSame('1000.00', (string) $custo->margem_lucro);
 
         // Sem fechamento: warn/ignore, sem exceção (produtor real chega em M6).
-        event(new ProducaoConcluidaEvent(9997, null, []));
+        event(new ProducaoConcluidaEvent(9997, null, [], today()->toDateString()));
 
         $this->assertSame(0, CustoEncomenda::where('id_encomenda', 9997)->count());
     }
@@ -99,7 +99,8 @@ class EventsSchedulerTest extends FinanceiroTestCase
                 && array_keys($e->payload()) === ['idLancamento', 'valor', 'dataVencimento', 'idReferenciaExterna']);
         Event::assertDispatched(CompraSolicitadaEvent::class,
             fn ($e) => $e::NAME === 'compra.solicitada.event'
-                && array_keys($e->payload()) === ['idCompra', 'idFornecedor']);
+                && array_keys($e->payload()) === ['idEntrada', 'idItem', 'idFornecedor', 'quantidade',
+                    'valorUnitario', 'valorTotal', 'dataEntrada', 'notaFiscal', 'idCompra']);
 
         // Nomes preservados (custo calculado é coberto no FechamentoCusteioTest).
         $this->assertSame('custo.calculado.event', CustoCalculadoEvent::NAME);

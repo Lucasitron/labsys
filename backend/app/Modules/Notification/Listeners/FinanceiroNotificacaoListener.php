@@ -2,7 +2,7 @@
 
 namespace App\Modules\Notification\Listeners;
 
-use App\Modules\Financeiro\Events\CompraSolicitadaEvent;
+use App\Events\CompraSolicitadaEvent;
 use App\Modules\Financeiro\Events\LancamentoVencidoEvent;
 use App\Modules\Notification\Services\NotificationDispatchService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -34,6 +34,9 @@ class FinanceiroNotificacaoListener implements ShouldQueue
     /** Mesmo NAME do Estoque (`compra.solicitada.event`), outra classe — tipo por origem. */
     public function handleCompraSolicitada(CompraSolicitadaEvent $event): void
     {
+        if ($event->idCompra === null) {
+            return;
+        }
         try {
             $this->dispatch->notificarAdmins(
                 'financeiro',

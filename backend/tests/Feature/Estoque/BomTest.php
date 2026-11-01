@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Estoque;
 
+use App\Events\ProducaoConcluidaEvent;
 use App\Modules\Auth\Enums\Role;
 use App\Modules\Estoque\Contracts\EstoqueContract;
-use App\Modules\Estoque\Events\ProducaoConcluidaEvent;
 use App\Modules\Estoque\Models\Item;
 use App\Modules\Estoque\Models\ListaMateriais;
 use App\Modules\Estoque\Models\SaidaEstoque;
@@ -131,7 +131,7 @@ class BomTest extends EstoqueTestCase
 
         $evento = new ProducaoConcluidaEvent(42, 7, [
             ['idItem' => (int) $item->getKey(), 'quantidadeConsumida' => '5.00'],
-        ]);
+        ], '2026-10-07');
 
         event($evento);
         $this->assertSame('25.00', Item::find($item->getKey())->quantidade_atual);
@@ -143,7 +143,7 @@ class BomTest extends EstoqueTestCase
             ->where('id_referencia', 42)->count());
 
         // Itens vazios = no-op.
-        event(new ProducaoConcluidaEvent(43, 7, []));
+        event(new ProducaoConcluidaEvent(43, 7, [], '2026-10-07'));
         $this->assertSame(0, SaidaEstoque::where('id_referencia', 43)->count());
 
         $this->assertSame('producao.concluida.event', ProducaoConcluidaEvent::NAME);

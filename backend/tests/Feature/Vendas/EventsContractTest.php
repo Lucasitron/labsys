@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Vendas;
 
+use App\Events\ProducaoStatusAlteradoEvent;
 use App\Modules\Vendas\Contracts\VendasContract;
 use App\Modules\Vendas\Events\EncomendaCriadaEvent;
 use App\Modules\Vendas\Events\EncomendaStatusAlteradoEvent;
 use App\Modules\Vendas\Events\OrcamentoAprovadoEvent;
-use App\Modules\Vendas\Events\ProducaoStatusAlteradoEvent;
 use App\Modules\Vendas\Models\Encomenda;
 use App\Modules\Vendas\Models\HistoricoStatusEncomenda;
 
@@ -60,7 +60,7 @@ class EventsContractTest extends VendasTestCase
         $id = $this->encomendaPronta($headers);
 
         // Dispatch manual (produtor M6 ainda não existe).
-        event(new ProducaoStatusAlteradoEvent($id, 'Produção', 'Setup concluído'));
+        event(new ProducaoStatusAlteradoEvent($id, 'PRODUCAO', null, 'Setup concluído', 'Produção'));
 
         $this->assertSame('Produção', Encomenda::find($id)->status_kanban->value);
         $historico = HistoricoStatusEncomenda::where('id_encomenda', $id)->orderBy('id_historico')->get();
@@ -69,11 +69,11 @@ class EventsContractTest extends VendasTestCase
         $this->assertSame('Setup concluído', $historico->last()->observacao);
 
         // Status igual = no-op (sem nova linha de histórico).
-        event(new ProducaoStatusAlteradoEvent($id, 'Produção'));
+        event(new ProducaoStatusAlteradoEvent($id, 'PRODUCAO', null, null, 'Produção'));
         $this->assertCount(2, HistoricoStatusEncomenda::where('id_encomenda', $id)->get());
 
         // Desconhecido = ignore, sem 500.
-        event(new ProducaoStatusAlteradoEvent($id, 'HIPERESPAÇO'));
+        event(new ProducaoStatusAlteradoEvent($id, 'HIPERESPAÇO', null, null, 'HIPERESPAÇO'));
         $this->assertSame('Produção', Encomenda::find($id)->status_kanban->value);
     }
 

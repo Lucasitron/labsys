@@ -2,7 +2,7 @@
 
 namespace App\Modules\Estoque\Listeners;
 
-use App\Modules\Estoque\Events\ProducaoConcluidaEvent;
+use App\Events\ProducaoConcluidaEvent;
 use App\Modules\Estoque\Services\ItemService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 

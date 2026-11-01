@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Estoque;
 
+use App\Events\CompraSolicitadaEvent;
 use App\Modules\Auth\Enums\Role;
-use App\Modules\Estoque\Events\CompraSolicitadaEvent;
 use App\Modules\Estoque\Events\EstoqueBaixoEvent;
 use App\Modules\Estoque\Models\EntradaEstoque;
 use App\Modules\Estoque\Models\Item;

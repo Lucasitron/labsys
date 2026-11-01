@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Financeiro;
 
-use App\Modules\Financeiro\Events\CompraSolicitadaEvent;
+use App\Events\CompraSolicitadaEvent;
 use App\Modules\Financeiro\Events\CustoCalculadoEvent;
 use App\Modules\Financeiro\Events\LancamentoVencidoEvent;
 use PHPUnit\Framework\TestCase;
@@ -31,7 +31,12 @@ class EventosTest extends TestCase
             $custo->payload(),
         );
 
-        $compra = new CompraSolicitadaEvent(9, null);
-        $this->assertSame(['idCompra' => 9, 'idFornecedor' => null], $compra->payload());
+        $compra = new CompraSolicitadaEvent(idCompra: 9);
+        $this->assertSame(
+            ['idEntrada' => null, 'idItem' => null, 'idFornecedor' => null, 'quantidade' => null,
+                'valorUnitario' => null, 'valorTotal' => null, 'dataEntrada' => null,
+                'notaFiscal' => null, 'idCompra' => 9],
+            $compra->payload(),
+        );
     }
 }

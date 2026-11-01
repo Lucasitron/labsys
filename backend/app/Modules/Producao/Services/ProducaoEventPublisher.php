@@ -2,15 +2,13 @@
 
 namespace App\Modules\Producao\Services;
 
-use App\Modules\Estoque\Events\ProducaoConcluidaEvent as EstoqueConcluidaEvent;
+use App\Events\ProducaoConcluidaEvent;
+use App\Events\ProducaoStatusAlteradoEvent;
 use App\Modules\Producao\Enums\KanbanStatus;
 use App\Modules\Producao\Events\AdvertenciaLimiteAtingidoEvent;
 use App\Modules\Producao\Events\AdvertenciaRegistradaEvent;
 use App\Modules\Producao\Events\KanbanStatusAlteradoEvent;
-use App\Modules\Producao\Events\ProducaoConcluidaEvent;
-use App\Modules\Producao\Events\ProducaoStatusAlteradoEvent;
 use App\Modules\Producao\Events\ProjetoMesaAbandonadoEvent;
-use App\Modules\Vendas\Events\ProducaoStatusAlteradoEvent as VendasStatusEvent;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -18,11 +16,9 @@ use Illuminate\Support\Facades\Log;
  * preservados): falha de fila nunca estoura 500 na operação — equivale ao
  * try/catch do `ProducaoEventPublisher` com `RabbitTemplate` (descartado).
  *
- * Os produtores reais de `producao.status.alterado.event` e
- * `producao.concluida.event` disparam também as classes de evento já
- * assinadas por M3/M4/M5 (`Vendas/...`, `Estoque/...`), desbloqueando
- * `ProducaoStatusListener`, `ConsumoProducaoListener` e o custeio do
- * Financeiro sem tocar nesses módulos.
+ * Os eventos transversais (`producao.status.alterado.event` /
+ * `producao.concluida.event`) vivem em `App\Events` — um consumidor
+ * (Estoque/Vendas/Financeiro/Notification) por classe, um único dispatch.
  */
 final class ProducaoEventPublisher
 {
@@ -30,8 +26,7 @@ final class ProducaoEventPublisher
     {
         $this->publicar(
             function () use ($idEncomenda, $novo, $idUsuario, $observacao): void {
-                event(new ProducaoStatusAlteradoEvent($idEncomenda, $novo->value, $idUsuario, $observacao));
-                event(new VendasStatusEvent($idEncomenda, $novo->rotuloVendas(), $observacao));
+                event(new ProducaoStatusAlteradoEvent($idEncomenda, $novo->value, $idUsuario, $observacao, $novo->rotuloVendas()));
             },
             'producao.status.alterado',
         );
@@ -55,7 +50,6 @@ final class ProducaoEventPublisher
         $this->publicar(
             function () use ($idEncomenda, $itens): void {
                 event(new ProducaoConcluidaEvent($idEncomenda, null, $itens, today()->toDateString()));
-                event(new EstoqueConcluidaEvent($idEncomenda, null, $itens));
             },
             'producao.concluida',
         );

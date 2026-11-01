@@ -3,7 +3,7 @@
 namespace App\Modules\Estoque\Services;
 
 use App\Modules\Estoque\EstoquePrincipal;
-use App\Modules\Estoque\Events\CompraSolicitadaEvent;
+use App\Events\CompraSolicitadaEvent;
 use App\Modules\Estoque\Models\EntradaEstoque;
 use App\Modules\Estoque\Models\Fornecedor;
 use App\Modules\Estoque\Models\Item;

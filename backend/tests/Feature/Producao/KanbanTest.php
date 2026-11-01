@@ -3,13 +3,11 @@
 namespace Tests\Feature\Producao;
 
 use App\Modules\Auth\Enums\Role;
-use App\Modules\Estoque\Events\ProducaoConcluidaEvent as EstoqueConcluidaEvent;
+use App\Events\ProducaoConcluidaEvent;
+use App\Events\ProducaoStatusAlteradoEvent;
 use App\Modules\Estoque\Models\Item;
 use App\Modules\Producao\Events\KanbanStatusAlteradoEvent;
-use App\Modules\Producao\Events\ProducaoConcluidaEvent;
-use App\Modules\Producao\Events\ProducaoStatusAlteradoEvent;
 use App\Modules\Producao\Models\EncomendaKanban;
-use App\Modules\Vendas\Events\ProducaoStatusAlteradoEvent as VendasStatusEvent;
 use Illuminate\Support\Facades\Event;
 
 /** Kanban: LINKA Vendas, `version` 409, histórico, eventos e baixa no `ENTREGUE`. */
@@ -47,7 +45,7 @@ class KanbanTest extends ProducaoTestCase
             ->assertCreated()->json('id');
 
         Event::fake([
-            ProducaoStatusAlteradoEvent::class, VendasStatusEvent::class, KanbanStatusAlteradoEvent::class,
+            ProducaoStatusAlteradoEvent::class, KanbanStatusAlteradoEvent::class,
         ]);
 
         $this->putJson("/api/producao/kanban/{$id}/mover", [
@@ -55,9 +53,8 @@ class KanbanTest extends ProducaoTestCase
         ], $admin)->assertOk()->assertJsonPath('version', 1);
 
         Event::assertDispatched(ProducaoStatusAlteradoEvent::class,
-            fn ($e) => $e->idEncomenda === $idEncomenda && $e->statusNovo === 'PRODUCAO');
-        Event::assertDispatched(VendasStatusEvent::class,
-            fn ($e) => $e->idEncomenda === $idEncomenda && $e->statusNovo === 'Produção');
+            fn ($e) => $e->idEncomenda === $idEncomenda
+                && $e->statusNovo === 'PRODUCAO' && $e->statusVendas === 'Produção');
         Event::assertDispatched(KanbanStatusAlteradoEvent::class,
             fn ($e) => $e->statusAnterior === 'FILA' && $e->statusNovo === 'PRODUCAO');
 
@@ -101,7 +98,7 @@ class KanbanTest extends ProducaoTestCase
             'itens' => [['idItem' => $item->getKey(), 'quantidade' => '5.00']],
         ], $headers)->assertCreated();
 
-        Event::fake([ProducaoConcluidaEvent::class, EstoqueConcluidaEvent::class]);
+        Event::fake([ProducaoConcluidaEvent::class]);
 
         foreach ([['PRONTO', 0], ['ENTREGUE', 1]] as [$alvo, $versao]) {
             $this->putJson("/api/producao/kanban/{$id}/mover",
@@ -110,8 +107,6 @@ class KanbanTest extends ProducaoTestCase
 
         Event::assertDispatched(ProducaoConcluidaEvent::class,
             fn ($e) => $e->idEncomenda === $idEncomenda && count($e->itens) === 1);
-        Event::assertDispatched(EstoqueConcluidaEvent::class,
-            fn ($e) => $e->idEncomenda === $idEncomenda);
 
         // Baixa real (dispatch real, sem fake) — precisa zerar o fake antes.
         Event::fake([\App\Modules\Vendas\Events\EncomendaCriadaEvent::class]);

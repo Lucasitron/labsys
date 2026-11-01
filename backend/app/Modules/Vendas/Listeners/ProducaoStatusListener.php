@@ -3,7 +3,7 @@
 namespace App\Modules\Vendas\Listeners;
 
 use App\Modules\Vendas\Enums\StatusKanban;
-use App\Modules\Vendas\Events\ProducaoStatusAlteradoEvent;
+use App\Events\ProducaoStatusAlteradoEvent;
 use App\Modules\Vendas\Models\Encomenda;
 use App\Modules\Vendas\Services\EncomendaService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -28,7 +28,7 @@ class ProducaoStatusListener implements ShouldQueue
             return;
         }
 
-        $novo = StatusKanban::tryFrom($event->statusNovo);
+        $novo = StatusKanban::tryFrom($event->statusVendas);
 
         if ($novo === null) {
             Log::warning("Status desconhecido da produção: {$event->statusNovo}");

@@ -2,7 +2,7 @@
 
 namespace App\Modules\Financeiro\Listeners;
 
-use App\Modules\Estoque\Events\ProducaoConcluidaEvent;
+use App\Events\ProducaoConcluidaEvent;
 use App\Modules\Financeiro\Services\CusteioService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;

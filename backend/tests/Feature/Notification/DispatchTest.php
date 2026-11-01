@@ -3,10 +3,11 @@
 namespace Tests\Feature\Notification;
 
 use App\Modules\Auth\Contracts\AuthContract;
-use App\Modules\Estoque\Events\CompraSolicitadaEvent as EstoqueCompra;
+use App\Events\CompraSolicitadaEvent;
+use App\Events\ProducaoConcluidaEvent;
+use App\Events\ProducaoStatusAlteradoEvent;
 use App\Modules\Estoque\Events\EmprestimoAtrasadoEvent;
 use App\Modules\Estoque\Events\EstoqueBaixoEvent;
-use App\Modules\Financeiro\Events\CompraSolicitadaEvent as FinanceiroCompra;
 use App\Modules\Financeiro\Events\LancamentoVencidoEvent;
 use App\Modules\Notification\Contracts\NotificationContract;
 use App\Modules\Notification\Listeners\EstoqueNotificacaoListener;
@@ -20,8 +21,6 @@ use App\Modules\Notification\Models\PreferenciaNotificacao;
 use App\Modules\Producao\Events\AdvertenciaLimiteAtingidoEvent;
 use App\Modules\Producao\Events\AdvertenciaRegistradaEvent;
 use App\Modules\Producao\Events\KanbanStatusAlteradoEvent;
-use App\Modules\Producao\Events\ProducaoConcluidaEvent;
-use App\Modules\Producao\Events\ProducaoStatusAlteradoEvent;
 use App\Modules\Producao\Events\ProjetoMesaAbandonadoEvent;
 use App\Modules\Rh\Contracts\RhContract;
 use App\Modules\Rh\Enums\NivelAcesso;
@@ -79,8 +78,11 @@ class DispatchTest extends NotificationTestCase
 
         $ouvinte->handleEstoqueBaixo(new EstoqueBaixoEvent(4, 'Filamento', '2.00', '10.00'));
         $ouvinte->handleEmprestimoAtrasado(new EmprestimoAtrasadoEvent(7, $alvo['login']->id_user, 4, '2026-09-30'));
-        $ouvinte->handleCompraSolicitada(new EstoqueCompra(11, 4, 2, '5.00', '10.00', '50.00', '2026-10-01', null));
-        app(FinanceiroNotificacaoListener::class)->handleCompraSolicitada(new FinanceiroCompra(12, null));
+        $ouvinte->handleCompraSolicitada(new CompraSolicitadaEvent(
+            idEntrada: 11, idItem: 4, idFornecedor: 2, quantidade: '5.00',
+            valorUnitario: '10.00', valorTotal: '50.00', dataEntrada: '2026-10-01',
+        ));
+        app(FinanceiroNotificacaoListener::class)->handleCompraSolicitada(new CompraSolicitadaEvent(idCompra: 12));
 
         $this->assertTrue(Notificacao::where('id_usuario', $idAdmin)->where('tipo', 'estoque')->exists());
         $this->assertTrue(Notificacao::where('id_usuario', $alvo['login']->id_user)->where('tipo', 'estoque')->exists());
