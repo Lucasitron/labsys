@@ -5,7 +5,7 @@ namespace App\Modules\Producao\Services;
 use App\Modules\Producao\Enums\ProjetoStatus;
 use App\Modules\Producao\Models\Projeto;
 use App\Modules\Producao\Policies\ProducaoPolicy;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class ProjetoService
 {
     /** @return list<Projeto> */
-    public function listar(?ProjetoStatus $status, ?int $idResponsavel, ProducaoPrincipal $principal): array
+    public function listar(?ProjetoStatus $status, ?int $idResponsavel, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
 
@@ -25,14 +25,14 @@ class ProjetoService
             ->all();
     }
 
-    public function detalhar(int $id, ProducaoPrincipal $principal): Projeto
+    public function detalhar(int $id, Caller $principal): Projeto
     {
         ProducaoPolicy::exigeLeitura($principal);
 
         return $this->obter($id);
     }
 
-    public function criar(array $dados, ProducaoPrincipal $principal): Projeto
+    public function criar(array $dados, Caller $principal): Projeto
     {
         ProducaoPolicy::exigeResponsavel((int) $dados['idResponsavel'], $principal);
 
@@ -49,7 +49,7 @@ class ProjetoService
         });
     }
 
-    public function atualizar(int $id, array $dados, ProducaoPrincipal $principal): Projeto
+    public function atualizar(int $id, array $dados, Caller $principal): Projeto
     {
         // 403 antes de 404: sem papel no módulo, nem a existência vaza.
         ProducaoPolicy::exigeLeitura($principal);
@@ -71,7 +71,7 @@ class ProjetoService
         });
     }
 
-    public function alterarStatus(int $id, ProjetoStatus $status, ?string $dataFimReal, ProducaoPrincipal $principal): Projeto
+    public function alterarStatus(int $id, ProjetoStatus $status, ?string $dataFimReal, Caller $principal): Projeto
     {
         ProducaoPolicy::exigeLeitura($principal);
         $projeto = $this->obter($id);
@@ -90,7 +90,7 @@ class ProjetoService
         });
     }
 
-    public function remover(int $id, ProducaoPrincipal $principal): void
+    public function remover(int $id, Caller $principal): void
     {
         ProducaoPolicy::exigeLeitura($principal);
         $projeto = $this->obter($id);

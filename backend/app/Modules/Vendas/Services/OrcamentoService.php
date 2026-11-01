@@ -10,7 +10,7 @@ use App\Modules\Vendas\Models\Encomenda;
 use App\Modules\Vendas\Models\ItemOrcamento;
 use App\Modules\Vendas\Models\Orcamento;
 use App\Modules\Vendas\Policies\VendasPolicy;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ConflitoException;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +19,7 @@ use Illuminate\Validation\ValidationException;
 /** Orçamentos com itens, ajustes, aprovação e duplicação (regras só aqui). */
 class OrcamentoService
 {
-    public function criar(array $dados, VendasPrincipal $principal): Orcamento
+    public function criar(array $dados, Caller $principal): Orcamento
     {
         VendasPolicy::exigeEscrita($principal);
 
@@ -48,7 +48,7 @@ class OrcamentoService
     }
 
     /** @return array{orcamentos:list<Orcamento>,counts:array<string,int>} */
-    public function listar(?StatusOrcamento $status, ?int $clienteId, VendasPrincipal $principal): array
+    public function listar(?StatusOrcamento $status, ?int $clienteId, Caller $principal): array
     {
         VendasPolicy::exigeLeitura($principal);
 
@@ -65,7 +65,7 @@ class OrcamentoService
         return ['orcamentos' => $query->get()->all(), 'counts' => $counts];
     }
 
-    public function detalhar(int $id, VendasPrincipal $principal): Orcamento
+    public function detalhar(int $id, Caller $principal): Orcamento
     {
         VendasPolicy::exigeLeitura($principal);
 
@@ -76,7 +76,7 @@ class OrcamentoService
      * Ajustes: edita itens/valores; aprovar publica `orcamento.aprovado.event`.
      * Aprovado+convertido trava edição (409).
      */
-    public function atualizar(int $id, array $dados, VendasPrincipal $principal): Orcamento
+    public function atualizar(int $id, array $dados, Caller $principal): Orcamento
     {
         VendasPolicy::exigeEscrita($principal);
 
@@ -120,7 +120,7 @@ class OrcamentoService
     }
 
     /** Duplica como Pendente com os mesmos itens (criado_por = atual). */
-    public function duplicar(int $id, VendasPrincipal $principal): Orcamento
+    public function duplicar(int $id, Caller $principal): Orcamento
     {
         VendasPolicy::exigeEscrita($principal);
 

@@ -2,6 +2,8 @@
 
 namespace App\Modules\Producao\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Producao\Http\Requests\ChecklistRequest;
 use App\Modules\Producao\Http\Requests\MaterialRequest;
@@ -13,13 +15,13 @@ use App\Modules\Producao\Http\Resources\MaterialResource;
 use App\Modules\Producao\Http\Resources\ResponsavelResource;
 use App\Modules\Producao\Http\Resources\SetorResource;
 use App\Modules\Producao\Http\Resources\SinalizacaoResource;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Producao\Services\SetorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Setores 5S — só HTTP (rotação e vínculo no service/policy). */
-class SetorController
+class SetorController extends Controller
 {
     public function __construct(private SetorService $setores) {}
 
@@ -133,11 +135,4 @@ class SetorController
         return response()->json(null, 204);
     }
 
-    private function principal(Request $request): ProducaoPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return ProducaoPrincipal::from($login);
-    }
 }

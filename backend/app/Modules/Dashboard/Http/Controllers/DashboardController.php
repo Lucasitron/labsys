@@ -2,6 +2,8 @@
 
 namespace App\Modules\Dashboard\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Contracts\AuthContract;
 use App\Modules\Auth\Models\Login;
 use App\Modules\Dashboard\Http\Resources\DashboardSummaryResource;
@@ -10,7 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Dashboard — só HTTP (agregador sem persistência; sem FormRequest: GET sem input). */
-class DashboardController
+class DashboardController extends Controller
 {
     public function __construct(private DashboardService $resumo) {}
 

@@ -6,7 +6,7 @@ use App\Modules\Vendas\Models\Cliente;
 use App\Modules\Vendas\Models\InteracaoCliente;
 use App\Modules\Vendas\Models\TarefaMarketing;
 use App\Modules\Vendas\Policies\VendasPolicy;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ResourceNotFoundException;
 
 /** CRM interno: interações (timeline) e tarefas de marketing (regras só aqui). */
@@ -18,7 +18,7 @@ class CrmService
 
     public const PRIORIDADES = ['Baixa', 'Média', 'Alta'];
 
-    public function registrarInteracao(array $dados, VendasPrincipal $principal): InteracaoCliente
+    public function registrarInteracao(array $dados, Caller $principal): InteracaoCliente
     {
         VendasPolicy::exigeEscrita($principal);
 
@@ -39,7 +39,7 @@ class CrmService
     }
 
     /** @return list<InteracaoCliente> */
-    public function listarInteracoes(int $idCliente, VendasPrincipal $principal): array
+    public function listarInteracoes(int $idCliente, Caller $principal): array
     {
         VendasPolicy::exigeLeitura($principal);
 
@@ -52,7 +52,7 @@ class CrmService
             ->all();
     }
 
-    public function criarTarefa(array $dados, VendasPrincipal $principal): TarefaMarketing
+    public function criarTarefa(array $dados, Caller $principal): TarefaMarketing
     {
         VendasPolicy::exigeEscrita($principal);
 
@@ -78,7 +78,7 @@ class CrmService
     }
 
     /** @return array{tarefas:list<TarefaMarketing>,counts:array<string,int>} */
-    public function listarTarefas(?int $responsavelId, ?string $status, VendasPrincipal $principal): array
+    public function listarTarefas(?int $responsavelId, ?string $status, Caller $principal): array
     {
         VendasPolicy::exigeLeitura($principal);
 
@@ -100,7 +100,7 @@ class CrmService
         return ['tarefas' => $tarefas->all(), 'counts' => $counts];
     }
 
-    public function atualizarTarefa(int $id, array $dados, VendasPrincipal $principal): TarefaMarketing
+    public function atualizarTarefa(int $id, array $dados, Caller $principal): TarefaMarketing
     {
         VendasPolicy::exigeEscrita($principal);
 

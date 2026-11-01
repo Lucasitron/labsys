@@ -2,8 +2,9 @@
 
 namespace App\Modules\Estoque\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
-use App\Modules\Estoque\EstoquePrincipal;
+use App\Http\Controllers\Controller;
+use App\Modules\Estoque\Http\Controllers\Concerns\ResolvesEstoquePrincipal;
+
 use App\Modules\Estoque\Http\Requests\LocalizacaoRequest;
 use App\Modules\Estoque\Http\Resources\LocalizacaoResource;
 use App\Modules\Estoque\Models\Localizacao;
@@ -15,8 +16,9 @@ use Illuminate\Http\Request;
  * Localizações — CRUD trivial direto no Eloquent (sem service forçado).
  * Escrita só Admin (matriz); leitura bloqueia Recrutando.
  */
-class LocalizacaoController
+class LocalizacaoController extends Controller
 {
+    use ResolvesEstoquePrincipal;
     public function index(Request $request): JsonResponse
     {
         EstoquePolicy::exigeLeitura($this->principal($request));
@@ -34,13 +36,5 @@ class LocalizacaoController
         $localizacao = Localizacao::create($request->validated());
 
         return response()->json((new LocalizacaoResource($localizacao))->toArray($request), 201);
-    }
-
-    private function principal(Request $request): EstoquePrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return EstoquePrincipal::from($login);
     }
 }

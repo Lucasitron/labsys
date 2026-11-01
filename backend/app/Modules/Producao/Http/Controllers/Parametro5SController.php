@@ -2,18 +2,20 @@
 
 namespace App\Modules\Producao\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Producao\Http\Requests\ParametroRequest;
 use App\Modules\Producao\Http\Resources\ParametroResource;
 use App\Modules\Producao\Models\Parametro5S;
 use App\Modules\Producao\Policies\ProducaoPolicy;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Parâmetros 5S — só HTTP (regra trivial no Model, sem service; `PUT` é Admin). */
-class Parametro5SController
+class Parametro5SController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
@@ -46,11 +48,4 @@ class Parametro5SController
             ?? throw new ResourceNotFoundException("Parâmetro 5S não encontrado: {$id}");
     }
 
-    private function principal(Request $request): ProducaoPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return ProducaoPrincipal::from($login);
-    }
 }

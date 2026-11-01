@@ -4,7 +4,7 @@ namespace App\Modules\Producao\Policies;
 
 use App\Modules\Auth\Enums\Role;
 use App\Modules\Producao\Models\SetorResponsavel;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ForbiddenException;
 
 /**
@@ -25,7 +25,7 @@ use App\Shared\Exceptions\ForbiddenException;
 class ProducaoPolicy
 {
     /** @throws ForbiddenException */
-    public static function exigeLeitura(ProducaoPrincipal $principal): void
+    public static function exigeLeitura(Caller $principal): void
     {
         if ($principal->role === Role::RECRUTANDO) {
             throw new ForbiddenException('Acesso negado ao módulo de produção');
@@ -33,7 +33,7 @@ class ProducaoPolicy
     }
 
     /** Admin sempre; demais só se forem o responsável/atribuído. */
-    public static function isResponsavelAtribuido(?int $idResponsavel, ProducaoPrincipal $principal): bool
+    public static function isResponsavelAtribuido(?int $idResponsavel, Caller $principal): bool
     {
         if ($principal->isAdmin()) {
             return true;
@@ -43,7 +43,7 @@ class ProducaoPolicy
     }
 
     /** @throws ForbiddenException */
-    public static function exigeResponsavel(?int $idResponsavel, ProducaoPrincipal $principal): void
+    public static function exigeResponsavel(?int $idResponsavel, Caller $principal): void
     {
         self::exigeLeitura($principal);
 
@@ -53,7 +53,7 @@ class ProducaoPolicy
     }
 
     /** @throws ForbiddenException */
-    public static function exigeAdmin(ProducaoPrincipal $principal): void
+    public static function exigeAdmin(Caller $principal): void
     {
         self::exigeLeitura($principal);
 
@@ -63,7 +63,7 @@ class ProducaoPolicy
     }
 
     /** Inclusão no Kanban: Admin+Bolsista (requirements §7; Voluntário `—`). */
-    public static function exigeIncluirKanban(ProducaoPrincipal $principal): void
+    public static function exigeIncluirKanban(Caller $principal): void
     {
         self::exigeLeitura($principal);
 
@@ -73,7 +73,7 @@ class ProducaoPolicy
     }
 
     /** Uso de máquina: B/V/E (+Admin); Recrutando fora (leitura geral). */
-    public static function exigeUsoMaquina(ProducaoPrincipal $principal): void
+    public static function exigeUsoMaquina(Caller $principal): void
     {
         self::exigeLeitura($principal);
     }
@@ -84,7 +84,7 @@ class ProducaoPolicy
      *
      * @throws ForbiddenException
      */
-    public static function exigeCriarSetor(ProducaoPrincipal $principal): void
+    public static function exigeCriarSetor(Caller $principal): void
     {
         self::exigeLeitura($principal);
 
@@ -111,7 +111,7 @@ class ProducaoPolicy
      *
      * @throws ForbiddenException
      */
-    public static function exigeEscritaSetor(int $idSetor, ProducaoPrincipal $principal): void
+    public static function exigeEscritaSetor(int $idSetor, Caller $principal): void
     {
         self::exigeLeitura($principal);
 

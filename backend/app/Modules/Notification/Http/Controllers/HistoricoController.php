@@ -2,13 +2,15 @@
 
 namespace App\Modules\Notification\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Notification\Http\Requests\HistoricoRequest;
 use App\Modules\Notification\Http\Resources\NotificationResource;
 use App\Modules\Notification\Services\NotificacaoService;
 use Illuminate\Http\JsonResponse;
 
 /** Histórico Admin — só HTTP (lista integral; front pagina client-side). */
-class HistoricoController
+class HistoricoController extends Controller
 {
     public function __construct(private NotificacaoService $inbox) {}
 

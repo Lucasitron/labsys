@@ -3,7 +3,7 @@
 namespace Tests\Unit\Financeiro;
 
 use App\Modules\Auth\Enums\Role;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Policies\FinanceiroPolicy;
 use App\Shared\Exceptions\ForbiddenException;
 use PHPUnit\Framework\TestCase;
@@ -13,7 +13,7 @@ class FinanceiroPolicyTest extends TestCase
 {
     public function test_admin_passa(): void
     {
-        $principal = new FinanceiroPrincipal(1, Role::ADMIN, true);
+        $principal = new Caller(1, Role::ADMIN, true);
 
         $this->assertTrue($principal->isAdmin());
         FinanceiroPolicy::exigeAdmin($principal);
@@ -24,7 +24,7 @@ class FinanceiroPolicyTest extends TestCase
     public function test_nao_admin_nega(Role $role): void
     {
         $this->expectException(ForbiddenException::class);
-        FinanceiroPolicy::exigeAdmin(new FinanceiroPrincipal(2, $role, false));
+        FinanceiroPolicy::exigeAdmin(new Caller(2, $role, false));
     }
 
     /** @return array<string, array{0:Role}> */

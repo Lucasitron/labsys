@@ -2,13 +2,15 @@
 
 namespace App\Modules\Notification\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Notification\Http\Requests\CanalRequest;
 use App\Modules\Notification\Models\ConfiguracaoCanal;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Http\JsonResponse;
 
 /** Configuração de canais — só HTTP (Admin; D9/docs/07 §6). CRUD trivial no Model. */
-class ConfiguracaoCanalController
+class ConfiguracaoCanalController extends Controller
 {
     public function index(): JsonResponse
     {

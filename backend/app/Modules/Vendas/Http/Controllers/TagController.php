@@ -2,18 +2,20 @@
 
 namespace App\Modules\Vendas\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Vendas\Http\Requests\TagRequest;
 use App\Modules\Vendas\Http\Resources\TagResource;
 use App\Modules\Vendas\Models\TagCliente;
 use App\Modules\Vendas\Policies\VendasPolicy;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ConflitoException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Tags de clientes — CRUD trivial direto no Model (sem service forçado). */
-class TagController
+class TagController extends Controller
 {
     public function store(TagRequest $request): JsonResponse
     {
@@ -42,11 +44,4 @@ class TagController
         ));
     }
 
-    private function principal(Request $request): VendasPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return VendasPrincipal::from($login);
-    }
 }

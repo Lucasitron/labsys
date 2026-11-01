@@ -2,8 +2,10 @@
 
 namespace App\Modules\Financeiro\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Http\Requests\CategoriaRequest;
 use App\Modules\Financeiro\Http\Resources\CategoriaResource;
 use App\Modules\Financeiro\Services\CategoriaService;
@@ -11,7 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Categorias financeiras — só HTTP (regras no service). */
-class CategoriaController
+class CategoriaController extends Controller
 {
     public function __construct(private CategoriaService $categorias) {}
 
@@ -39,11 +41,4 @@ class CategoriaController
         ));
     }
 
-    private function principal(Request $request): FinanceiroPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return FinanceiroPrincipal::from($login);
-    }
 }

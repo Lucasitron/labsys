@@ -5,7 +5,7 @@ namespace App\Modules\Financeiro\Services;
 use App\Modules\Financeiro\Enums\StatusLancamento;
 use App\Modules\Financeiro\Enums\TipoDoacao;
 use App\Modules\Financeiro\Enums\TipoLancamento;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Models\CustoEncomenda;
 use App\Modules\Financeiro\Models\DoacaoRecurso;
 use App\Modules\Financeiro\Models\LancamentoFinanceiro;
@@ -38,7 +38,7 @@ class RelatorioService
     }
 
     /** @return array<string,string|list<array<string,string>>> */
-    public function fluxoCaixa(?string $inicio, ?string $fim, ?string $periodo, FinanceiroPrincipal $principal): array
+    public function fluxoCaixa(?string $inicio, ?string $fim, ?string $periodo, Caller $principal): array
     {
         FinanceiroPolicy::exigeAdmin($principal);
         $per = $this->resolverPeriodo($inicio, $fim, $periodo);
@@ -75,7 +75,7 @@ class RelatorioService
     }
 
     /** @return array<string,string> */
-    public function dre(?string $inicio, ?string $fim, ?string $periodo, FinanceiroPrincipal $principal): array
+    public function dre(?string $inicio, ?string $fim, ?string $periodo, Caller $principal): array
     {
         FinanceiroPolicy::exigeAdmin($principal);
         $per = $this->resolverPeriodo($inicio, $fim, $periodo);
@@ -97,7 +97,7 @@ class RelatorioService
     }
 
     /** @return list<array<string,mixed>> último custo por encomenda, com margem % */
-    public function lucratividade(FinanceiroPrincipal $principal): array
+    public function lucratividade(Caller $principal): array
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -129,7 +129,7 @@ class RelatorioService
     }
 
     /** @return list<array<string,mixed>> só ENTRADA ATRASADO, com dias em atraso */
-    public function inadimplencia(FinanceiroPrincipal $principal): array
+    public function inadimplencia(Caller $principal): array
     {
         FinanceiroPolicy::exigeAdmin($principal);
         $hoje = today()->toDateString();
@@ -154,7 +154,7 @@ class RelatorioService
     }
 
     /** @return array<string,mixed> */
-    public function doacoesDespesas(?string $inicio, ?string $fim, ?string $periodo, FinanceiroPrincipal $principal): array
+    public function doacoesDespesas(?string $inicio, ?string $fim, ?string $periodo, Caller $principal): array
     {
         FinanceiroPolicy::exigeAdmin($principal);
         $per = $this->resolverPeriodo($inicio, $fim, $periodo);
@@ -216,7 +216,7 @@ class RelatorioService
     }
 
     /** @return list<array<string,string>> custo agregado por máquina (referência externa) */
-    public function custoMaquina(FinanceiroPrincipal $principal): array
+    public function custoMaquina(Caller $principal): array
     {
         FinanceiroPolicy::exigeAdmin($principal);
 

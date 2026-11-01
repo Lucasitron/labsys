@@ -2,17 +2,19 @@
 
 namespace App\Modules\Vendas\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Vendas\Http\Requests\TarefaAtualizacaoRequest;
 use App\Modules\Vendas\Http\Requests\TarefaRequest;
 use App\Modules\Vendas\Http\Resources\TarefaResource;
 use App\Modules\Vendas\Services\CrmService;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Tarefas de marketing — só HTTP. */
-class TarefaMarketingController
+class TarefaMarketingController extends Controller
 {
     public function __construct(private CrmService $crm) {}
 
@@ -52,11 +54,4 @@ class TarefaMarketingController
         return response()->json((new TarefaResource($tarefa))->toArray($request));
     }
 
-    private function principal(Request $request): VendasPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return VendasPrincipal::from($login);
-    }
 }

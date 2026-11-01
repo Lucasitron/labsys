@@ -7,7 +7,7 @@ use App\Modules\Vendas\Enums\TipoAlvoSolicitacao;
 use App\Modules\Vendas\Enums\TipoSolicitacao;
 use App\Modules\Vendas\Models\SolicitacaoEdicao;
 use App\Modules\Vendas\Policies\VendasPolicy;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ConflitoException;
 use App\Shared\Exceptions\ResourceNotFoundException;
 
@@ -18,7 +18,7 @@ use App\Shared\Exceptions\ResourceNotFoundException;
  */
 class SolicitacaoService
 {
-    public function solicitar(array $dados, VendasPrincipal $principal): SolicitacaoEdicao
+    public function solicitar(array $dados, Caller $principal): SolicitacaoEdicao
     {
         VendasPolicy::exigeLeitura($principal);
 
@@ -42,7 +42,7 @@ class SolicitacaoService
     }
 
     /** @return array{solicitacoes:list<SolicitacaoEdicao>,counts:array<string,int>} */
-    public function listar(?StatusSolicitacao $status, VendasPrincipal $principal): array
+    public function listar(?StatusSolicitacao $status, Caller $principal): array
     {
         VendasPolicy::exigeLeitura($principal);
 
@@ -60,7 +60,7 @@ class SolicitacaoService
     }
 
     /** Decidir (Admin-only): só flipa status — D-4, sem tocar no alvo. */
-    public function decidir(int $id, string $decisao, ?string $motivo, VendasPrincipal $principal): SolicitacaoEdicao
+    public function decidir(int $id, string $decisao, ?string $motivo, Caller $principal): SolicitacaoEdicao
     {
         VendasPolicy::exigeEscrita($principal);
 

@@ -3,14 +3,14 @@
 namespace App\Modules\Financeiro\Services;
 
 use App\Modules\Financeiro\Enums\TipoDoacao;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Models\DoacaoRecurso;
 use App\Modules\Financeiro\Policies\FinanceiroPolicy;
 
 /** Registro e listagem de doações e recursos de projetos. */
 class DoacaoService
 {
-    public function registrar(array $dados, FinanceiroPrincipal $principal): DoacaoRecurso
+    public function registrar(array $dados, Caller $principal): DoacaoRecurso
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -24,7 +24,7 @@ class DoacaoService
     }
 
     /** @return list<DoacaoRecurso> */
-    public function listar(?TipoDoacao $tipo, ?string $inicio, ?string $fim, FinanceiroPrincipal $principal): array
+    public function listar(?TipoDoacao $tipo, ?string $inicio, ?string $fim, Caller $principal): array
     {
         FinanceiroPolicy::exigeAdmin($principal);
 

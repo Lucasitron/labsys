@@ -2,32 +2,32 @@
 
 namespace App\Modules\Rh\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
+use App\Http\Controllers\Controller;
+use App\Modules\Rh\Http\Controllers\Concerns\ResolvesRhPrincipal;
+
 use App\Modules\Rh\Enums\StatusSolicitacao;
 use App\Modules\Rh\Enums\TipoCertificado;
 use App\Modules\Rh\Http\Requests\DecisaoSolicitacaoRequest;
 use App\Modules\Rh\Http\Requests\SolicitarCertificadoRequest;
 use App\Modules\Rh\Http\Resources\CertificadoResource;
 use App\Modules\Rh\Http\Resources\SolicitacaoResource;
-use App\Modules\Rh\RhPrincipal;
 use App\Modules\Rh\Services\CertificadoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Certificados — só HTTP. Aprovar/rejeitar são Admin (rota `can:admin`). */
-class CertificadoController
+class CertificadoController extends Controller
 {
+    use ResolvesRhPrincipal;
     public function __construct(private CertificadoService $certificados) {}
 
     public function solicitar(SolicitarCertificadoRequest $request): JsonResponse
     {
-        /** @var Login $login */
-        $login = $request->user();
 
         $solicitacao = $this->certificados->solicitar([
             'tipoCertificado' => TipoCertificado::from($request->input('tipoCertificado')),
             'horasSolicitadas' => $request->input('horasSolicitadas'),
-        ], RhPrincipal::from($login));
+        ], $this->principal($request));
 
         return response()->json(
             (new SolicitacaoResource($solicitacao->load('funcionario.pessoa')))->toArray($request),
@@ -41,12 +41,10 @@ class CertificadoController
             'status' => ['nullable', 'in:PENDENTE,APROVADO,REJEITADO'],
         ]);
 
-        /** @var Login $login */
-        $login = $request->user();
 
         $lista = $this->certificados->listarSolicitacoes(
             isset($filtros['status']) ? StatusSolicitacao::from($filtros['status']) : null,
-            RhPrincipal::from($login),
+            $this->principal($request),
         );
 
         return response()->json(collect($lista)->map(
@@ -56,10 +54,8 @@ class CertificadoController
 
     public function aprovar(DecisaoSolicitacaoRequest $request, int $id): JsonResponse
     {
-        /** @var Login $login */
-        $login = $request->user();
 
-        $certificado = $this->certificados->aprovar($id, $request->input('observacao'), RhPrincipal::from($login));
+        $certificado = $this->certificados->aprovar($id, $request->input('observacao'), $this->principal($request));
 
         return response()->json(
             (new CertificadoResource($certificado, $this->consolidadas($certificado)))->toArray($request)
@@ -68,20 +64,16 @@ class CertificadoController
 
     public function rejeitar(DecisaoSolicitacaoRequest $request, int $id): JsonResponse
     {
-        /** @var Login $login */
-        $login = $request->user();
 
-        $solicitacao = $this->certificados->rejeitar($id, $request->input('observacao'), RhPrincipal::from($login));
+        $solicitacao = $this->certificados->rejeitar($id, $request->input('observacao'), $this->principal($request));
 
         return response()->json((new SolicitacaoResource($solicitacao))->toArray($request));
     }
 
     public function emitidos(Request $request): JsonResponse
     {
-        /** @var Login $login */
-        $login = $request->user();
 
-        $lista = $this->certificados->listarEmitidos(RhPrincipal::from($login));
+        $lista = $this->certificados->listarEmitidos($this->principal($request));
 
         return response()->json(array_map(
             fn ($c) => (new CertificadoResource($c, $this->consolidadas($c)))->toArray($request),
@@ -91,10 +83,8 @@ class CertificadoController
 
     public function emitido(Request $request, int $id): CertificadoResource
     {
-        /** @var Login $login */
-        $login = $request->user();
 
-        $certificado = $this->certificados->obterEmitido($id, RhPrincipal::from($login));
+        $certificado = $this->certificados->obterEmitido($id, $this->principal($request));
 
         return new CertificadoResource($certificado, $this->consolidadas($certificado));
     }

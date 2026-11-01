@@ -2,9 +2,11 @@
 
 namespace App\Modules\Financeiro\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Financeiro\Enums\StatusCompra;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Http\Requests\CompraRequest;
 use App\Modules\Financeiro\Http\Resources\CompraResource;
 use App\Modules\Financeiro\Services\CompraService;
@@ -12,7 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Solicitações de compra — só HTTP. Sem rota de visualizar. */
-class CompraController
+class CompraController extends Controller
 {
     public function __construct(private CompraService $compras) {}
 
@@ -54,11 +56,4 @@ class CompraController
         return response()->json((new CompraResource($compra))->toArray($request));
     }
 
-    private function principal(Request $request): FinanceiroPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return FinanceiroPrincipal::from($login);
-    }
 }

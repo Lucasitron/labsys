@@ -2,13 +2,15 @@
 
 namespace App\Modules\Notification\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Notification\Http\Requests\RevisarRequest;
-use App\Modules\Notification\NotificationPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Notification\Services\NotificacaoService;
 use Illuminate\Http\JsonResponse;
 
 /** Revisão do Admin — só HTTP (move ativas p/ o histórico; D9/docs/07 §6). */
-class RevisaoController
+class RevisaoController extends Controller
 {
     public function __construct(private NotificacaoService $inbox) {}
 
@@ -17,7 +19,7 @@ class RevisaoController
         return response()->json([
             'revisadas' => $this->inbox->revisar(
                 $request->ids(),
-                NotificationPrincipal::from($request->user())->idUser,
+                Caller::from($request->user())->idUser,
             ),
         ]);
     }

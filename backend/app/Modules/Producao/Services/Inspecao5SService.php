@@ -8,7 +8,7 @@ use App\Modules\Producao\Models\ItemInspecao5S;
 use App\Modules\Producao\Models\SetorChecklist;
 use App\Modules\Producao\Models\SetorResponsavel;
 use App\Modules\Producao\Policies\ProducaoPolicy;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -26,7 +26,7 @@ class Inspecao5SService
     ) {}
 
     /** @return list<Inspecao5S> */
-    public function listar(?int $idSetor, ProducaoPrincipal $principal): array
+    public function listar(?int $idSetor, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
 
@@ -37,14 +37,14 @@ class Inspecao5SService
             ->all();
     }
 
-    public function detalhar(int $id, ProducaoPrincipal $principal): Inspecao5S
+    public function detalhar(int $id, Caller $principal): Inspecao5S
     {
         ProducaoPolicy::exigeLeitura($principal);
 
         return $this->obter($id)->load(['setor', 'itens']);
     }
 
-    public function registrar(array $dados, ProducaoPrincipal $principal): Inspecao5S
+    public function registrar(array $dados, Caller $principal): Inspecao5S
     {
         ProducaoPolicy::exigeResponsavel((int) $dados['idInspetor'], $principal);
 
@@ -101,7 +101,7 @@ class Inspecao5SService
         });
     }
 
-    public function remover(int $id, ProducaoPrincipal $principal): void
+    public function remover(int $id, Caller $principal): void
     {
         ProducaoPolicy::exigeAdmin($principal);
 

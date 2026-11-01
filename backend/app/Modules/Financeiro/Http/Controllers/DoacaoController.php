@@ -2,9 +2,11 @@
 
 namespace App\Modules\Financeiro\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Financeiro\Enums\TipoDoacao;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Http\Requests\DoacaoRequest;
 use App\Modules\Financeiro\Http\Resources\DoacaoResource;
 use App\Modules\Financeiro\Services\DoacaoService;
@@ -12,7 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Doações e recursos de projetos — só HTTP. */
-class DoacaoController
+class DoacaoController extends Controller
 {
     public function __construct(private DoacaoService $doacoes) {}
 
@@ -44,11 +46,4 @@ class DoacaoController
         ));
     }
 
-    private function principal(Request $request): FinanceiroPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return FinanceiroPrincipal::from($login);
-    }
 }

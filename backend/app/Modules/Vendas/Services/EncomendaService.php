@@ -12,7 +12,7 @@ use App\Modules\Vendas\Models\HistoricoStatusEncomenda;
 use App\Modules\Vendas\Models\ItemOrcamento;
 use App\Modules\Vendas\Models\Orcamento;
 use App\Modules\Vendas\Policies\VendasPolicy;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ConflitoException;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\DB;
  */
 class EncomendaService
 {
-    public function criar(array $dados, VendasPrincipal $principal): Encomenda
+    public function criar(array $dados, Caller $principal): Encomenda
     {
         VendasPolicy::exigeEscrita($principal);
 
@@ -85,7 +85,7 @@ class EncomendaService
     }
 
     /** @return array{encomendas:list<Encomenda>,counts:array<string,int>} */
-    public function listar(?StatusKanban $status, ?int $clienteId, VendasPrincipal $principal): array
+    public function listar(?StatusKanban $status, ?int $clienteId, Caller $principal): array
     {
         VendasPolicy::exigeLeitura($principal);
 
@@ -102,7 +102,7 @@ class EncomendaService
         return ['encomendas' => $query->get()->all(), 'counts' => $counts];
     }
 
-    public function detalhar(int $id, VendasPrincipal $principal): Encomenda
+    public function detalhar(int $id, Caller $principal): Encomenda
     {
         VendasPolicy::exigeLeitura($principal);
 
@@ -110,7 +110,7 @@ class EncomendaService
     }
 
     /** @return list<ItemOrcamento> itens herdados do orçamento (vazio em venda direta) */
-    public function itensDe(int $id, VendasPrincipal $principal): array
+    public function itensDe(int $id, Caller $principal): array
     {
         $encomenda = $this->detalhar($id, $principal);
 
@@ -130,7 +130,7 @@ class EncomendaService
         StatusKanban $destino,
         int $versao,
         ?string $observacao,
-        VendasPrincipal $principal,
+        Caller $principal,
     ): Encomenda {
         VendasPolicy::exigirCriadorOuAdmin(
             ($atual = $this->obter($id))->criado_por === null ? null : (int) $atual->criado_por,
@@ -166,7 +166,7 @@ class EncomendaService
      * Alteração: encerra a atual (histórico) + cria nova ordem referenciando
      * a origem.
      */
-    public function novaOrdem(int $id, array $dados, VendasPrincipal $principal): Encomenda
+    public function novaOrdem(int $id, array $dados, Caller $principal): Encomenda
     {
         $atual = $this->obter($id);
         VendasPolicy::exigirCriadorOuAdmin(
@@ -209,7 +209,7 @@ class EncomendaService
     }
 
     /** Leitura do histórico (HistoricoService dobrado aqui, sem classe extra). */
-    public function historico(int $idEncomenda, VendasPrincipal $principal): array
+    public function historico(int $idEncomenda, Caller $principal): array
     {
         VendasPolicy::exigeLeitura($principal);
 

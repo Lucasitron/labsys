@@ -4,16 +4,16 @@ namespace Tests\Unit\Vendas;
 
 use App\Modules\Auth\Enums\Role;
 use App\Modules\Vendas\Policies\VendasPolicy;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ForbiddenException;
 use PHPUnit\Framework\TestCase;
 
 class VendasPolicyTest extends TestCase
 {
-    private function principal(Role $role, int $id = 7): VendasPrincipal
+    private function principal(Role $role, int $id = 7): Caller
     {
-        return new VendasPrincipal(
-            idPessoa: $id,
+        return new Caller(
+            idUser: $id,
             role: $role,
             admin: $role === Role::ADMIN,
         );

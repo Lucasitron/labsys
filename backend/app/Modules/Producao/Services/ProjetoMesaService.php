@@ -6,7 +6,7 @@ use App\Modules\Producao\Enums\StatusProjetoMesa;
 use App\Modules\Producao\Models\AuditoriaProjetoMesa;
 use App\Modules\Producao\Models\ProjetoMesa;
 use App\Modules\Producao\Policies\ProducaoPolicy;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +20,7 @@ class ProjetoMesaService
     public function __construct(private ProducaoEventPublisher $eventos) {}
 
     /** @return list<ProjetoMesa> */
-    public function listar(?StatusProjetoMesa $status, ProducaoPrincipal $principal): array
+    public function listar(?StatusProjetoMesa $status, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
 
@@ -31,14 +31,14 @@ class ProjetoMesaService
             ->all();
     }
 
-    public function detalhar(int $id, ProducaoPrincipal $principal): ProjetoMesa
+    public function detalhar(int $id, Caller $principal): ProjetoMesa
     {
         ProducaoPolicy::exigeLeitura($principal);
 
         return $this->obter($id);
     }
 
-    public function criar(array $dados, ProducaoPrincipal $principal): ProjetoMesa
+    public function criar(array $dados, Caller $principal): ProjetoMesa
     {
         ProducaoPolicy::exigeResponsavel((int) $dados['idFuncionario'], $principal);
 
@@ -63,7 +63,7 @@ class ProjetoMesaService
         });
     }
 
-    public function atualizar(int $id, array $dados, ProducaoPrincipal $principal): ProjetoMesa
+    public function atualizar(int $id, array $dados, Caller $principal): ProjetoMesa
     {
         ProducaoPolicy::exigeLeitura($principal);
         $projeto = $this->obter($id);
@@ -85,7 +85,7 @@ class ProjetoMesaService
     }
 
     /** Evolução reativa `ABANDONADO → ATIVO`. */
-    public function registrarEvolucao(int $id, ProducaoPrincipal $principal): ProjetoMesa
+    public function registrarEvolucao(int $id, Caller $principal): ProjetoMesa
     {
         ProducaoPolicy::exigeLeitura($principal);
         $projeto = $this->obter($id);
@@ -104,7 +104,7 @@ class ProjetoMesaService
         });
     }
 
-    public function remover(int $id, ProducaoPrincipal $principal): void
+    public function remover(int $id, Caller $principal): void
     {
         ProducaoPolicy::exigeLeitura($principal);
         $projeto = $this->obter($id);
@@ -116,14 +116,14 @@ class ProjetoMesaService
     }
 
     /** Conteúdo do QR do totem (o PNG é inviável sem GD — serve-se a string, P9). */
-    public function conteudoQrCode(int $id, ProducaoPrincipal $principal): string
+    public function conteudoQrCode(int $id, Caller $principal): string
     {
         ProducaoPolicy::exigeLeitura($principal);
 
         return (string) $this->obter($id)->qr_code_totem;
     }
 
-    public function auditar(array $dados, ProducaoPrincipal $principal): AuditoriaProjetoMesa
+    public function auditar(array $dados, Caller $principal): AuditoriaProjetoMesa
     {
         ProducaoPolicy::exigeAdmin($principal);
 
@@ -156,7 +156,7 @@ class ProjetoMesaService
     }
 
     /** @return list<AuditoriaProjetoMesa> */
-    public function listarAuditorias(int $idProjetoMesa, ProducaoPrincipal $principal): array
+    public function listarAuditorias(int $idProjetoMesa, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
         $this->obter($idProjetoMesa);

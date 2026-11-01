@@ -2,8 +2,9 @@
 
 namespace App\Modules\Estoque\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
-use App\Modules\Estoque\EstoquePrincipal;
+use App\Http\Controllers\Controller;
+use App\Modules\Estoque\Http\Controllers\Concerns\ResolvesEstoquePrincipal;
+
 use App\Modules\Estoque\Http\Requests\EntradaRequest;
 use App\Modules\Estoque\Http\Resources\EntradaResource;
 use App\Modules\Estoque\Services\EntradaService;
@@ -11,8 +12,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Entradas — só HTTP. Filtro: só `?idItem=` (sem `?status=` — E-1). */
-class EntradaController
+class EntradaController extends Controller
 {
+    use ResolvesEstoquePrincipal;
     public function __construct(private EntradaService $entradas) {}
 
     public function store(EntradaRequest $request): JsonResponse
@@ -42,13 +44,5 @@ class EntradaController
     public function show(Request $request, int $id): EntradaResource
     {
         return new EntradaResource($this->entradas->buscar($id, $this->principal($request)));
-    }
-
-    private function principal(Request $request): EstoquePrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return EstoquePrincipal::from($login);
     }
 }

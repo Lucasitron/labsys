@@ -2,8 +2,10 @@
 
 namespace App\Modules\Financeiro\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Http\Requests\FechamentoRequest;
 use App\Modules\Financeiro\Http\Resources\CustoResource;
 use App\Modules\Financeiro\Http\Resources\FechamentoResource;
@@ -13,7 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Fechamento de encomenda e consulta de custo — só HTTP. Sem PUT/cancel. */
-class CusteioController
+class CusteioController extends Controller
 {
     public function __construct(
         private FechamentoService $fechamentos,
@@ -59,11 +61,4 @@ class CusteioController
         return response()->json((new CustoResource($custo))->toArray($request));
     }
 
-    private function principal(Request $request): FinanceiroPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return FinanceiroPrincipal::from($login);
-    }
 }

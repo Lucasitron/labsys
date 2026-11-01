@@ -4,7 +4,7 @@ namespace App\Modules\Financeiro\Services;
 
 use App\Modules\Financeiro\Enums\StatusLancamento;
 use App\Modules\Financeiro\Enums\TipoLancamento;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Models\CategoriaFinanceira;
 use App\Modules\Financeiro\Models\LancamentoFinanceiro;
 use App\Modules\Financeiro\Policies\FinanceiroPolicy;
@@ -22,7 +22,7 @@ class LancamentoService
 {
     public function __construct(private FinanceiroEventPublisher $publisher) {}
 
-    public function criar(array $dados, FinanceiroPrincipal $principal): LancamentoFinanceiro
+    public function criar(array $dados, Caller $principal): LancamentoFinanceiro
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -58,7 +58,7 @@ class LancamentoService
     /**
      * @return array{lancamentos:list<LancamentoFinanceiro>,counts:array<string,int>,resumo:array<string,string>}
      */
-    public function listar(array $filtros, FinanceiroPrincipal $principal): array
+    public function listar(array $filtros, Caller $principal): array
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -114,7 +114,7 @@ class LancamentoService
         ];
     }
 
-    public function registrarPagamento(int $id, array $dados, FinanceiroPrincipal $principal): LancamentoFinanceiro
+    public function registrarPagamento(int $id, array $dados, Caller $principal): LancamentoFinanceiro
     {
         FinanceiroPolicy::exigeAdmin($principal);
 

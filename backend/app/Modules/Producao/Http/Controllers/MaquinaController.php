@@ -2,6 +2,8 @@
 
 namespace App\Modules\Producao\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Producao\Enums\MaquinaStatus;
 use App\Modules\Producao\Http\Requests\MaquinaRequest;
@@ -10,13 +12,13 @@ use App\Modules\Producao\Http\Requests\UsoEncerrarRequest;
 use App\Modules\Producao\Http\Requests\UsoIniciarRequest;
 use App\Modules\Producao\Http\Resources\HistoricoUsoResource;
 use App\Modules\Producao\Http\Resources\MaquinaResource;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Producao\Services\MaquinaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Máquinas e usos — só HTTP (cadastro/status Admin; `horas_uso` no service). */
-class MaquinaController
+class MaquinaController extends Controller
 {
     public function __construct(private MaquinaService $maquinas) {}
 
@@ -90,11 +92,4 @@ class MaquinaController
         return response()->json(null, 204);
     }
 
-    private function principal(Request $request): ProducaoPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return ProducaoPrincipal::from($login);
-    }
 }

@@ -2,9 +2,10 @@
 
 namespace App\Modules\Estoque\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
+use App\Http\Controllers\Controller;
+use App\Modules\Estoque\Http\Controllers\Concerns\ResolvesEstoquePrincipal;
+
 use App\Modules\Estoque\Enums\Categoria;
-use App\Modules\Estoque\EstoquePrincipal;
 use App\Modules\Estoque\Http\Requests\ItemRequest;
 use App\Modules\Estoque\Http\Resources\ItemResource;
 use App\Modules\Estoque\Services\ItemService;
@@ -13,8 +14,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** Itens + CSV — só HTTP: FormRequest valida, service decide, Resource dá o shape. */
-class ItemController
+class ItemController extends Controller
 {
+    use ResolvesEstoquePrincipal;
     public function __construct(private ItemService $itens) {}
 
     public function store(ItemRequest $request): JsonResponse
@@ -85,13 +87,5 @@ class ItemController
             fn ($i) => (new ItemResource($i))->toArray($request),
             $importados,
         ), 201);
-    }
-
-    private function principal(Request $request): EstoquePrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return EstoquePrincipal::from($login);
     }
 }

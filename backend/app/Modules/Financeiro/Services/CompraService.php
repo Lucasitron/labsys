@@ -3,7 +3,7 @@
 namespace App\Modules\Financeiro\Services;
 
 use App\Modules\Financeiro\Enums\StatusCompra;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Models\SolicitacaoCompra;
 use App\Modules\Financeiro\Policies\FinanceiroPolicy;
 use App\Shared\Exceptions\ConflitoException;
@@ -18,7 +18,7 @@ class CompraService
 {
     public function __construct(private FinanceiroEventPublisher $publisher) {}
 
-    public function registrar(array $dados, FinanceiroPrincipal $principal): SolicitacaoCompra
+    public function registrar(array $dados, Caller $principal): SolicitacaoCompra
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -37,7 +37,7 @@ class CompraService
     }
 
     /** @return list<SolicitacaoCompra> */
-    public function listar(?StatusCompra $status, FinanceiroPrincipal $principal): array
+    public function listar(?StatusCompra $status, Caller $principal): array
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -47,7 +47,7 @@ class CompraService
             ->get()->all();
     }
 
-    public function detalhar(int $id, FinanceiroPrincipal $principal): SolicitacaoCompra
+    public function detalhar(int $id, Caller $principal): SolicitacaoCompra
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -55,7 +55,7 @@ class CompraService
             ?? throw new ResourceNotFoundException("Solicitação de compra não encontrada: {$id}");
     }
 
-    public function concluir(int $id, FinanceiroPrincipal $principal): SolicitacaoCompra
+    public function concluir(int $id, Caller $principal): SolicitacaoCompra
     {
         FinanceiroPolicy::exigeAdmin($principal);
 

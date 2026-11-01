@@ -8,7 +8,7 @@ use App\Modules\Producao\Models\SetorMaterial;
 use App\Modules\Producao\Models\SetorResponsavel;
 use App\Modules\Producao\Models\SetorSinalizacao;
 use App\Modules\Producao\Policies\ProducaoPolicy;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -21,7 +21,7 @@ use Illuminate\Validation\ValidationException;
 class SetorService
 {
     /** @return list<Setor> */
-    public function listar(?bool $ativo, ProducaoPrincipal $principal): array
+    public function listar(?bool $ativo, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
 
@@ -32,14 +32,14 @@ class SetorService
             ->all();
     }
 
-    public function detalhar(int $id, ProducaoPrincipal $principal): Setor
+    public function detalhar(int $id, Caller $principal): Setor
     {
         ProducaoPolicy::exigeLeitura($principal);
 
         return $this->obter($id)->load(['materiais', 'sinalizacoes', 'checklists', 'responsaveis']);
     }
 
-    public function criar(array $dados, ProducaoPrincipal $principal): Setor
+    public function criar(array $dados, Caller $principal): Setor
     {
         ProducaoPolicy::exigeCriarSetor($principal);
 
@@ -54,7 +54,7 @@ class SetorService
         ])));
     }
 
-    public function atualizar(int $id, array $dados, ProducaoPrincipal $principal): Setor
+    public function atualizar(int $id, array $dados, Caller $principal): Setor
     {
         $setor = $this->obter($id);
         ProducaoPolicy::exigeEscritaSetor((int) $setor->getKey(), $principal);
@@ -74,7 +74,7 @@ class SetorService
         });
     }
 
-    public function remover(int $id, ProducaoPrincipal $principal): void
+    public function remover(int $id, Caller $principal): void
     {
         ProducaoPolicy::exigeLeitura($principal);
         $setor = $this->obter($id);
@@ -92,7 +92,7 @@ class SetorService
         });
     }
 
-    public function adicionarMaterial(int $idSetor, array $dados, ProducaoPrincipal $principal): SetorMaterial
+    public function adicionarMaterial(int $idSetor, array $dados, Caller $principal): SetorMaterial
     {
         $this->obter($idSetor);
         ProducaoPolicy::exigeEscritaSetor($idSetor, $principal);
@@ -104,7 +104,7 @@ class SetorService
         ]);
     }
 
-    public function removerMaterial(int $idSetor, int $idMaterial, ProducaoPrincipal $principal): void
+    public function removerMaterial(int $idSetor, int $idMaterial, Caller $principal): void
     {
         ProducaoPolicy::exigeEscritaSetor($idSetor, $principal);
         $material = SetorMaterial::find($idMaterial)
@@ -114,7 +114,7 @@ class SetorService
         $material->delete();
     }
 
-    public function adicionarSinalizacao(int $idSetor, array $dados, ProducaoPrincipal $principal): SetorSinalizacao
+    public function adicionarSinalizacao(int $idSetor, array $dados, Caller $principal): SetorSinalizacao
     {
         $this->obter($idSetor);
         ProducaoPolicy::exigeEscritaSetor($idSetor, $principal);
@@ -125,7 +125,7 @@ class SetorService
         ]);
     }
 
-    public function removerSinalizacao(int $idSetor, int $idSinalizacao, ProducaoPrincipal $principal): void
+    public function removerSinalizacao(int $idSetor, int $idSinalizacao, Caller $principal): void
     {
         ProducaoPolicy::exigeEscritaSetor($idSetor, $principal);
         $sinalizacao = SetorSinalizacao::find($idSinalizacao)
@@ -135,7 +135,7 @@ class SetorService
         $sinalizacao->delete();
     }
 
-    public function adicionarChecklist(int $idSetor, array $dados, ProducaoPrincipal $principal): SetorChecklist
+    public function adicionarChecklist(int $idSetor, array $dados, Caller $principal): SetorChecklist
     {
         $this->obter($idSetor);
         ProducaoPolicy::exigeEscritaSetor($idSetor, $principal);
@@ -147,7 +147,7 @@ class SetorService
         ]);
     }
 
-    public function atualizarChecklist(int $idSetor, int $idItem, array $dados, ProducaoPrincipal $principal): SetorChecklist
+    public function atualizarChecklist(int $idSetor, int $idItem, array $dados, Caller $principal): SetorChecklist
     {
         ProducaoPolicy::exigeEscritaSetor($idSetor, $principal);
         $checklist = SetorChecklist::find($idItem)
@@ -165,7 +165,7 @@ class SetorService
         });
     }
 
-    public function removerChecklist(int $idSetor, int $idItem, ProducaoPrincipal $principal): void
+    public function removerChecklist(int $idSetor, int $idItem, Caller $principal): void
     {
         ProducaoPolicy::exigeEscritaSetor($idSetor, $principal);
         $checklist = SetorChecklist::find($idItem)
@@ -175,7 +175,7 @@ class SetorService
         $checklist->delete();
     }
 
-    public function adicionarResponsavel(int $idSetor, array $dados, ProducaoPrincipal $principal): SetorResponsavel
+    public function adicionarResponsavel(int $idSetor, array $dados, Caller $principal): SetorResponsavel
     {
         ProducaoPolicy::exigeAdmin($principal);
         $this->obter($idSetor);
@@ -198,7 +198,7 @@ class SetorService
     }
 
     /** @return list<SetorResponsavel> */
-    public function listarResponsaveis(int $idSetor, ProducaoPrincipal $principal): array
+    public function listarResponsaveis(int $idSetor, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
         $this->obter($idSetor);
@@ -206,7 +206,7 @@ class SetorService
         return SetorResponsavel::where('id_setor', $idSetor)->orderBy('id_responsavel')->get()->all();
     }
 
-    public function removerResponsavel(int $idSetor, int $idResponsavel, ProducaoPrincipal $principal): void
+    public function removerResponsavel(int $idSetor, int $idResponsavel, Caller $principal): void
     {
         ProducaoPolicy::exigeEscritaSetor($idSetor, $principal);
         $responsavel = SetorResponsavel::find($idResponsavel)

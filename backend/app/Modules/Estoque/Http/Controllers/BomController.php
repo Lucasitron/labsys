@@ -2,8 +2,9 @@
 
 namespace App\Modules\Estoque\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
-use App\Modules\Estoque\EstoquePrincipal;
+use App\Http\Controllers\Controller;
+use App\Modules\Estoque\Http\Controllers\Concerns\ResolvesEstoquePrincipal;
+
 use App\Modules\Estoque\Http\Requests\BomConsumoRequest;
 use App\Modules\Estoque\Http\Requests\BomRequest;
 use App\Modules\Estoque\Http\Resources\BomResource;
@@ -12,8 +13,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** BOMs — só HTTP (`?projetoId=` filtra pelo produto/serviço). */
-class BomController
+class BomController extends Controller
 {
+    use ResolvesEstoquePrincipal;
     public function __construct(private BomService $boms) {}
 
     public function store(BomRequest $request): JsonResponse
@@ -57,13 +59,5 @@ class BomController
         $bom = $this->boms->registrarConsumo($id, $request->validated()['itens'], $this->principal($request));
 
         return response()->json((new BomResource($bom))->toArray($request));
-    }
-
-    private function principal(Request $request): EstoquePrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return EstoquePrincipal::from($login);
     }
 }

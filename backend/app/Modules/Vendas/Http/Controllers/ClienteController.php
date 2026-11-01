@@ -2,6 +2,8 @@
 
 namespace App\Modules\Vendas\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Vendas\Enums\TipoPessoa;
 use App\Modules\Vendas\Http\Requests\BulkTagRequest;
@@ -9,12 +11,12 @@ use App\Modules\Vendas\Http\Requests\ClienteRequest;
 use App\Modules\Vendas\Http\Requests\VinculoTagRequest;
 use App\Modules\Vendas\Http\Resources\ClienteResource;
 use App\Modules\Vendas\Services\ClienteService;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Clientes PF/PJ — só HTTP: FormRequest valida, service decide, Resource dá o shape. */
-class ClienteController
+class ClienteController extends Controller
 {
     public function __construct(private ClienteService $clientes) {}
 
@@ -121,11 +123,4 @@ class ClienteController
         ), fn ($t) => $t !== null));
     }
 
-    private function principal(Request $request): VendasPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return VendasPrincipal::from($login);
-    }
 }

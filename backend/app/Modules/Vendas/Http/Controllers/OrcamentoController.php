@@ -2,18 +2,20 @@
 
 namespace App\Modules\Vendas\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Vendas\Enums\StatusOrcamento;
 use App\Modules\Vendas\Http\Requests\OrcamentoAtualizacaoRequest;
 use App\Modules\Vendas\Http\Requests\OrcamentoRequest;
 use App\Modules\Vendas\Http\Resources\OrcamentoResource;
 use App\Modules\Vendas\Services\OrcamentoService;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Orçamentos — só HTTP. Conversão em encomenda é o POST /encomendas. */
-class OrcamentoController
+class OrcamentoController extends Controller
 {
     public function __construct(private OrcamentoService $orcamentos) {}
 
@@ -65,11 +67,4 @@ class OrcamentoController
         return response()->json((new OrcamentoResource($copia))->toArray($request), 201);
     }
 
-    private function principal(Request $request): VendasPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return VendasPrincipal::from($login);
-    }
 }

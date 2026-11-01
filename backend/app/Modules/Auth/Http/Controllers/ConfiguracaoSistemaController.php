@@ -2,12 +2,14 @@
 
 namespace App\Modules\Auth\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Http\Requests\AtualizarSistemaRequest;
 use App\Modules\Auth\Services\SistemaService;
 use Illuminate\Http\JsonResponse;
 
 /** Parâmetros globais do sistema (Admin-only) — só HTTP. */
-class ConfiguracaoSistemaController
+class ConfiguracaoSistemaController extends Controller
 {
     public function __construct(private SistemaService $sistema) {}
 

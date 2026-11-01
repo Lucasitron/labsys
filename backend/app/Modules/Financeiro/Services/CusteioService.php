@@ -6,7 +6,7 @@ use App\Modules\Estoque\Contracts\EstoqueContract;
 use App\Modules\Financeiro\Enums\StatusLancamento;
 use App\Modules\Financeiro\Enums\TipoCategoria;
 use App\Modules\Financeiro\Enums\TipoLancamento;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Models\CategoriaFinanceira;
 use App\Modules\Financeiro\Models\CustoEncomenda;
 use App\Modules\Financeiro\Models\FechamentoEncomenda;
@@ -140,7 +140,7 @@ class CusteioService
     }
 
     /** Último cálculo da encomenda (congelado). */
-    public function consultar(int $idEncomenda, FinanceiroPrincipal $principal): CustoEncomenda
+    public function consultar(int $idEncomenda, Caller $principal): CustoEncomenda
     {
         FinanceiroPolicy::exigeAdmin($principal);
 

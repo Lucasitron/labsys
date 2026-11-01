@@ -2,15 +2,17 @@
 
 namespace App\Modules\Notification\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Notification\Http\Requests\ListarNotificacoesRequest;
 use App\Modules\Notification\Http\Resources\NotificationResource;
-use App\Modules\Notification\NotificationPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Notification\Services\NotificacaoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Inbox — só HTTP (qualquer autenticado, incl. Recrutando; isolamento no service). */
-class NotificacaoController
+class NotificacaoController extends Controller
 {
     public function __construct(private NotificacaoService $inbox) {}
 
@@ -57,8 +59,4 @@ class NotificacaoController
         ]);
     }
 
-    private function principal(Request $request): NotificationPrincipal
-    {
-        return NotificationPrincipal::from($request->user());
-    }
 }

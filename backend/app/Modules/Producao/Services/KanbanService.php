@@ -8,7 +8,7 @@ use App\Modules\Producao\Models\ConsumoEncomenda;
 use App\Modules\Producao\Models\EncomendaKanban;
 use App\Modules\Producao\Models\HistoricoKanban;
 use App\Modules\Producao\Policies\ProducaoPolicy;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Vendas\Contracts\VendasContract;
 use App\Shared\Exceptions\ConflitoException;
 use App\Shared\Exceptions\ResourceNotFoundException;
@@ -30,7 +30,7 @@ class KanbanService
     ) {}
 
     /** @return list<EncomendaKanban> */
-    public function listar(?KanbanStatus $status, ProducaoPrincipal $principal): array
+    public function listar(?KanbanStatus $status, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
 
@@ -41,7 +41,7 @@ class KanbanService
             ->all();
     }
 
-    public function buscarPorEncomenda(int $idEncomenda, ProducaoPrincipal $principal): EncomendaKanban
+    public function buscarPorEncomenda(int $idEncomenda, Caller $principal): EncomendaKanban
     {
         ProducaoPolicy::exigeLeitura($principal);
 
@@ -49,7 +49,7 @@ class KanbanService
     }
 
     /** @return list<HistoricoKanban> */
-    public function historico(int $idEncomenda, ProducaoPrincipal $principal): array
+    public function historico(int $idEncomenda, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
 
@@ -59,7 +59,7 @@ class KanbanService
             ->all();
     }
 
-    public function incluir(array $dados, ProducaoPrincipal $principal): EncomendaKanban
+    public function incluir(array $dados, Caller $principal): EncomendaKanban
     {
         ProducaoPolicy::exigeIncluirKanban($principal);
 
@@ -89,7 +89,7 @@ class KanbanService
         });
     }
 
-    public function mover(int $id, KanbanStatus $destino, int $version, ?string $observacao, ProducaoPrincipal $principal): EncomendaKanban
+    public function mover(int $id, KanbanStatus $destino, int $version, ?string $observacao, Caller $principal): EncomendaKanban
     {
         ProducaoPolicy::exigeLeitura($principal);
         $kanban = $this->obter($id);
@@ -127,7 +127,7 @@ class KanbanService
         });
     }
 
-    public function remover(int $id, ProducaoPrincipal $principal): void
+    public function remover(int $id, Caller $principal): void
     {
         ProducaoPolicy::exigeLeitura($principal);
         $kanban = $this->obter($id);
@@ -144,7 +144,7 @@ class KanbanService
      *
      * @return list<ConsumoEncomenda>
      */
-    public function registrarConsumo(int $idEncomenda, array $itens, ProducaoPrincipal $principal): array
+    public function registrarConsumo(int $idEncomenda, array $itens, Caller $principal): array
     {
         $kanban = EncomendaKanban::where('id_encomenda', $idEncomenda)->first();
         ProducaoPolicy::exigeResponsavel(
@@ -184,7 +184,7 @@ class KanbanService
     }
 
     /** @return list<ConsumoEncomenda> */
-    public function listarConsumo(int $idEncomenda, ProducaoPrincipal $principal): array
+    public function listarConsumo(int $idEncomenda, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
 

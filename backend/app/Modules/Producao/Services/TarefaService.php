@@ -6,7 +6,7 @@ use App\Modules\Producao\Enums\PrioridadeTarefa;
 use App\Modules\Producao\Enums\TarefaStatus;
 use App\Modules\Producao\Models\Tarefa;
 use App\Modules\Producao\Policies\ProducaoPolicy;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 class TarefaService
 {
     /** @return list<Tarefa> */
-    public function listar(?int $idProjeto, ?int $idResponsavel, ?TarefaStatus $status, ProducaoPrincipal $principal): array
+    public function listar(?int $idProjeto, ?int $idResponsavel, ?TarefaStatus $status, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
 
@@ -30,14 +30,14 @@ class TarefaService
             ->all();
     }
 
-    public function detalhar(int $id, ProducaoPrincipal $principal): Tarefa
+    public function detalhar(int $id, Caller $principal): Tarefa
     {
         ProducaoPolicy::exigeLeitura($principal);
 
         return $this->obter($id);
     }
 
-    public function criar(array $dados, ProducaoPrincipal $principal, ProjetoService $projetos): Tarefa
+    public function criar(array $dados, Caller $principal, ProjetoService $projetos): Tarefa
     {
         $projeto = $projetos->obter((int) $dados['idProjeto']);
         ProducaoPolicy::exigeResponsavel(
@@ -59,7 +59,7 @@ class TarefaService
         });
     }
 
-    public function atualizar(int $id, array $dados, ProducaoPrincipal $principal, ProjetoService $projetos): Tarefa
+    public function atualizar(int $id, array $dados, Caller $principal, ProjetoService $projetos): Tarefa
     {
         ProducaoPolicy::exigeLeitura($principal);
         $tarefa = $this->obter($id);
@@ -82,7 +82,7 @@ class TarefaService
         });
     }
 
-    public function alterarStatus(int $id, TarefaStatus $status, ?string $dataConclusao, ProducaoPrincipal $principal): Tarefa
+    public function alterarStatus(int $id, TarefaStatus $status, ?string $dataConclusao, Caller $principal): Tarefa
     {
         ProducaoPolicy::exigeLeitura($principal);
         $tarefa = $this->obter($id);
@@ -100,7 +100,7 @@ class TarefaService
     }
 
     /** `PATCH /tarefas/{id}`: conclui a própria tarefa (idempotente). */
-    public function concluirPropria(int $id, ProducaoPrincipal $principal): Tarefa
+    public function concluirPropria(int $id, Caller $principal): Tarefa
     {
         ProducaoPolicy::exigeLeitura($principal);
         $tarefa = $this->obter($id);
@@ -121,7 +121,7 @@ class TarefaService
         });
     }
 
-    public function remover(int $id, ProducaoPrincipal $principal): void
+    public function remover(int $id, Caller $principal): void
     {
         ProducaoPolicy::exigeLeitura($principal);
         $tarefa = $this->obter($id);
@@ -130,7 +130,7 @@ class TarefaService
         $tarefa->delete();
     }
 
-    private function exigeResponsavelProjeto(Tarefa $tarefa, ProducaoPrincipal $principal): void
+    private function exigeResponsavelProjeto(Tarefa $tarefa, Caller $principal): void
     {
         $tarefa->loadMissing('projeto');
 

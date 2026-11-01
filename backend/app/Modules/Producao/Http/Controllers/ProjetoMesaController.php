@@ -2,12 +2,14 @@
 
 namespace App\Modules\Producao\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Producao\Enums\StatusProjetoMesa;
 use App\Modules\Producao\Http\Requests\ProjetoMesaRequest;
 use App\Modules\Producao\Http\Resources\AuditoriaResource;
 use App\Modules\Producao\Http\Resources\ProjetoMesaResource;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Producao\Services\ProjetoMesaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,7 +19,7 @@ use Illuminate\Http\Request;
  * (`fablab://projeto-mesa/{id}`): o PNG (`chillerlan/php-qrcode`) é inviável
  * sem GD/imagick nas imagens PHP 8.3 disponíveis.
  */
-class ProjetoMesaController
+class ProjetoMesaController extends Controller
 {
     public function __construct(private ProjetoMesaService $mesas) {}
 
@@ -80,11 +82,4 @@ class ProjetoMesaController
         return response()->json(null, 204);
     }
 
-    private function principal(Request $request): ProducaoPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return ProducaoPrincipal::from($login);
-    }
 }

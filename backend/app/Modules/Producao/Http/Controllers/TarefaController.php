@@ -2,19 +2,21 @@
 
 namespace App\Modules\Producao\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Producao\Enums\TarefaStatus;
 use App\Modules\Producao\Http\Requests\TarefaRequest;
 use App\Modules\Producao\Http\Requests\TarefaStatusRequest;
 use App\Modules\Producao\Http\Resources\TarefaResource;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Producao\Services\ProjetoService;
 use App\Modules\Producao\Services\TarefaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Tarefas — só HTTP (`PATCH` conclui a própria tarefa, compat M8). */
-class TarefaController
+class TarefaController extends Controller
 {
     public function __construct(private TarefaService $tarefas, private ProjetoService $projetos) {}
 
@@ -80,11 +82,4 @@ class TarefaController
         return response()->json(null, 204);
     }
 
-    private function principal(Request $request): ProducaoPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return ProducaoPrincipal::from($login);
-    }
 }

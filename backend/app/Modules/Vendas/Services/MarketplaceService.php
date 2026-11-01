@@ -5,14 +5,14 @@ namespace App\Modules\Vendas\Services;
 use App\Modules\Vendas\Models\Encomenda;
 use App\Modules\Vendas\Models\RegistroMarketplace;
 use App\Modules\Vendas\Policies\VendasPolicy;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ConflitoException;
 use App\Shared\Exceptions\ResourceNotFoundException;
 
 /** Registro manual de vendas externas (regras só aqui). Escrita = Admin. */
 class MarketplaceService
 {
-    public function registrar(array $dados, VendasPrincipal $principal): RegistroMarketplace
+    public function registrar(array $dados, Caller $principal): RegistroMarketplace
     {
         VendasPolicy::exigeEscrita($principal);
 
@@ -36,7 +36,7 @@ class MarketplaceService
     }
 
     /** @return array{registros:list<RegistroMarketplace>,totais:array<string,string>} */
-    public function listar(?int $encomendaId, ?string $plataforma, VendasPrincipal $principal): array
+    public function listar(?int $encomendaId, ?string $plataforma, Caller $principal): array
     {
         VendasPolicy::exigeLeitura($principal);
 

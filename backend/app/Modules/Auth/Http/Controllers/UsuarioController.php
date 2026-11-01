@@ -2,6 +2,8 @@
 
 namespace App\Modules\Auth\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Http\Requests\AlterarStatusRequest;
 use App\Modules\Auth\Http\Requests\AtualizarUsuarioRequest;
 use App\Modules\Auth\Http\Requests\CriarUsuarioRequest;
@@ -13,7 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Gestão de contas de acesso (Admin-only) — só HTTP. */
-class UsuarioController
+class UsuarioController extends Controller
 {
     public function __construct(private UsuarioService $usuarios) {}
 

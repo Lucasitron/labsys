@@ -2,16 +2,18 @@
 
 namespace App\Modules\Vendas\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Vendas\Http\Requests\MarketplaceRequest;
 use App\Modules\Vendas\Http\Resources\MarketplaceResource;
 use App\Modules\Vendas\Services\MarketplaceService;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Marketplace manual — só HTTP (só `?encomendaId=&plataforma=` no listar). */
-class MarketplaceController
+class MarketplaceController extends Controller
 {
     public function __construct(private MarketplaceService $marketplace) {}
 
@@ -51,11 +53,4 @@ class MarketplaceController
         ]);
     }
 
-    private function principal(Request $request): VendasPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return VendasPrincipal::from($login);
-    }
 }

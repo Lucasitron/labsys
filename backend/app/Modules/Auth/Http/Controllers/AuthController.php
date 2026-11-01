@@ -2,6 +2,8 @@
 
 namespace App\Modules\Auth\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Enums\Role;
 use App\Modules\Auth\Http\Requests\AlterarSenhaRequest;
 use App\Modules\Auth\Http\Requests\LoginRequest;
@@ -14,7 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Auth & Identity — só HTTP: valida (FormRequest), delega ao service, devolve JSON/Resource. */
-class AuthController
+class AuthController extends Controller
 {
     public function __construct(private AuthService $auth) {}
 

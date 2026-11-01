@@ -2,16 +2,18 @@
 
 namespace App\Modules\Rh\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
-use App\Modules\Rh\RhPrincipal;
+use App\Http\Controllers\Controller;
+use App\Modules\Rh\Http\Controllers\Concerns\ResolvesRhPrincipal;
+
 use App\Modules\Rh\Services\ExtratoService;
 use App\Shared\Exceptions\ForbiddenException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Leitura do extrato mensal (a geração é o scheduler R10). Só HTTP. */
-class ExtratoController
+class ExtratoController extends Controller
 {
+    use ResolvesRhPrincipal;
     public function __construct(private ExtratoService $extrato) {}
 
     public function show(Request $request): JsonResponse
@@ -21,9 +23,7 @@ class ExtratoController
             'mes' => ['nullable', 'date_format:Y-m'],
         ]);
 
-        /** @var Login $login */
-        $login = $request->user();
-        $principal = RhPrincipal::from($login);
+        $principal = $this->principal($request);
 
         $idFuncionario = isset($filtros['funcionarioId'])
             ? (int) $filtros['funcionarioId']

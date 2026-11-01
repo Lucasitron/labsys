@@ -2,20 +2,22 @@
 
 namespace App\Modules\Rh\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
+use App\Http\Controllers\Controller;
+use App\Modules\Rh\Http\Controllers\Concerns\ResolvesRhPrincipal;
+
 use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Enums\PessoaStatus;
 use App\Modules\Rh\Http\Requests\PessoaRequest;
 use App\Modules\Rh\Http\Resources\AvaliacaoResource;
 use App\Modules\Rh\Http\Resources\PessoaResource;
-use App\Modules\Rh\RhPrincipal;
 use App\Modules\Rh\Services\PessoaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Pessoas — só HTTP: FormRequest valida, service decide, Resource dá o shape. */
-class PessoaController
+class PessoaController extends Controller
 {
+    use ResolvesRhPrincipal;
     public function __construct(private PessoaService $pessoas) {}
 
     public function store(PessoaRequest $request): JsonResponse
@@ -152,13 +154,5 @@ class PessoaController
             'nome_usuario' => $request->input('nomeUsuario'),
             'setor' => $request->input('setor'),
         ];
-    }
-
-    private function principal(Request $request): RhPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return RhPrincipal::from($login);
     }
 }

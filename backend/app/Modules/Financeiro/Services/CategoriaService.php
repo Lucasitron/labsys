@@ -3,7 +3,7 @@
 namespace App\Modules\Financeiro\Services;
 
 use App\Modules\Financeiro\Enums\TipoCategoria;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Models\CategoriaFinanceira;
 use App\Modules\Financeiro\Policies\FinanceiroPolicy;
 
@@ -11,7 +11,7 @@ use App\Modules\Financeiro\Policies\FinanceiroPolicy;
 class CategoriaService
 {
     /** @return list<CategoriaFinanceira> */
-    public function listar(?TipoCategoria $tipo, FinanceiroPrincipal $principal): array
+    public function listar(?TipoCategoria $tipo, Caller $principal): array
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -21,7 +21,7 @@ class CategoriaService
             ->get()->all();
     }
 
-    public function criar(array $dados, FinanceiroPrincipal $principal): CategoriaFinanceira
+    public function criar(array $dados, Caller $principal): CategoriaFinanceira
     {
         FinanceiroPolicy::exigeAdmin($principal);
 

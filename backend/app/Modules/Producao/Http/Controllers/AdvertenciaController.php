@@ -2,16 +2,18 @@
 
 namespace App\Modules\Producao\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Producao\Http\Requests\AdvertenciaRequest;
 use App\Modules\Producao\Http\Resources\AdvertenciaResource;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Producao\Services\AdvertenciaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Advertências — só HTTP (registro Admin; leitura própria p/ não-Admin). */
-class AdvertenciaController
+class AdvertenciaController extends Controller
 {
     public function __construct(private AdvertenciaService $advertencias) {}
 
@@ -36,11 +38,4 @@ class AdvertenciaController
         return response()->json(AdvertenciaResource::collection($lista));
     }
 
-    private function principal(Request $request): ProducaoPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return ProducaoPrincipal::from($login);
-    }
 }

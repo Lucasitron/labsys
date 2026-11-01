@@ -2,12 +2,14 @@
 
 namespace App\Modules\Auth\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Http\Requests\CriarTokenRequest;
 use App\Modules\Auth\Services\TokenIntegracaoService;
 use Illuminate\Http\JsonResponse;
 
 /** Tokens de integração (Admin-only) — só HTTP. */
-class TokenIntegracaoController
+class TokenIntegracaoController extends Controller
 {
     public function __construct(private TokenIntegracaoService $tokens) {}
 

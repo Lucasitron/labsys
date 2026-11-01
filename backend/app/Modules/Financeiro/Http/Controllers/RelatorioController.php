@@ -2,8 +2,10 @@
 
 namespace App\Modules\Financeiro\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Services\RelatorioService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,7 +15,7 @@ use Illuminate\Http\Request;
  * `periodo` com allowlist `yyyy-MM` (422 fora do formato); `dataInicio`/`dataFim`
  * têm precedência. Lucratividade/inadimplência/custo-máquina sem período.
  */
-class RelatorioController
+class RelatorioController extends Controller
 {
     public function __construct(private RelatorioService $relatorios) {}
 
@@ -78,11 +80,4 @@ class RelatorioController
         ];
     }
 
-    private function principal(Request $request): FinanceiroPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return FinanceiroPrincipal::from($login);
-    }
 }

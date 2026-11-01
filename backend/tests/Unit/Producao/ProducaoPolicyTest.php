@@ -5,16 +5,16 @@ namespace Tests\Unit\Producao;
 use App\Modules\Auth\Enums\Role;
 use App\Modules\Producao\Enums\KanbanStatus;
 use App\Modules\Producao\Policies\ProducaoPolicy;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ForbiddenException;
 use PHPUnit\Framework\TestCase;
 
 /** Policy + vínculo + rótulos (sem banco). */
 class ProducaoPolicyTest extends TestCase
 {
-    private function principal(Role $role, int $id = 7): ProducaoPrincipal
+    private function principal(Role $role, int $id = 7): Caller
     {
-        return new ProducaoPrincipal($id, $role, $role === Role::ADMIN);
+        return new Caller($id, $role, $role === Role::ADMIN);
     }
 
     public function test_leitura_nega_recrutando(): void

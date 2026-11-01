@@ -2,8 +2,10 @@
 
 namespace App\Modules\Financeiro\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Http\Requests\OverheadRequest;
 use App\Modules\Financeiro\Http\Requests\ValorHoraRequest;
 use App\Modules\Financeiro\Http\Resources\OverheadResource;
@@ -13,7 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Valores/hora por nível e taxa de overhead — só HTTP (append-only). */
-class ParametroController
+class ParametroController extends Controller
 {
     public function __construct(private ParametroService $parametros) {}
 
@@ -48,11 +50,4 @@ class ParametroController
         return response()->json((new OverheadResource($overhead))->toArray($request));
     }
 
-    private function principal(Request $request): FinanceiroPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return FinanceiroPrincipal::from($login);
-    }
 }

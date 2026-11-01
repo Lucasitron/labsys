@@ -2,18 +2,20 @@
 
 namespace App\Modules\Producao\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Producao\Enums\ProjetoStatus;
 use App\Modules\Producao\Http\Requests\ProjetoRequest;
 use App\Modules\Producao\Http\Requests\ProjetoStatusRequest;
 use App\Modules\Producao\Http\Resources\ProjetoResource;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Producao\Services\ProjetoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Projetos — só HTTP (vínculos e carimbos no service). */
-class ProjetoController
+class ProjetoController extends Controller
 {
     public function __construct(private ProjetoService $projetos) {}
 
@@ -70,11 +72,4 @@ class ProjetoController
         return response()->json(null, 204);
     }
 
-    private function principal(Request $request): ProducaoPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return ProducaoPrincipal::from($login);
-    }
 }

@@ -2,18 +2,20 @@
 
 namespace App\Modules\Rh\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
+use App\Http\Controllers\Controller;
+use App\Modules\Rh\Http\Controllers\Concerns\ResolvesRhPrincipal;
+
 use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Http\Requests\AlterarNivelRequest;
 use App\Modules\Rh\Http\Requests\ConvidarRequest;
 use App\Modules\Rh\Http\Resources\FuncionarioResource;
-use App\Modules\Rh\RhPrincipal;
 use App\Modules\Rh\Services\NivelService;
 use Illuminate\Http\JsonResponse;
 
 /** Níveis (Admin): matriz, alteração de membro e convites. Só HTTP. */
-class NivelController
+class NivelController extends Controller
 {
+    use ResolvesRhPrincipal;
     public function __construct(private NivelService $niveis) {}
 
     public function matriz(): JsonResponse
@@ -23,13 +25,11 @@ class NivelController
 
     public function alterarMembro(AlterarNivelRequest $request, int $id): JsonResponse
     {
-        /** @var Login $login */
-        $login = $request->user();
 
         return response()->json($this->niveis->alterarMembro(
             $id,
             NivelAcesso::from((int) $request->input('nivel')),
-            RhPrincipal::from($login),
+            $this->principal($request),
         ));
     }
 

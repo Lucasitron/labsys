@@ -2,7 +2,7 @@
 
 namespace App\Modules\Financeiro\Services;
 
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Models\ParametroOverhead;
 use App\Modules\Financeiro\Models\ValorHoraNivel;
 use App\Modules\Financeiro\Policies\FinanceiroPolicy;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
  */
 class ParametroService
 {
-    public function definirValorHora(array $dados, FinanceiroPrincipal $principal): ValorHoraNivel
+    public function definirValorHora(array $dados, Caller $principal): ValorHoraNivel
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -32,7 +32,7 @@ class ParametroService
     }
 
     /** @return list<ValorHoraNivel> vigentes: o mais recente de cada nível (0-3) */
-    public function valoresVigentes(FinanceiroPrincipal $principal): array
+    public function valoresVigentes(Caller $principal): array
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -60,7 +60,7 @@ class ParametroService
         return (string) $valor->valor_hora;
     }
 
-    public function definirOverhead(array $dados, FinanceiroPrincipal $principal): ParametroOverhead
+    public function definirOverhead(array $dados, Caller $principal): ParametroOverhead
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -74,7 +74,7 @@ class ParametroService
         return $overhead;
     }
 
-    public function overheadVigente(FinanceiroPrincipal $principal): ParametroOverhead
+    public function overheadVigente(Caller $principal): ParametroOverhead
     {
         FinanceiroPolicy::exigeAdmin($principal);
 

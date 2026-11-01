@@ -2,12 +2,14 @@
 
 namespace App\Modules\Auth\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Http\Requests\AtualizarPermissaoRequest;
 use App\Modules\Auth\Services\RbacService;
 use Illuminate\Http\JsonResponse;
 
 /** Matriz RBAC completa + edição de célula (Admin-only) — só HTTP. */
-class PermissaoController
+class PermissaoController extends Controller
 {
     public function __construct(private RbacService $rbac) {}
 

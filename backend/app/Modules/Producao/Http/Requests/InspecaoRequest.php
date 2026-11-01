@@ -4,7 +4,7 @@ namespace App\Modules\Producao\Http\Requests;
 
 use App\Modules\Auth\Models\Login;
 use App\Modules\Producao\Policies\ProducaoPolicy;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -23,7 +23,7 @@ class InspecaoRequest extends FormRequest
 
         // RBAC antes da validação: Recrutando → 403 em tudo (convenção
         // "FormRequest valida+autoriza"; vínculos finos ficam no service).
-        ProducaoPolicy::exigeLeitura(ProducaoPrincipal::from($login));
+        ProducaoPolicy::exigeLeitura(Caller::from($login));
 
         return true;
     }

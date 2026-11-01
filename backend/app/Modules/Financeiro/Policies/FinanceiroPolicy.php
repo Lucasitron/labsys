@@ -2,7 +2,7 @@
 
 namespace App\Modules\Financeiro\Policies;
 
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ForbiddenException;
 
 /**
@@ -13,7 +13,7 @@ use App\Shared\Exceptions\ForbiddenException;
 class FinanceiroPolicy
 {
     /** @throws ForbiddenException */
-    public static function exigeAdmin(FinanceiroPrincipal $principal): void
+    public static function exigeAdmin(Caller $principal): void
     {
         if (! $principal->isAdmin()) {
             throw new ForbiddenException('Apenas Admin pode acessar o módulo financeiro');

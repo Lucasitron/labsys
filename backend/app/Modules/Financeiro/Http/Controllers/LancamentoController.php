@@ -2,8 +2,10 @@
 
 namespace App\Modules\Financeiro\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Http\Requests\LancamentoRequest;
 use App\Modules\Financeiro\Http\Requests\PagamentoRequest;
 use App\Modules\Financeiro\Http\Resources\LancamentoResource;
@@ -12,7 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Lançamentos (contas a pagar/receber) — só HTTP. Sem endpoint bulk. */
-class LancamentoController
+class LancamentoController extends Controller
 {
     public function __construct(private LancamentoService $lancamentos) {}
 
@@ -57,11 +59,4 @@ class LancamentoController
         return response()->json((new LancamentoResource($lancamento))->toArray($request));
     }
 
-    private function principal(Request $request): FinanceiroPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return FinanceiroPrincipal::from($login);
-    }
 }

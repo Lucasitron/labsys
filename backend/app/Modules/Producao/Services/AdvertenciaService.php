@@ -7,7 +7,7 @@ use App\Modules\Producao\Models\AdvertenciaMembro;
 use App\Modules\Producao\Models\Inspecao5S;
 use App\Modules\Producao\Models\Parametro5S;
 use App\Modules\Producao\Policies\ProducaoPolicy;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +24,7 @@ class AdvertenciaService
     public function __construct(private ProducaoEventPublisher $eventos) {}
 
     /** @return list<AdvertenciaMembro> não-Admin vê só as próprias (server-side). */
-    public function listar(?int $idFuncionario, ProducaoPrincipal $principal): array
+    public function listar(?int $idFuncionario, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
 
@@ -37,7 +37,7 @@ class AdvertenciaService
             ->all();
     }
 
-    public function registrar(array $dados, ProducaoPrincipal $principal): AdvertenciaMembro
+    public function registrar(array $dados, Caller $principal): AdvertenciaMembro
     {
         ProducaoPolicy::exigeAdmin($principal);
 

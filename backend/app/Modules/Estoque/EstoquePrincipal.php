@@ -5,6 +5,7 @@ namespace App\Modules\Estoque;
 use App\Modules\Auth\Contracts\AuthContract;
 use App\Modules\Auth\Enums\Role;
 use App\Modules\Auth\Models\Login;
+use App\Shared\Auth\Caller;
 
 /**
  * Identidade do chamador no Estoque (port de EstoquePrincipal: o guard JWT do
@@ -14,34 +15,31 @@ use App\Modules\Auth\Models\Login;
  * `usuario_responsabilidade` no contrato, o vínculo é o `setor` do login
  * (ESTOQUE/ALMOXARIFADO/SUPRIMENTOS) — server-side, nunca no front.
  */
-final class EstoquePrincipal
+class EstoquePrincipal extends Caller
 {
     /** @var list<string> */
     private const SETORES_ESTOQUE = ['ESTOQUE', 'ALMOXARIFADO', 'SUPRIMENTOS'];
 
     public function __construct(
-        public readonly int $idPessoa,
-        public readonly ?Role $role,
-        public readonly bool $admin,
+        int $idPessoa,
+        ?Role $role,
+        bool $admin,
         public readonly bool $responsavelEstoque,
-    ) {}
+    ) {
+        parent::__construct($idPessoa, $role, $admin);
+    }
 
     public static function from(Login $login): self
     {
-        $role = app(AuthContract::class)->roleOf((int) $login->id_user);
+        $caller = Caller::from($login);
 
         $setor = mb_strtoupper(trim((string) ($login->setor ?? '')));
 
         return new self(
-            idPessoa: (int) $login->id_user,
-            role: $role,
-            admin: $role === Role::ADMIN,
+            idPessoa: $caller->idUser,
+            role: $caller->role,
+            admin: $caller->admin,
             responsavelEstoque: in_array($setor, self::SETORES_ESTOQUE, true),
         );
-    }
-
-    public function isAdmin(): bool
-    {
-        return $this->admin;
     }
 }

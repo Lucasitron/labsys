@@ -3,7 +3,7 @@
 namespace App\Modules\Financeiro\Services;
 
 use App\Modules\Financeiro\Enums\StatusFechamento;
-use App\Modules\Financeiro\FinanceiroPrincipal;
+use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Models\FechamentoEncomenda;
 use App\Modules\Financeiro\Models\HorasEncomenda;
 use App\Modules\Financeiro\Policies\FinanceiroPolicy;
@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
  */
 class FechamentoService
 {
-    public function criar(array $dados, FinanceiroPrincipal $principal): FechamentoEncomenda
+    public function criar(array $dados, Caller $principal): FechamentoEncomenda
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -58,7 +58,7 @@ class FechamentoService
             ]);
     }
 
-    public function consultar(int $idEncomenda, FinanceiroPrincipal $principal): FechamentoEncomenda
+    public function consultar(int $idEncomenda, Caller $principal): FechamentoEncomenda
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -66,7 +66,7 @@ class FechamentoService
     }
 
     /** @return list<FechamentoEncomenda> */
-    public function listar(FinanceiroPrincipal $principal): array
+    public function listar(Caller $principal): array
     {
         FinanceiroPolicy::exigeAdmin($principal);
 
@@ -118,7 +118,7 @@ class FechamentoService
      * Alteração de encomenda (D-5): encerra a ordem atual (custo congelado) e
      * abre nova ordem com novas estimativas e valor — nunca edita o congelado.
      */
-    public function novaOrdem(int $idEncomenda, array $dados, FinanceiroPrincipal $principal): FechamentoEncomenda
+    public function novaOrdem(int $idEncomenda, array $dados, Caller $principal): FechamentoEncomenda
     {
         FinanceiroPolicy::exigeAdmin($principal);
 

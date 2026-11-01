@@ -2,8 +2,9 @@
 
 namespace App\Modules\Estoque\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
-use App\Modules\Estoque\EstoquePrincipal;
+use App\Http\Controllers\Controller;
+use App\Modules\Estoque\Http\Controllers\Concerns\ResolvesEstoquePrincipal;
+
 use App\Modules\Estoque\Http\Requests\FornecedorRequest;
 use App\Modules\Estoque\Http\Resources\FornecedorResource;
 use App\Modules\Estoque\Models\Fornecedor;
@@ -15,8 +16,9 @@ use Illuminate\Http\Request;
  * Fornecedores — CRUD trivial direto no Eloquent (sem service forçado).
  * Escrita só Admin (matriz); leitura bloqueia Recrutando.
  */
-class FornecedorController
+class FornecedorController extends Controller
 {
+    use ResolvesEstoquePrincipal;
     public function store(FornecedorRequest $request): JsonResponse
     {
         $fornecedor = Fornecedor::create($request->validated());
@@ -33,13 +35,5 @@ class FornecedorController
         return response()->json($fornecedores->map(
             fn ($f) => (new FornecedorResource($f))->toArray($request),
         )->all());
-    }
-
-    private function principal(Request $request): EstoquePrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return EstoquePrincipal::from($login);
     }
 }

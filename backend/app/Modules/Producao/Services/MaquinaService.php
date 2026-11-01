@@ -6,7 +6,7 @@ use App\Modules\Producao\Enums\MaquinaStatus;
 use App\Modules\Producao\Models\HistoricoUsoMaquina;
 use App\Modules\Producao\Models\Maquina;
 use App\Modules\Producao\Policies\ProducaoPolicy;
-use App\Modules\Producao\ProducaoPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ConflitoException;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +19,7 @@ use Illuminate\Validation\ValidationException;
 class MaquinaService
 {
     /** @return list<Maquina> */
-    public function listar(?MaquinaStatus $status, ProducaoPrincipal $principal): array
+    public function listar(?MaquinaStatus $status, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
 
@@ -30,14 +30,14 @@ class MaquinaService
             ->all();
     }
 
-    public function detalhar(int $id, ProducaoPrincipal $principal): Maquina
+    public function detalhar(int $id, Caller $principal): Maquina
     {
         ProducaoPolicy::exigeLeitura($principal);
 
         return $this->obter($id);
     }
 
-    public function criar(array $dados, ProducaoPrincipal $principal): Maquina
+    public function criar(array $dados, Caller $principal): Maquina
     {
         ProducaoPolicy::exigeAdmin($principal);
 
@@ -49,7 +49,7 @@ class MaquinaService
         ]));
     }
 
-    public function atualizar(int $id, array $dados, ProducaoPrincipal $principal): Maquina
+    public function atualizar(int $id, array $dados, Caller $principal): Maquina
     {
         ProducaoPolicy::exigeAdmin($principal);
         $maquina = $this->obter($id);
@@ -66,7 +66,7 @@ class MaquinaService
         });
     }
 
-    public function alterarStatus(int $id, MaquinaStatus $status, ProducaoPrincipal $principal): Maquina
+    public function alterarStatus(int $id, MaquinaStatus $status, Caller $principal): Maquina
     {
         ProducaoPolicy::exigeAdmin($principal);
         $maquina = $this->obter($id);
@@ -79,14 +79,14 @@ class MaquinaService
         });
     }
 
-    public function remover(int $id, ProducaoPrincipal $principal): void
+    public function remover(int $id, Caller $principal): void
     {
         ProducaoPolicy::exigeAdmin($principal);
 
         $this->obter($id)->delete();
     }
 
-    public function iniciarUso(int $idMaquina, array $dados, ProducaoPrincipal $principal): HistoricoUsoMaquina
+    public function iniciarUso(int $idMaquina, array $dados, Caller $principal): HistoricoUsoMaquina
     {
         ProducaoPolicy::exigeUsoMaquina($principal);
         $maquina = $this->obter($idMaquina);
@@ -110,7 +110,7 @@ class MaquinaService
         });
     }
 
-    public function encerrarUso(int $idMaquina, int $idUso, array $dados, ProducaoPrincipal $principal): HistoricoUsoMaquina
+    public function encerrarUso(int $idMaquina, int $idUso, array $dados, Caller $principal): HistoricoUsoMaquina
     {
         ProducaoPolicy::exigeUsoMaquina($principal);
         $maquina = $this->obter($idMaquina);
@@ -150,7 +150,7 @@ class MaquinaService
     }
 
     /** @return list<HistoricoUsoMaquina> */
-    public function historico(int $idMaquina, ProducaoPrincipal $principal): array
+    public function historico(int $idMaquina, Caller $principal): array
     {
         ProducaoPolicy::exigeLeitura($principal);
         $this->obter($idMaquina);

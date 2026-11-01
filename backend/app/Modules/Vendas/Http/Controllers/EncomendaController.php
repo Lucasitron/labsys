@@ -2,6 +2,8 @@
 
 namespace App\Modules\Vendas\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Vendas\Enums\StatusKanban;
 use App\Modules\Vendas\Http\Requests\EncomendaRequest;
@@ -9,12 +11,12 @@ use App\Modules\Vendas\Http\Requests\KanbanRequest;
 use App\Modules\Vendas\Http\Requests\NovaOrdemRequest;
 use App\Modules\Vendas\Http\Resources\EncomendaResource;
 use App\Modules\Vendas\Services\EncomendaService;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Encomendas e Kanban — só HTTP (criador+Admin e `versao` no service). */
-class EncomendaController
+class EncomendaController extends Controller
 {
     public function __construct(private EncomendaService $encomendas) {}
 
@@ -99,11 +101,4 @@ class EncomendaController
         return $resource->toArray($request);
     }
 
-    private function principal(Request $request): VendasPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return VendasPrincipal::from($login);
-    }
 }

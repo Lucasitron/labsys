@@ -2,15 +2,17 @@
 
 namespace App\Modules\Vendas\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Auth\Models\Login;
 use App\Modules\Vendas\Http\Resources\HistoricoResource;
 use App\Modules\Vendas\Services\EncomendaService;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Histórico do Kanban — leitura (sem service dedicado). */
-class HistoricoController
+class HistoricoController extends Controller
 {
     public function __construct(private EncomendaService $encomendas) {}
 
@@ -24,11 +26,4 @@ class HistoricoController
         ));
     }
 
-    private function principal(Request $request): VendasPrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return VendasPrincipal::from($login);
-    }
 }

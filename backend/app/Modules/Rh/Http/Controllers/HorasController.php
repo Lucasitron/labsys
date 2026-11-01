@@ -2,12 +2,13 @@
 
 namespace App\Modules\Rh\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
+use App\Http\Controllers\Controller;
+use App\Modules\Rh\Http\Controllers\Concerns\ResolvesRhPrincipal;
+
 use App\Modules\Rh\Enums\StatusApontamento;
 use App\Modules\Rh\Http\Requests\RegistrarApontamentoRequest;
 use App\Modules\Rh\Http\Requests\RejeitarApontamentoRequest;
 use App\Modules\Rh\Http\Resources\ApontamentoResource;
-use App\Modules\Rh\RhPrincipal;
 use App\Modules\Rh\Services\ApontamentoService;
 use App\Modules\Rh\Services\CertificadoService;
 use Illuminate\Http\JsonResponse;
@@ -17,8 +18,9 @@ use Illuminate\Http\Request;
  * Fachada de horas (tela de registro): delega ao ApontamentoService e ao
  * CertificadoService — sem classe fachada extra.
  */
-class HorasController
+class HorasController extends Controller
 {
+    use ResolvesRhPrincipal;
     public function __construct(
         private ApontamentoService $apontamentos,
         private CertificadoService $certificados,
@@ -26,10 +28,8 @@ class HorasController
 
     public function disponiveis(Request $request): JsonResponse
     {
-        /** @var Login $login */
-        $login = $request->user();
 
-        return response()->json($this->certificados->horasDisponiveis(RhPrincipal::from($login)));
+        return response()->json($this->certificados->horasDisponiveis($this->principal($request)));
     }
 
     public function index(Request $request): JsonResponse
@@ -39,13 +39,11 @@ class HorasController
             'periodo' => ['nullable', 'date_format:Y-m'],
         ]);
 
-        /** @var Login $login */
-        $login = $request->user();
 
         $lista = $this->apontamentos->listar(
             isset($filtros['status']) ? StatusApontamento::from($filtros['status']) : null,
             $filtros['periodo'] ?? null,
-            RhPrincipal::from($login),
+            $this->principal($request),
         );
 
         return response()->json(collect($lista)->map(
@@ -55,24 +53,20 @@ class HorasController
 
     public function store(RegistrarApontamentoRequest $request): JsonResponse
     {
-        /** @var Login $login */
-        $login = $request->user();
 
         $apontamento = $this->apontamentos->registrar($request->only([
             'idFuncionario', 'tipo', 'idReferencia', 'data', 'horasTrabalhadas',
             'horaInicio', 'horaFim', 'descricaoAtividade',
-        ]), RhPrincipal::from($login));
+        ]), $this->principal($request));
 
         return response()->json((new ApontamentoResource($apontamento))->toArray($request), 201);
     }
 
     public function validar(Request $request, int $id): JsonResponse
     {
-        /** @var Login $login */
-        $login = $request->user();
 
         $apontamento = $this->apontamentos->validar(
-            $id, StatusApontamento::VALIDADO, null, RhPrincipal::from($login),
+            $id, StatusApontamento::VALIDADO, null, $this->principal($request),
         );
 
         return response()->json((new ApontamentoResource($apontamento))->toArray($request));
@@ -80,11 +74,9 @@ class HorasController
 
     public function rejeitar(RejeitarApontamentoRequest $request, int $id): JsonResponse
     {
-        /** @var Login $login */
-        $login = $request->user();
 
         $apontamento = $this->apontamentos->validar(
-            $id, StatusApontamento::REJEITADO, $request->input('motivo'), RhPrincipal::from($login),
+            $id, StatusApontamento::REJEITADO, $request->input('motivo'), $this->principal($request),
         );
 
         return response()->json((new ApontamentoResource($apontamento))->toArray($request));

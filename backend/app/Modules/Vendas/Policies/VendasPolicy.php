@@ -3,7 +3,7 @@
 namespace App\Modules\Vendas\Policies;
 
 use App\Modules\Auth\Enums\Role;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ForbiddenException;
 
 /**
@@ -20,7 +20,7 @@ use App\Shared\Exceptions\ForbiddenException;
 class VendasPolicy
 {
     /** @throws ForbiddenException */
-    public static function exigeLeitura(VendasPrincipal $principal): void
+    public static function exigeLeitura(Caller $principal): void
     {
         if ($principal->role === Role::RECRUTANDO) {
             throw new ForbiddenException('Acesso negado ao módulo de vendas');
@@ -28,7 +28,7 @@ class VendasPolicy
     }
 
     /** @throws ForbiddenException */
-    public static function exigeEscrita(VendasPrincipal $principal): void
+    public static function exigeEscrita(Caller $principal): void
     {
         self::exigeLeitura($principal);
 
@@ -38,7 +38,7 @@ class VendasPolicy
     }
 
     /** @throws ForbiddenException */
-    public static function exigirCriadorOuAdmin(?int $criadoPor, VendasPrincipal $principal): void
+    public static function exigirCriadorOuAdmin(?int $criadoPor, Caller $principal): void
     {
         self::exigeLeitura($principal);
 

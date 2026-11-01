@@ -10,7 +10,7 @@ use App\Modules\Vendas\Models\Orcamento;
 use App\Modules\Vendas\Models\TagCliente;
 use App\Modules\Vendas\Policies\VendasPolicy;
 use App\Modules\Vendas\Rules\DocumentoRule;
-use App\Modules\Vendas\VendasPrincipal;
+use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ConflitoException;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -18,7 +18,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 /** Gestão de clientes PF/PJ (regras só aqui). Escrita = Admin (matriz prevalece). */
 class ClienteService
 {
-    public function criar(array $dados, VendasPrincipal $principal): Cliente
+    public function criar(array $dados, Caller $principal): Cliente
     {
         VendasPolicy::exigeEscrita($principal);
 
@@ -42,7 +42,7 @@ class ClienteService
         array $tagIds,
         int $page,
         int $pageSize,
-        VendasPrincipal $principal,
+        Caller $principal,
     ): LengthAwarePaginator {
         VendasPolicy::exigeLeitura($principal);
 
@@ -64,7 +64,7 @@ class ClienteService
     }
 
     /** @return array{cliente:Cliente,indicadores:array<string,mixed>} */
-    public function detalhar(int $id, VendasPrincipal $principal): array
+    public function detalhar(int $id, Caller $principal): array
     {
         VendasPolicy::exigeLeitura($principal);
 
@@ -84,7 +84,7 @@ class ClienteService
         ];
     }
 
-    public function atualizar(int $id, array $dados, VendasPrincipal $principal): Cliente
+    public function atualizar(int $id, array $dados, Caller $principal): Cliente
     {
         VendasPolicy::exigeEscrita($principal);
 
@@ -104,7 +104,7 @@ class ClienteService
         return $cliente->refresh()->load('tags');
     }
 
-    public function excluir(int $id, VendasPrincipal $principal): void
+    public function excluir(int $id, Caller $principal): void
     {
         VendasPolicy::exigeEscrita($principal);
 
@@ -118,7 +118,7 @@ class ClienteService
         $cliente->delete();
     }
 
-    public function vincularTag(int $idCliente, int $idTag, VendasPrincipal $principal): void
+    public function vincularTag(int $idCliente, int $idTag, Caller $principal): void
     {
         VendasPolicy::exigeEscrita($principal);
 
@@ -128,7 +128,7 @@ class ClienteService
         $cliente->tags()->syncWithoutDetaching([$idTag]);
     }
 
-    public function desvincularTag(int $idCliente, int $idTag, VendasPrincipal $principal): void
+    public function desvincularTag(int $idCliente, int $idTag, Caller $principal): void
     {
         VendasPolicy::exigeEscrita($principal);
 
@@ -136,7 +136,7 @@ class ClienteService
     }
 
     /** Marca tag em lote, sem duplicidade (Admin-only). @return array{vinculados:int,tagId:int} */
-    public function bulkTag(array $clienteIds, int $tagId, VendasPrincipal $principal): array
+    public function bulkTag(array $clienteIds, int $tagId, Caller $principal): array
     {
         VendasPolicy::exigeEscrita($principal);
 

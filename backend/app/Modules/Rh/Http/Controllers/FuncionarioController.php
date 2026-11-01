@@ -2,19 +2,21 @@
 
 namespace App\Modules\Rh\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
+use App\Http\Controllers\Controller;
+use App\Modules\Rh\Http\Controllers\Concerns\ResolvesRhPrincipal;
+
 use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Http\Requests\AlterarNivelRequest;
 use App\Modules\Rh\Http\Requests\VincularFuncionarioRequest;
 use App\Modules\Rh\Http\Resources\FuncionarioResource;
-use App\Modules\Rh\RhPrincipal;
 use App\Modules\Rh\Services\FuncionarioService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** Funcionários — só HTTP. Nível e vínculo são Admin (rota `can:admin`). */
-class FuncionarioController
+class FuncionarioController extends Controller
 {
+    use ResolvesRhPrincipal;
     public function __construct(private FuncionarioService $funcionarios) {}
 
     public function index(Request $request): JsonResponse
@@ -52,21 +54,17 @@ class FuncionarioController
 
     public function alterarNivel(AlterarNivelRequest $request, int $id): JsonResponse
     {
-        /** @var Login $login */
-        $login = $request->user();
 
         return response()->json($this->funcionarios->alterarNivel(
             $id,
             NivelAcesso::from((int) $request->input('nivel')),
-            RhPrincipal::from($login),
+            $this->principal($request),
         ));
     }
 
     public function horas(Request $request, int $id): JsonResponse
     {
-        /** @var Login $login */
-        $login = $request->user();
 
-        return response()->json($this->funcionarios->totalHoras($id, RhPrincipal::from($login)));
+        return response()->json($this->funcionarios->totalHoras($id, $this->principal($request)));
     }
 }

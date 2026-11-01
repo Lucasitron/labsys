@@ -2,8 +2,9 @@
 
 namespace App\Modules\Estoque\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
-use App\Modules\Estoque\EstoquePrincipal;
+use App\Http\Controllers\Controller;
+use App\Modules\Estoque\Http\Controllers\Concerns\ResolvesEstoquePrincipal;
+
 use App\Modules\Estoque\Http\Requests\EmprestimoRequest;
 use App\Modules\Estoque\Http\Resources\EmprestimoResource;
 use App\Modules\Estoque\Services\EmprestimoService;
@@ -12,8 +13,9 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 /** Empréstimos — só HTTP (`?status=` só aqui; escopo E-7 no service). */
-class EmprestimoController
+class EmprestimoController extends Controller
 {
+    use ResolvesEstoquePrincipal;
     public function __construct(private EmprestimoService $emprestimos) {}
 
     public function store(EmprestimoRequest $request): JsonResponse
@@ -60,13 +62,5 @@ class EmprestimoController
         $emprestimo = $this->emprestimos->devolver($id, $this->principal($request));
 
         return response()->json((new EmprestimoResource($emprestimo))->toArray($request));
-    }
-
-    private function principal(Request $request): EstoquePrincipal
-    {
-        /** @var Login $login */
-        $login = $request->user();
-
-        return EstoquePrincipal::from($login);
     }
 }

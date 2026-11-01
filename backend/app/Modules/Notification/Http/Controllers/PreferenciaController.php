@@ -2,12 +2,14 @@
 
 namespace App\Modules\Notification\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Modules\Notification\Http\Requests\AtualizarPreferenciasRequest;
 use App\Modules\Notification\Services\NotificacaoService;
 use Illuminate\Http\JsonResponse;
 
 /** Preferências tipo×canal — só HTTP (Admin; validação estrita no service → 400). */
-class PreferenciaController
+class PreferenciaController extends Controller
 {
     public function __construct(private NotificacaoService $inbox) {}
 
