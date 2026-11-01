@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Pedido de edição (qualquer autenticado exceto Recrutando — service). */
 class SolicitacaoRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

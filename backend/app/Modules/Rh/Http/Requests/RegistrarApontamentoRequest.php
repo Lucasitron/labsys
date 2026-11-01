@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Apontamento: com horaInicio+hFim o servidor recalcula (ignora o enviado). */
 class RegistrarApontamentoRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

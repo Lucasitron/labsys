@@ -2,17 +2,11 @@
 
 namespace App\Modules\Notification\Http\Requests;
 
-use App\Modules\Auth\Models\Login;
 use Illuminate\Foundation\Http\FormRequest;
 
 /** Revisão do Admin: ids das ativas a mover p/ o histórico (D9). */
 class RevisarRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user() instanceof Login;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Saída manual (consumo, perda, ajuste). */
 class SaidaRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

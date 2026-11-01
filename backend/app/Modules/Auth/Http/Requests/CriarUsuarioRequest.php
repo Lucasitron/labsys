@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** POST /api/usuarios — convite de conta (situação ausente = PENDENTE, nível ausente = 4). */
 class CriarUsuarioRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

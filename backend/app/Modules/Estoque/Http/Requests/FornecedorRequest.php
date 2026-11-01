@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Fornecedor (só Admin cadastra — rota com `can:admin`). */
 class FornecedorRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

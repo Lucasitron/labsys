@@ -8,11 +8,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Cliente PF/PJ (cadastro/atualização): documento com dígitos, unicidade no service. */
 class ClienteRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

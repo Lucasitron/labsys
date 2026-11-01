@@ -18,7 +18,7 @@ class ExtratoController
     {
         $filtros = $request->validate([
             'funcionarioId' => ['nullable', 'integer'],
-            'mes' => ['nullable', 'regex:/^\d{4}-\d{2}$/'],
+            'mes' => ['nullable', 'date_format:Y-m'],
         ]);
 
         /** @var Login $login */

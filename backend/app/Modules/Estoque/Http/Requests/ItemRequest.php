@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Item (criar/atualizar): autorização é do service (RBAC por vínculo). */
 class ItemRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

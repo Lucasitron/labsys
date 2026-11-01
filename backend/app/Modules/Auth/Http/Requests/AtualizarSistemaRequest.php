@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** PUT /api/configuracoes/sistema — identidade + cadências 5S. */
 class AtualizarSistemaRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

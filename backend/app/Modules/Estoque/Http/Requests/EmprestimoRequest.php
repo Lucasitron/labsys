@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Empréstimo: devolução prevista hoje ou futura. */
 class EmprestimoRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

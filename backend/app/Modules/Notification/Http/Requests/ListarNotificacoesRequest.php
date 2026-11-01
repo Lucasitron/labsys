@@ -2,7 +2,6 @@
 
 namespace App\Modules\Notification\Http\Requests;
 
-use App\Modules\Auth\Models\Login;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -11,11 +10,6 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class ListarNotificacoesRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user() instanceof Login;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -44,6 +38,6 @@ class ListarNotificacoesRequest extends FormRequest
             return null;
         }
 
-        return filter_var($this->input('read'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        return $this->boolean('read');
     }
 }

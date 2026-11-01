@@ -69,7 +69,6 @@ class AuthController
             $login,
             $request->input('senhaAtual'),
             $request->input('novaSenha'),
-            $request->input('confirmacaoSenha'),
             $request->bearerToken(),
         );
 

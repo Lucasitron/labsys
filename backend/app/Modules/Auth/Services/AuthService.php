@@ -32,10 +32,6 @@ class AuthService
     /** @return array{accessToken:string,refreshToken:string,tokenType:string,expiresIn:int,idUser:int,role:string,setor:?string,nomeUsuario:string} */
     public function login(?string $email, ?string $nomeUsuario, string $senha): array
     {
-        if (blank($email) && blank($nomeUsuario)) {
-            throw new InvalidCredentialsException('Informe e-mail ou nome de usuário');
-        }
-
         $login = blank($email)
             ? Login::where('nome_usuario', $nomeUsuario)->first()
             : Login::where('email', $email)->first();
@@ -170,7 +166,7 @@ class AuthService
     /**
      * Altera a senha do próprio usuário; revoga o Bearer atual (força re-login).
      */
-    public function alterarSenha(Login $login, string $senhaAtual, string $novaSenha, string $confirmacaoSenha, ?string $tokenAtual = null): void
+    public function alterarSenha(Login $login, string $senhaAtual, string $novaSenha, ?string $tokenAtual = null): void
     {
         $fresh = Login::find($login->getKey());
 
@@ -180,10 +176,6 @@ class AuthService
 
         if (! Hash::check($senhaAtual, $fresh->senha_hash)) {
             throw new InvalidCredentialsException('Senha atual incorreta');
-        }
-
-        if ($novaSenha !== $confirmacaoSenha) {
-            throw new \InvalidArgumentException('Nova senha e confirmação não conferem');
         }
 
         $fresh->senha_hash = Hash::make($novaSenha);

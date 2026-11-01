@@ -68,7 +68,7 @@ class RelatorioController
         $filtros = $request->validate([
             'dataInicio' => ['nullable', 'date'],
             'dataFim' => ['nullable', 'date'],
-            'periodo' => ['nullable', 'string', 'regex:/^\d{4}-(0[1-9]|1[0-2])$/'],
+            'periodo' => ['nullable', 'string', 'date_format:Y-m'],
         ]);
 
         return [

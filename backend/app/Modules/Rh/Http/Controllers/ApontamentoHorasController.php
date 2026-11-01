@@ -34,7 +34,7 @@ class ApontamentoHorasController
     {
         $filtros = $request->validate([
             'status' => ['nullable', 'in:PENDENTE,VALIDADO,REJEITADO'],
-            'periodo' => ['nullable', 'regex:/^\d{4}-\d{2}$/'],
+            'periodo' => ['nullable', 'date_format:Y-m'],
         ]);
 
         /** @var Login $login */

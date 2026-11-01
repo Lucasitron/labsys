@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Nova ordem por alteração (encerra a atual + cria nova com origem). */
 class NovaOrdemRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

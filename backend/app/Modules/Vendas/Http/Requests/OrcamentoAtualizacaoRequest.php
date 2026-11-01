@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Ajustes de orçamento (status e/ou itens). Conversão é o POST /encomendas. */
 class OrcamentoAtualizacaoRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Atualização de tarefa (status/prioridade/prazo). */
 class TarefaAtualizacaoRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

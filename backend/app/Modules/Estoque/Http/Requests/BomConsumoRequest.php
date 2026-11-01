@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Consumo real dos itens da BOM. */
 class BomConsumoRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

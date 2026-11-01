@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** POST /api/rh/processo-seletivo — candidato (vira pessoa + funcionário nível 4). */
 class IniciarProcessoRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

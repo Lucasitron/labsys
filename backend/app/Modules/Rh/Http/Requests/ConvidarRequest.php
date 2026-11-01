@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** POST /api/rh/niveis/convites — pessoa + funcionário (nível 4 nasce Recrutando). Admin. */
 class ConvidarRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

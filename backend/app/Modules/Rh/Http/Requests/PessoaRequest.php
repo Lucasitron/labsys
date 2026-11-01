@@ -8,11 +8,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Pessoa (cadastro/atualização): matrícula única e CPF opcional checados no service. */
 class PessoaRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

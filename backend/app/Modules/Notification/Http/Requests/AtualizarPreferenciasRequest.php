@@ -2,7 +2,6 @@
 
 namespace App\Modules\Notification\Http\Requests;
 
-use App\Modules\Auth\Models\Login;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -12,11 +11,6 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class AtualizarPreferenciasRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user() instanceof Login;
-    }
-
     /** @return array<string, mixed> */
     public function rules(): array
     {

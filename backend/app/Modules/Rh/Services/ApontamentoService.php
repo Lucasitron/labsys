@@ -167,11 +167,11 @@ class ApontamentoService
             return [null, null];
         }
 
-        if (! preg_match('/^\d{4}-\d{2}$/', trim($periodo))) {
+        try {
+            $base = Carbon::createFromFormat('!Y-m', trim($periodo));
+        } catch (\Throwable $e) {
             throw new \InvalidArgumentException('Período deve estar no formato yyyy-MM');
         }
-
-        $base = Carbon::createFromFormat('Y-m', trim($periodo))->startOfDay();
 
         return [$base->copy()->startOfMonth()->toDateString(), $base->copy()->endOfMonth()->toDateString()];
     }
