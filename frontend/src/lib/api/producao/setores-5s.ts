@@ -1,6 +1,7 @@
 import type { Ciclo5S, Paginado, Setor5S } from '$lib/types/producao';
+import { paginarClient } from '$lib/utils/pagination';
 import { apiFetch } from '../client';
-import { bearer, paginarClient, unwrapLista } from './client';
+import { unwrapLista } from './client';
 
 const BASE = '/producao/setores';
 
@@ -65,7 +66,7 @@ export async function obterSetores5S(
 	params: Setor5SFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Setor5S>> {
-	const res = await apiFetch<RawSetor[] | { data: RawSetor[] }>(BASE, { headers: bearer() }, fetchFn);
+	const res = await apiFetch<RawSetor[] | { data: RawSetor[] }>(BASE, {}, fetchFn);
 	const todos = unwrapLista(res).map(mapSetor);
 	if (params.ciclo && params.ciclo.length > 0) {
 		return paginarClient(
@@ -78,7 +79,7 @@ export async function obterSetores5S(
 }
 
 export async function obterSetor5SPorId(id: string, fetchFn: typeof fetch = fetch): Promise<Setor5S> {
-	const raw = await apiFetch<RawSetor>(`${BASE}/${id}`, { headers: bearer() }, fetchFn);
+	const raw = await apiFetch<RawSetor>(`${BASE}/${id}`, {}, fetchFn);
 	return mapSetor(raw);
 }
 
@@ -94,7 +95,6 @@ export function criarSetor5S(payload: CriarSetor5SPayload): Promise<Setor5S> {
 	if (payload.ativo !== undefined) body['ativo'] = payload.ativo;
 	return apiFetch<Setor5S>(BASE, {
 		method: 'POST',
-		headers: bearer(),
 		body: JSON.stringify(body)
 	});
 }
@@ -102,7 +102,6 @@ export function criarSetor5S(payload: CriarSetor5SPayload): Promise<Setor5S> {
 export function atualizarSetor5S(id: string, payload: Partial<CriarSetor5SPayload>): Promise<Setor5S> {
 	return apiFetch<Setor5S>(`${BASE}/${id}`, {
 		method: 'PUT',
-		headers: bearer(),
 		body: JSON.stringify(payload)
 	});
 }
@@ -110,7 +109,6 @@ export function atualizarSetor5S(id: string, payload: Partial<CriarSetor5SPayloa
 export function adicionarChecklistDoSetor(id: string, payload: AdicionarChecklistPayload): Promise<Setor5S> {
 	return apiFetch<Setor5S>(`${BASE}/${id}/checklist`, {
 		method: 'POST',
-		headers: bearer(),
 		body: JSON.stringify(payload)
 	});
 }
@@ -128,7 +126,6 @@ export function adicionarResponsavelDoSetor(
 	}
 	return apiFetch<Setor5S>(`${BASE}/${id}/responsaveis`, {
 		method: 'POST',
-		headers: bearer(),
 		body: JSON.stringify({ ...payload, idFuncionario })
 	});
 }

@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 
 
@@ -23,7 +22,7 @@ interface RawFuncionario {
 export async function listFuncionarios(
 	fetchFn: typeof fetch = fetch
 ): Promise<FuncionarioOption[]> {
-	const res = await apiFetch<RawFuncionario[]>('/rh/funcionarios', { headers: bearer() }, fetchFn);
+	const res = await apiFetch<RawFuncionario[]>('/rh/funcionarios', {}, fetchFn);
 	return (res ?? []).map((f) => ({
 		id: String(f.id),
 		idPessoa: String(f.idPessoa),

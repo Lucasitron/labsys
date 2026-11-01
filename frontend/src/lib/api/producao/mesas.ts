@@ -1,6 +1,7 @@
 import type { Mesa5S, MesaAuditoriaResultado, Paginado, SituacaoMesas } from '$lib/types/producao';
+import { paginarClient } from '$lib/utils/pagination';
 import { apiFetch } from '../client';
-import { bearer, paginarClient, unwrapLista } from './client';
+import { unwrapLista } from './client';
 
 const BASE = '/producao/projetos-mesa';
 const AUDITORIAS = '/producao/auditorias-projeto-mesa';
@@ -60,7 +61,7 @@ export async function obterMesas(
 ): Promise<Paginado<Mesa5S>> {
 	const res = await apiFetch<RawProjetoMesa[] | { data: RawProjetoMesa[] }>(
 		BASE,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	let todas = unwrapLista(res).map(mapMesa);
@@ -89,7 +90,6 @@ export function criarMesa(payload: CriarMesaPayload): Promise<Mesa5S> {
 	if (payload.prazoExecucao) body['prazoExecucao'] = payload.prazoExecucao;
 	return apiFetch<Mesa5S>(BASE, {
 		method: 'POST',
-		headers: bearer(),
 		body: JSON.stringify(body)
 	});
 }
@@ -102,7 +102,6 @@ export function registrarAuditoriaMesa(id: string, payload: AuditoriaMesaPayload
 	if (payload.acao) body['acaoTomada'] = payload.acao;
 	return apiFetch<void>(AUDITORIAS, {
 		method: 'POST',
-		headers: bearer(),
 		body: JSON.stringify(body)
 	});
 }

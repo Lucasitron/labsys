@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import {
 	CATEGORIA_TIPO_PARA_UPPER,
@@ -28,7 +27,7 @@ export function mapCategoria(raw: RawCategoria): CategoriaFinanceira {
 export async function listCategorias(fetchFn: typeof fetch = fetch): Promise<CategoriaFinanceira[]> {
 	const raw = await apiFetch<RawCategoria[] | { data: RawCategoria[] }>(
 		BASE,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	const lista = Array.isArray(raw) ? raw : (raw.data ?? []);
@@ -43,7 +42,6 @@ export async function createCategoria(
 		BASE,
 		{
 			method: 'POST',
-			headers: bearer(),
 			body: JSON.stringify({
 				nome: payload.nome,
 				tipo: CATEGORIA_TIPO_PARA_UPPER[payload.tipo],

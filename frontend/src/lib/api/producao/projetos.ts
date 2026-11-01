@@ -1,6 +1,7 @@
 import type { Paginado, Projeto, ProjetoStatus } from '$lib/types/producao';
+import { paginarClient } from '$lib/utils/pagination';
 import { apiFetch } from '../client';
-import { bearer, paginarClient, STATUS_PROJETO_UPPER, unwrapLista } from './client';
+import { STATUS_PROJETO_UPPER, unwrapLista } from './client';
 
 const BASE = '/producao/projetos';
 
@@ -80,7 +81,7 @@ export async function obterProjetos(
 	params: ProjetoFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Projeto>> {
-	const res = await apiFetch<RawProjeto[] | { data: RawProjeto[] }>(BASE, { headers: bearer() }, fetchFn);
+	const res = await apiFetch<RawProjeto[] | { data: RawProjeto[] }>(BASE, {}, fetchFn);
 	let todos = unwrapLista(res).map(mapProjeto);
 	if (params.status && params.status.length > 0) {
 		todos = todos.filter((p) => params.status!.includes(p.status));
@@ -92,13 +93,12 @@ export async function obterProjetos(
 }
 
 export async function obterProjetoPorId(id: string, fetchFn: typeof fetch = fetch): Promise<Projeto> {
-	return await apiFetch<Projeto>(`${BASE}/${id}`, { headers: bearer() }, fetchFn);
+	return await apiFetch<Projeto>(`${BASE}/${id}`, {}, fetchFn);
 }
 
 export function criarProjeto(payload: CriarProjetoPayload): Promise<Projeto> {
 	return apiFetch<Projeto>(BASE, {
 		method: 'POST',
-		headers: bearer(),
 		body: JSON.stringify(paraPayloadProjeto(payload))
 	});
 }
@@ -106,7 +106,6 @@ export function criarProjeto(payload: CriarProjetoPayload): Promise<Projeto> {
 export function atualizarProjeto(id: string, payload: Partial<CriarProjetoPayload>): Promise<Projeto> {
 	return apiFetch<Projeto>(`${BASE}/${id}`, {
 		method: 'PUT',
-		headers: bearer(),
 		body: JSON.stringify(paraPayloadProjeto(payload))
 	});
 }

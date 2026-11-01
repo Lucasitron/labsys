@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type { Module } from '$lib/types/auth';
 import type { Nivel, PermissaoMatriz, PermissaoNivel } from '$lib/types/configuracoes';
@@ -27,7 +26,7 @@ interface RawCelula {
 export async function obterPermissoes(fetchFn: typeof fetch = fetch): Promise<PermissaoMatriz> {
 	const res = await apiFetch<{ matriz: RawCelula[] }>(
 		'/permissoes',
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	const matriz = {} as PermissaoMatriz;
@@ -49,7 +48,6 @@ export async function atualizarPermissao(
 ): Promise<void> {
 	await apiFetch<unknown>(`/permissoes/${modulo}/${nivel}`, {
 		method: 'PUT',
-		headers: bearer(),
 		body: JSON.stringify({ valor })
 	});
 }

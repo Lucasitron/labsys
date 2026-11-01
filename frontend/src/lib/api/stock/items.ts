@@ -5,7 +5,7 @@ import type {
 	UpdateItemPayload
 } from '$lib/types/stock';
 import { deriveItemStatus } from '$lib/utils/stock-status';
-import { buildQuery, stockFetch, stockFetchBlob } from './request';
+import { apiFetch, apiFetchBlob, buildQuery } from '$lib/api/client';
 
 const BASE = '/estoque/itens';
 
@@ -33,7 +33,7 @@ export async function listarItens(
 		idLocalizacao: params.idLocalizacao,
 		baixo: params.baixo === true ? '1' : undefined
 	});
-	const raw = await stockFetch<StockItem[]>(`${BASE}${qs}`, {}, fetchFn);
+	const raw = await apiFetch<StockItem[]>(`${BASE}${qs}`, {}, fetchFn);
 	return raw.map(withStatus);
 }
 
@@ -41,12 +41,12 @@ export async function buscarItem(
 	id: string,
 	fetchFn: typeof fetch = fetch
 ): Promise<StockItem> {
-	return withStatus(await stockFetch<StockItem>(`${BASE}/${id}`, {}, fetchFn));
+	return withStatus(await apiFetch<StockItem>(`${BASE}/${id}`, {}, fetchFn));
 }
 
 export async function criarItem(payload: CreateItemPayload): Promise<StockItem> {
 	return withStatus(
-		await stockFetch<StockItem>(BASE, {
+		await apiFetch<StockItem>(BASE, {
 			method: 'POST',
 			body: JSON.stringify(payload)
 		})
@@ -58,7 +58,7 @@ export async function atualizarItem(
 	payload: UpdateItemPayload
 ): Promise<StockItem> {
 	return withStatus(
-		await stockFetch<StockItem>(`${BASE}/${id}`, {
+		await apiFetch<StockItem>(`${BASE}/${id}`, {
 			method: 'PUT',
 			body: JSON.stringify(payload)
 		})
@@ -71,7 +71,7 @@ export async function importarCsv(
 ): Promise<StockItem[]> {
 	const form = new FormData();
 	form.append('arquivo', file);
-	const raw = await stockFetch<StockItem[]>('/estoque/itens/import', {
+	const raw = await apiFetch<StockItem[]>('/estoque/itens/import', {
 		method: 'POST',
 		body: form
 	}, fetchFn);
@@ -79,7 +79,7 @@ export async function importarCsv(
 }
 
 export async function exportarCsv(fetchFn: typeof fetch = fetch): Promise<void> {
-	const blob = await stockFetchBlob('/estoque/itens/export', {}, fetchFn);
+	const blob = await apiFetchBlob('/estoque/itens/export', {}, fetchFn);
 	const url = URL.createObjectURL(blob);
 	const link = document.createElement('a');
 	link.href = url;

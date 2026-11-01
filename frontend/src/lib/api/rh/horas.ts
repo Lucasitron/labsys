@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch, ApiError } from '$lib/api/client';
 import type {
 	ExtratoMensalHoras,
@@ -84,7 +83,7 @@ export async function listApontamentos(
 	const qs = query.toString();
 	const raw = await apiFetch<RawApontamento[]>(
 		`/rh/apontamentos-horas${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	let hours = (raw ?? []).map(mapApontamento);
@@ -104,7 +103,7 @@ export async function createApontamento(
 	}
 	const detalhe = await apiFetch<{ idFuncionario?: number | string | null }>(
 		`/rh/pessoas/${payload.personId}/detalhe`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	if (detalhe.idFuncionario == null) {
@@ -122,7 +121,7 @@ export async function createApontamento(
 	if (payload.observation?.trim()) body['descricaoAtividade'] = payload.observation.trim();
 	const raw = await apiFetch<RawApontamento>(
 		'/rh/apontamentos-horas',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(body) },
+		{ method: 'POST', body: JSON.stringify(body) },
 		fetchFn
 	);
 	return mapApontamento(raw);
@@ -134,7 +133,7 @@ export async function validarApontamento(
 ): Promise<HoraApontamento> {
 	const raw = await apiFetch<RawApontamento>(
 		`/rh/apontamentos-horas/${id}/validar`,
-		{ method: 'PUT', headers: bearer(), body: JSON.stringify({ status: 'VALIDADO' }) },
+		{ method: 'PUT', body: JSON.stringify({ status: 'VALIDADO' }) },
 		fetchFn
 	);
 	return mapApontamento(raw);
@@ -147,7 +146,7 @@ export async function rejeitarHoras(
 ): Promise<HoraApontamento> {
 	const raw = await apiFetch<RawApontamento>(
 		`/rh/horas/${id}/rejeitar`,
-		{ method: 'PATCH', headers: bearer(), body: JSON.stringify({ motivo: payload.reason }) },
+		{ method: 'PATCH', body: JSON.stringify({ motivo: payload.reason }) },
 		fetchFn
 	);
 	return mapApontamento(raw);
@@ -164,7 +163,7 @@ export async function getHorasDisponiveis(
 		raw = await apiFetch<{
 			idFuncionario?: number | string | null;
 			totalHorasDisponiveis?: number | string | null;
-		}>('/rh/horas/disponiveis', { headers: bearer() }, fetchFn);
+		}>('/rh/horas/disponiveis', {}, fetchFn);
 	} catch (err) {
 		// Endpoint "próprias": usuário sem vínculo de funcionário recebe 403.
 		// Tratado como estado neutro ("sem vínculo"), não como erro de tela.

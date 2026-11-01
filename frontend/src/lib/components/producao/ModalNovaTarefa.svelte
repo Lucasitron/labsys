@@ -2,7 +2,7 @@
 import { apiErrorMessage } from '$lib/utils/errors';
 import { onMount } from 'svelte';
 import type { NomeFunc, Prioridade, Projeto, Tarefa } from '$lib/types/producao';
-	import { criarTarefa } from '$lib/api/producao/client';
+	import { criarTarefa } from '$lib/api/producao';
 		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {

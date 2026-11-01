@@ -1,6 +1,7 @@
 import type { Cartao5S, ChamadoMaquina, Maquina, MaquinaStatus, Paginado, Preventiva } from '$lib/types/producao';
+import { paginarClient } from '$lib/utils/pagination';
 import { apiFetch } from '../client';
-import { bearer, MAQUINA_STATUS_UPPER, paginarClient, unwrapLista } from './client';
+import { MAQUINA_STATUS_UPPER, unwrapLista } from './client';
 
 const BASE = '/producao/maquinas';
 
@@ -59,7 +60,7 @@ export async function obterMaquinas(
 	params: MaquinaFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Maquina>> {
-	const res = await apiFetch<RawMaquina[] | { data: RawMaquina[] }>(BASE, { headers: bearer() }, fetchFn);
+	const res = await apiFetch<RawMaquina[] | { data: RawMaquina[] }>(BASE, {}, fetchFn);
 	let todas = unwrapLista(res).map(mapMaquina);
 	if (params.search) {
 		const termo = params.search.toLowerCase();
@@ -74,7 +75,7 @@ export async function obterMaquinas(
 }
 
 export async function obterMaquinaPorId(id: string, fetchFn: typeof fetch = fetch): Promise<Maquina> {
-	return await apiFetch<Maquina>(`${BASE}/${id}`, { headers: bearer() }, fetchFn);
+	return await apiFetch<Maquina>(`${BASE}/${id}`, {}, fetchFn);
 }
 
 export function criarMaquina(payload: CriarMaquinaPayload): Promise<Maquina> {
@@ -85,7 +86,6 @@ export function criarMaquina(payload: CriarMaquinaPayload): Promise<Maquina> {
 	if (payload.status !== undefined) body['status'] = MAQUINA_STATUS_PARA_UPPER[payload.status];
 	return apiFetch<Maquina>(BASE, {
 		method: 'POST',
-		headers: bearer(),
 		body: JSON.stringify(body)
 	});
 }
@@ -97,7 +97,6 @@ export function atualizarStatusMaquina(id: string, payload: AtualizarStatusMaqui
 	}
 	return apiFetch<Maquina>(`${BASE}/${id}/status`, {
 		method: 'PUT',
-		headers: bearer(),
 		body: JSON.stringify({ status })
 	});
 }

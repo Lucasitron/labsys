@@ -1,8 +1,8 @@
 import type { PageLoad } from './$types';
-import { obterSetores5S } from '$lib/api/producao/client';
+import { obterSetores5S } from '$lib/api/producao';
 import type { Cartao5S, Paginado, Setor5S } from '$lib/types/producao';
-import { PADRAO_TAMANHO_PAGINA } from '$lib/api/producao/client';
-import { paginaDaUrl, tamanhoDaPaginaDaUrl } from '$lib/api/producao/client';
+import { PADRAO_TAMANHO_PAGINA } from '$lib/api/producao';
+import { paginaDaUrl, tamanhoDaPaginaDaUrl } from '$lib/api/producao';
 
 export const ssr = false;
 export const prerender = false;

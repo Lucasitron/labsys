@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type {
 	CreateGrupoPayload,
@@ -109,7 +108,7 @@ export async function iniciarProcesso(
 	if (payload.idTutor !== undefined) body['idTutor'] = payload.idTutor;
 	const raw = await apiFetch<RawProcesso>(
 		'/rh/processo-seletivo',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(body) },
+		{ method: 'POST', body: JSON.stringify(body) },
 		fetchFn
 	);
 	return {
@@ -132,7 +131,7 @@ export async function listPS(
 		totais: { processos: number; grupos: number; emAvaliacao: number; aprovados: number };
 	}>(
 		`/rh/processo-seletivo${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return {
@@ -156,7 +155,7 @@ export async function createGrupo(
 	if (payload.memberIds?.length) body['membroIds'] = payload.memberIds.map(Number);
 	const raw = await apiFetch<RawGrupo>(
 		'/rh/processo-seletivo/grupos',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(body) },
+		{ method: 'POST', body: JSON.stringify(body) },
 		fetchFn
 	);
 	return mapGrupo(raw);
@@ -181,7 +180,6 @@ export async function moverEstagio(
 		`/rh/processo-seletivo/${id}/estagio`,
 		{
 			method: 'PATCH',
-			headers: bearer(),
 			body: JSON.stringify({ etapa: ETAPA_PARA_UPPER[estagio] })
 		},
 		fetchFn
@@ -213,7 +211,6 @@ export async function avaliarMembro(
 		`/rh/processo-seletivo/${id}/membros/${pessoaId}/avaliar`,
 		{
 			method: 'POST',
-			headers: bearer(),
 			body: JSON.stringify({ nota: Number(payload.nota), feedback: payload.feedback })
 		},
 		fetchFn

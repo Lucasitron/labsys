@@ -1,5 +1,5 @@
 import type { PageLoad } from './$types';
-import { obterEvolucaoRanking5S, obterRanking5S } from '$lib/api/producao/client';
+import { obterEvolucaoRanking5S, obterRanking5S } from '$lib/api/producao';
 import type { EvolucaoRanking5S, ResultadoRanking5S } from '$lib/api/producao/ranking-5s';
 
 export const ssr = false;

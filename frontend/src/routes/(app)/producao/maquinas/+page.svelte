@@ -4,7 +4,7 @@
 	import { CARTOES } from './+page';
 	import type { NomeFunc } from '$lib/types/producao';
 	import { CARTAO_META, MAQUINA_STATUS_META } from '$lib/utils/producao-status';
-	import { criarMaquina } from '$lib/api/producao/client';
+	import { criarMaquina } from '$lib/api/producao';
 	import { ApiError, NetworkError } from '$lib/api/client';
 	import { toasts } from '$lib/stores/toast';
 	import CartaoBadge from '$lib/components/producao/CartaoBadge.svelte';

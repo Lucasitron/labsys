@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type { Nivel, NivelMatrix, NivelMembro } from '$lib/types/rh';
 
@@ -54,7 +53,7 @@ export function mapNivelMatrix(raw: { niveis: RawNivel[]; permissoes: RawPermiss
 export async function getNiveis(fetchFn: typeof fetch = fetch): Promise<NivelMatrix> {
 	const raw = await apiFetch<{ niveis: RawNivel[]; permissoes: RawPermissao[] }>(
 		'/rh/niveis',
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return mapNivelMatrix(raw);
@@ -67,7 +66,7 @@ export async function alterarNivel(
 ): Promise<NivelMembro> {
 	return await apiFetch<NivelMembro>(
 		`/rh/niveis/${membroId}/membros`,
-		{ method: 'PATCH', headers: bearer(), body: JSON.stringify({ nivel: NIVEL_PARA_INT[nivel] }) },
+		{ method: 'PATCH', body: JSON.stringify({ nivel: NIVEL_PARA_INT[nivel] }) },
 		fetchFn
 	);
 }

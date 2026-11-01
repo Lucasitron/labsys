@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import {
 	periodoParaDatas,
@@ -77,7 +76,7 @@ export async function listLancamentos(
 		pagination?: LancamentosResult['pagination'];
 	}>(
 		`${BASE}${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	const lancamentos = (res.lancamentos ?? []).map(mapLancamento);
@@ -117,7 +116,7 @@ export async function createLancamento(
 	if (payload.observacao) body['observacao'] = payload.observacao;
 	const raw = await apiFetch<RawLancamento>(
 		BASE,
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(body) },
+		{ method: 'POST', body: JSON.stringify(body) },
 		fetchFn
 	);
 	return mapLancamento(raw);
@@ -130,7 +129,7 @@ export async function registrarPagamento(
 ): Promise<Lancamento> {
 	const raw = await apiFetch<RawLancamento>(
 		`${BASE}/${encodeURIComponent(id)}/pagamento`,
-		{ method: 'PUT', headers: bearer(), body: JSON.stringify(payload) },
+		{ method: 'PUT', body: JSON.stringify(payload) },
 		fetchFn
 	);
 	return mapLancamento(raw);

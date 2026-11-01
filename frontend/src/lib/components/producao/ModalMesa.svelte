@@ -2,7 +2,7 @@
 	import { errorMessage } from '$lib/utils/errors';
 	import { onMount } from 'svelte';
 	import type { Mesa5S, NomeFunc, Projeto } from '$lib/types/producao';
-	import { criarMesa } from '$lib/api/producao/client';
+	import { criarMesa } from '$lib/api/producao';
 		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {

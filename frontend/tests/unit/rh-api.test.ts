@@ -424,20 +424,6 @@ describe('rh/api — níveis', () => {
 	});
 });
 
-describe('rh/api — bearer', () => {
-	it('envia Authorization Bearer quando há token na store', async () => {
-		authMock.set({ user: null, token: 'tk-rh', isAuthenticated: false });
-		apiFetchMock.mockResolvedValue({ id: 1, nomeCompleto: 'Ana', matricula: 'M1' });
-		const { getPessoa } = await freshPessoas();
-
-		await getPessoa('p1');
-
-		expect((chamada().init['headers'] as Record<string, string>).Authorization).toBe(
-			'Bearer tk-rh'
-		);
-	});
-});
-
 describe('rh/api — guardas de naming PT e R-5', () => {
 	it('nenhum path /rh/people novo e nenhum /stock/ em paths das chamadas', async () => {
 		apiFetchMock.mockImplementation(async (path: string, init?: RequestInit) => {

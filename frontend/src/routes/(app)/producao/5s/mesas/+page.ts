@@ -5,7 +5,7 @@ import {
 	PADRAO_TAMANHO_PAGINA,
 	paginaDaUrl,
 	tamanhoDaPaginaDaUrl
-} from '$lib/api/producao/client';
+} from '$lib/api/producao';
 import type { Mesa5S, NomeFunc, Paginado, Projeto, SituacaoMesas } from '$lib/types/producao';
 
 export const ssr = false;

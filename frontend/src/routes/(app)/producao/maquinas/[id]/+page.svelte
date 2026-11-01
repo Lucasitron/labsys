@@ -12,7 +12,7 @@
 		abrirChamadoMaquina,
 		atualizarStatusMaquina,
 		criarPreventivaMaquina
-	} from '$lib/api/producao/client';
+	} from '$lib/api/producao';
 	import { toasts, toastError } from '$lib/stores/toast';
 	import { isResponsavelAtribuido } from '$lib/utils/permissions';
 	import { ABAS_MAQUINA } from './+page';

@@ -116,16 +116,6 @@ describe('api/notifications — montagem de rotas e query strings', () => {
 		expect(apiFetchMock.mock.calls[0]![0]).toBe('/notificacoes');
 	});
 
-	it('envia Authorization Bearer quando há token na store', async () => {
-		authMock.set({ user: null, token: 'tk-1', isAuthenticated: true });
-		apiFetchMock.mockResolvedValue(pagina());
-		const { listNotifications } = await freshApi();
-
-		await listNotifications();
-
-		const [, init] = apiFetchMock.mock.calls[0]!;
-		expect((init!.headers as Record<string, string>).Authorization).toBe('Bearer tk-1');
-	});
 
 	it('markRead chama PATCH /notification/notificacoes/{id}/ler', async () => {
 		apiFetchMock.mockResolvedValue(undefined);

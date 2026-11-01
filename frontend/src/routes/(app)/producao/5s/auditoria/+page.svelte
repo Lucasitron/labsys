@@ -11,7 +11,7 @@
 	import ModalAuditoria from '$lib/components/producao/ModalAuditoria.svelte';
 	import { INSPECAO_STATUS_META } from '$lib/utils/producao-status';
 	import { canAuditar5S } from '$lib/utils/permissions';
-	import { nomearAuditor5S } from '$lib/api/producao/client';
+	import { nomearAuditor5S } from '$lib/api/producao';
 	import type { Inspecao5S } from '$lib/types/producao';
 
 	const PADRAO_5S_ITENS = [

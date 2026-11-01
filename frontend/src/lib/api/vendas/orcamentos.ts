@@ -1,6 +1,5 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
-import { paginarClient } from '$lib/api/producao/client';
+import { paginarClient } from '$lib/api/producao';
 import type {
 	CreateOrcamentoPayload,
 	ListOrcamentosParams,
@@ -48,7 +47,7 @@ export async function listOrcamentos(
 	const qs = query.toString();
 	const res = await apiFetch<{ orcamentos: RawOrcamento[]; counts: Record<string, number> }>(
 		`/vendas/orcamentos${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	let todos = res.orcamentos.map(mapOrcamento);
@@ -68,7 +67,7 @@ export async function listOrcamentos(
 export async function getOrcamento(id: string, fetchFn: typeof fetch = fetch): Promise<Orcamento> {
 	const raw = await apiFetch<RawOrcamento>(
 		`/vendas/orcamentos/${id}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return mapOrcamento(raw);
@@ -82,7 +81,6 @@ export async function createOrcamento(
 		'/vendas/orcamentos',
 		{
 			method: 'POST',
-			headers: bearer(),
 			body: JSON.stringify({
 				...payload,
 				clienteId: Number(payload.clienteId),
@@ -116,7 +114,7 @@ export async function updateOrcamento(
 	if (payload.clienteId !== undefined) body['clienteId'] = Number(payload.clienteId);
 	const raw = await apiFetch<RawOrcamento>(
 		`/vendas/orcamentos/${id}`,
-		{ method: 'PUT', headers: bearer(), body: JSON.stringify(body) },
+		{ method: 'PUT', body: JSON.stringify(body) },
 		fetchFn
 	);
 	return mapOrcamento(raw);
@@ -128,7 +126,7 @@ export async function duplicarOrcamento(
 ): Promise<Orcamento> {
 	const raw = await apiFetch<RawOrcamento>(
 		`/vendas/orcamentos/${id}/duplicar`,
-		{ method: 'POST', headers: bearer() },
+		{ method: 'POST', },
 		fetchFn
 	);
 	return mapOrcamento(raw);

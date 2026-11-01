@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from './client';
 import type {
 	HistoryEntry,
@@ -64,7 +63,7 @@ export async function listNotifications(
 		totalPages: number;
 	}>(
 		`/notificacoes${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return {
@@ -79,21 +78,19 @@ export async function listNotifications(
 export async function markRead(id: string, fetchFn: typeof fetch = fetch): Promise<void> {
 	await apiFetch<void>(`/notification/notificacoes/${id}/ler`, {
 		method: 'PATCH',
-		headers: bearer()
-	}, fetchFn);
+		}, fetchFn);
 }
 
 export async function markAllRead(fetchFn: typeof fetch = fetch): Promise<void> {
 	await apiFetch<void>('/notification/notificacoes/ler-todas', {
 		method: 'POST',
-		headers: bearer()
-	}, fetchFn);
+		}, fetchFn);
 }
 
 export async function getPreferences(fetchFn: typeof fetch = fetch): Promise<NotificationPreferences> {
 	return await apiFetch<NotificationPreferences>(
 		'/notification/preferencias',
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 }
@@ -104,7 +101,6 @@ export async function savePreferences(
 ): Promise<void> {
 	await apiFetch<void>('/notification/preferencias', {
 		method: 'PUT',
-		headers: bearer(),
 		body: JSON.stringify(preferences)
 	}, fetchFn);
 }
@@ -125,7 +121,7 @@ export async function history(
 		total: number;
 	}>(
 		`/notification/historico${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	const items: HistoryEntry[] = unwrapItems(res.items).map((raw) => ({

@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type {
 	CreateTarefaPayload,
@@ -55,7 +54,7 @@ export async function listTarefas(
 	const qs = query.toString();
 	const res = await apiFetch<{ tarefas: RawTarefaMarketing[]; counts: Record<string, number> }>(
 		`/vendas/tarefas-marketing${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return { tarefas: (res.tarefas ?? []).map(mapTarefaMarketing), counts: res.counts };
@@ -67,7 +66,7 @@ export async function createTarefa(
 ): Promise<TarefaMarketing> {
 	const raw = await apiFetch<RawTarefaMarketing>(
 		'/vendas/tarefas-marketing',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
+		{ method: 'POST', body: JSON.stringify(payload) },
 		fetchFn
 	);
 	return mapTarefaMarketing(raw);
@@ -80,7 +79,7 @@ export async function updateTarefa(
 ): Promise<TarefaMarketing> {
 	const raw = await apiFetch<RawTarefaMarketing>(
 		`/vendas/tarefas-marketing/${id}`,
-		{ method: 'PUT', headers: bearer(), body: JSON.stringify(payload) },
+		{ method: 'PUT', body: JSON.stringify(payload) },
 		fetchFn
 	);
 	return mapTarefaMarketing(raw);

@@ -4,7 +4,7 @@ import {
 	PADRAO_TAMANHO_PAGINA,
 	paginaDaUrl,
 	tamanhoDaPaginaDaUrl
-} from '$lib/api/producao/client';
+} from '$lib/api/producao';
 import type { NomeFunc, Paginado, Projeto, ProjetoStatus } from '$lib/types/producao';
 
 export const ssr = false;

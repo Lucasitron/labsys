@@ -1,5 +1,4 @@
-import { bearer } from '$lib/api/bearer';
-import { apiFetch } from '$lib/api/client';
+import { apiFetch, buildQuery } from '$lib/api/client';
 import type { Nivel, Paginado, SituacaoUsuario, Usuario } from '$lib/types/configuracoes';
 
 export interface UsuarioPayload {
@@ -53,18 +52,6 @@ export function mapUsuario(raw: RawUsuario): Usuario {
 	};
 }
 
-function montarQuery(filtros: UsuariosFiltros): string {
-	const search = new URLSearchParams();
-	// Back pagina de 0; a UI pagina de 1.
-	if (filtros.page !== undefined) search.set('page', String(Math.max(0, filtros.page - 1)));
-	if (filtros.pageSize !== undefined) search.set('size', String(filtros.pageSize));
-	if (filtros.search) search.set('search', filtros.search);
-	if (filtros.nivel !== undefined) search.set('nivel', String(filtros.nivel));
-	if (filtros.situacao) search.set('situacao', SITUACAO_PARA_UPPER[filtros.situacao]);
-	const qs = search.toString();
-	return qs ? `?${qs}` : '';
-}
-
 export async function listarUsuarios(
 	filtros: UsuariosFiltros = {},
 	fetchFn: typeof fetch = fetch
@@ -76,8 +63,8 @@ export async function listarUsuarios(
 		total: number;
 		totalPages: number;
 	}>(
-		`/usuarios${montarQuery(filtros)}`,
-		{ headers: bearer() },
+		`/usuarios${buildQuery({ page: filtros.page !== undefined ? Math.max(0, filtros.page - 1) : undefined, size: filtros.pageSize, search: filtros.search, nivel: filtros.nivel, situacao: filtros.situacao ? SITUACAO_PARA_UPPER[filtros.situacao] : undefined })}`,
+		{},
 		fetchFn
 	);
 	return {
@@ -94,7 +81,6 @@ export async function listarUsuarios(
 export function atualizarUsuario(id: string, payload: UsuarioPayload): Promise<Usuario> {
 	return apiFetch<RawUsuario>(`/usuarios/${id}`, {
 		method: 'PUT',
-		headers: bearer(),
 		body: JSON.stringify({
 			email: payload.email,
 			nomeUsuario: payload.nome,
@@ -107,7 +93,6 @@ export function atualizarUsuario(id: string, payload: UsuarioPayload): Promise<U
 export function alterarStatus(id: string, situacao: SituacaoUsuario): Promise<Usuario> {
 	return apiFetch<RawUsuario>(`/usuarios/${id}/status`, {
 		method: 'PATCH',
-		headers: bearer(),
 		body: JSON.stringify({ situacao: SITUACAO_PARA_UPPER[situacao] })
 	}).then(mapUsuario);
 }

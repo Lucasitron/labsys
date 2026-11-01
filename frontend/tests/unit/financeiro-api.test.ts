@@ -266,22 +266,6 @@ describe('financeiro/api — erros e bearer', () => {
 		).rejects.toMatchObject({ status: 422 });
 	});
 
-	it('envia Authorization Bearer quando há token na store', async () => {
-		authMock.set({ user: null, token: 'tk-fin', isAuthenticated: false });
-		apiFetchMock.mockResolvedValue({
-			lancamentos: [
-				{ id: 1, idCategoria: 2, tipo: 'ENTRADA', valor: '100', dataVencimento: '2026-09-20', status: 'PENDENTE' }
-			]
-		});
-		const { getLancamento } = await freshLancamentos();
-
-		const lancamento = await getLancamento('1');
-
-		expect((chamada().init['headers'] as Record<string, string>).Authorization).toBe(
-			'Bearer tk-fin'
-		);
-		expect(lancamento.valor).toBe(100);
-	});
 });
 
 describe('financeiro/api — guarda de paths /financeiro/**', () => {

@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import { obterProjetoPorId, obterTarefas } from '$lib/api/producao/client';
+import { obterProjetoPorId, obterTarefas } from '$lib/api/producao';
 import type { Paginado, Projeto, Tarefa } from '$lib/types/producao';
 
 export const ssr = false;

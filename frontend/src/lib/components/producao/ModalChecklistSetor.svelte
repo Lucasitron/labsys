@@ -5,7 +5,7 @@
 	import {
 		adicionarChecklistDoSetor,
 		obterSetor5SPorId
-	} from '$lib/api/producao/client';
+	} from '$lib/api/producao';
 		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {

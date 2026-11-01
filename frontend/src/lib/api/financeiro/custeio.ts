@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type {
 	FechamentoEncomenda,
@@ -53,7 +52,7 @@ export function mapCusto(raw: Raw): CustoEncomenda {
 }
 
 export async function listFechamentos(fetchFn: typeof fetch = fetch): Promise<FechamentoEncomenda[]> {
-	const raw = await apiFetch<Raw[]>(FECHAMENTOS, { headers: bearer() }, fetchFn);
+	const raw = await apiFetch<Raw[]>(FECHAMENTOS, {}, fetchFn);
 	return (raw ?? []).map(mapFechamento);
 }
 
@@ -65,7 +64,6 @@ export async function createFechamento(
 		FECHAMENTOS,
 		{
 			method: 'POST',
-			headers: bearer(),
 			body: JSON.stringify({
 				idEncomenda: Number(payload.idEncomenda),
 				horasEstimadas: Number(payload.horasEstimadas),
@@ -79,12 +77,12 @@ export async function createFechamento(
 }
 
 export async function getCusto(idEncomenda: string, fetchFn: typeof fetch = fetch): Promise<CustoEncomenda> {
-	const raw = await apiFetch<Raw>(`${CUSTOS}/${encodeURIComponent(idEncomenda)}`, { headers: bearer() }, fetchFn);
+	const raw = await apiFetch<Raw>(`${CUSTOS}/${encodeURIComponent(idEncomenda)}`, {}, fetchFn);
 	return mapCusto(raw);
 }
 
 export async function listValoresHora(fetchFn: typeof fetch = fetch): Promise<ValorHoraNivel[]> {
-	const raw = await apiFetch<Raw[]>(VALORES_HORA, { headers: bearer() }, fetchFn);
+	const raw = await apiFetch<Raw[]>(VALORES_HORA, {}, fetchFn);
 	return (raw ?? []).map((v) => ({
 		nivelAcesso: Number(v['nivelAcesso'] ?? 0) as ValorHoraNivel['nivelAcesso'],
 		valorHora: num(v['valorHora']),
@@ -100,7 +98,6 @@ export async function definirValorHora(
 		VALORES_HORA,
 		{
 			method: 'POST',
-			headers: bearer(),
 			body: JSON.stringify({
 				nivelAcesso: Number(payload.nivelAcesso),
 				valorHora: Number(payload.valorHora),
@@ -124,7 +121,6 @@ export async function definirOverhead(
 		OVERHEAD,
 		{
 			method: 'POST',
-			headers: bearer(),
 			body: JSON.stringify({
 				valorTaxaHora: Number(payload.valorTaxaHora),
 				dataVigencia: payload.dataVigencia

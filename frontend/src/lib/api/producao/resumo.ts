@@ -1,6 +1,5 @@
 import type { ContagemKanban, ResumoProducao } from '$lib/types/producao';
 import type { DashboardSummary } from '$lib/types/dashboard';
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 
 // O gateway não expõe `GET /producao/resumo`; a agregação mora no Dashboard
@@ -45,7 +44,7 @@ export function mapResumoProducao(summary: DashboardSummary): ResumoProducao {
 export async function obterResumo(fetchFn: typeof fetch = fetch): Promise<ResumoProducao> {
 	const summary = await apiFetch<DashboardSummary>(
 		'/dashboard/resumo',
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return mapResumoProducao(summary);

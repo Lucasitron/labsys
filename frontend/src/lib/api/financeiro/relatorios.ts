@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type {
 	FluxoCaixa,
@@ -36,7 +35,7 @@ export async function getFluxoCaixa(
 		saidas: number | string;
 		saldo: number | string;
 		semanas: RawSemana[];
-	}>(`${BASE}/fluxo-caixa${periodoQuery(params)}`, { headers: bearer() }, fetchFn);
+	}>(`${BASE}/fluxo-caixa${periodoQuery(params)}`, {}, fetchFn);
 	return {
 		linhas: (raw.semanas ?? []).map((s) => ({
 			periodo: s.semana,
@@ -54,7 +53,7 @@ export async function getDre(
 ): Promise<Dre> {
 	const raw = await apiFetch<Record<string, number | string>>(
 		`${BASE}/dre${periodoQuery(params)}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return {
@@ -80,7 +79,7 @@ export async function getLucratividade(
 ): Promise<Lucratividade> {
 	const raw = await apiFetch<RawLucratividade[]>(
 		`${BASE}/lucratividade`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return {
@@ -108,7 +107,7 @@ export async function getInadimplencia(
 ): Promise<Inadimplencia> {
 	const raw = await apiFetch<RawInadimplencia[]>(
 		`${BASE}/inadimplencia`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return {
@@ -136,7 +135,7 @@ export async function getDoacoesDespesas(
 ): Promise<DoacoesDespesas> {
 	const raw = await apiFetch<{ saldo: number | string; meses: RawMes[] }>(
 		`${BASE}/doacoes-despesas${periodoQuery(params)}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return {
@@ -162,7 +161,7 @@ export async function getCustoMaquina(
 ): Promise<CustoMaquina> {
 	const raw = await apiFetch<RawCustoMaquina[]>(
 		`${BASE}/custo-maquina`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	const linhas = (raw ?? []).map((l) => ({

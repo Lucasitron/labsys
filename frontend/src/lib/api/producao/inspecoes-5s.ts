@@ -1,6 +1,6 @@
 import type { Inspecao5S, InspecaoStatus, Paginado } from '$lib/types/producao';
 import { apiFetch } from '../client';
-import { bearer, paraPaginado, unwrapLista } from './client';
+import { paraPaginado, unwrapLista } from './client';
 
 const BASE = '/producao/inspecoes-5s';
 
@@ -51,7 +51,7 @@ export async function obterInspecoes5S(
 	params: InspecaoFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Inspecao5S>> {
-	const res = await apiFetch<RawInspecao[] | { data: RawInspecao[] }>(BASE, { headers: bearer() }, fetchFn);
+	const res = await apiFetch<RawInspecao[] | { data: RawInspecao[] }>(BASE, {}, fetchFn);
 	return paraPaginado({ data: unwrapLista(res).map(mapInspecao) }, params.page, params.pageSize);
 }
 

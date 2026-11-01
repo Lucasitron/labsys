@@ -49,6 +49,7 @@ beforeEach(() => {
 	gotoMock.mockReset();
 	logoutMock.mockReset();
 	authMock.set({ user: null, token: null, isAuthenticated: false });
+	localStorage.removeItem('fablab.auth');
 	window.history.replaceState({}, '', '/');
 });
 
@@ -99,6 +100,7 @@ describe('api/dashboard', () => {
 
 	it('envia Authorization Bearer quando há token na store', async () => {
 		authMock.set({ user: null, token: 'tk-123', isAuthenticated: true });
+		localStorage.setItem('fablab.auth', JSON.stringify({ token: 'tk-123' }));
 		const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse(SUMMARY));
 		const { fetchSummary } = await freshDashboard();
 

@@ -246,17 +246,6 @@ describe('vendas/api — erros e bearer', () => {
 		).rejects.toMatchObject({ status: 409 });
 	});
 
-	it('envia Authorization Bearer quando há token na store', async () => {
-		authMock.set({ user: null, token: 'tk-vendas', isAuthenticated: false });
-		apiFetchMock.mockResolvedValue({ cliente: { id: 'c1', tipoPessoa: 'PF', nomeRazaoSocial: 'Ana', documento: '***', email: '', telefone: '', dataCadastro: '' } });
-		const { getCliente } = await freshClientes();
-
-		await getCliente('c1');
-
-		expect((chamada().init['headers'] as Record<string, string>).Authorization).toBe(
-			'Bearer tk-vendas'
-		);
-	});
 });
 
 describe('vendas/api — guarda de paths /vendas/**', () => {

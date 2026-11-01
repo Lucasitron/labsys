@@ -36,11 +36,13 @@ async function freshSenha() {
 beforeEach(() => {
 	vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
 	authMock.set({ user: null, token: 'tk-1', refreshToken: null, isAuthenticated: true });
+	localStorage.setItem('fablab.auth', JSON.stringify({ token: 'tk-1' }));
 });
 
 afterEach(() => {
 	vi.unstubAllEnvs();
 	vi.unstubAllGlobals();
+	localStorage.removeItem('fablab.auth');
 });
 
 describe('api/configuracoes/senha (contrato Laravel)', () => {

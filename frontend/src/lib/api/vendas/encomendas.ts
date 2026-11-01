@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type {
 	CreateEncomendaPayload,
@@ -52,7 +51,7 @@ export async function listEncomendas(
 	const qs = query.toString();
 	const res = await apiFetch<{ encomendas: RawEncomenda[]; counts: Record<string, number> }>(
 		`/vendas/encomendas${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	let encomendas = res.encomendas.map(mapEncomenda);
@@ -70,7 +69,7 @@ export async function listEncomendas(
 export async function getEncomenda(id: string, fetchFn: typeof fetch = fetch): Promise<Encomenda> {
 	const raw = await apiFetch<RawEncomenda>(
 		`/vendas/encomendas/${id}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return mapEncomenda(raw);
@@ -88,7 +87,7 @@ export async function createEncomenda(
 	if (payload.observacoes !== undefined) body['observacoes'] = payload.observacoes;
 	const raw = await apiFetch<RawEncomenda>(
 		'/vendas/encomendas',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(body) },
+		{ method: 'POST', body: JSON.stringify(body) },
 		fetchFn
 	);
 	return mapEncomenda(raw);
@@ -103,7 +102,6 @@ export async function moverKanban(
 		`/vendas/encomendas/${id}/kanban`,
 		{
 			method: 'PUT',
-			headers: bearer(),
 			body: JSON.stringify({
 				statusKanban: payload.statusKanban,
 				versao: payload.versao,
@@ -130,7 +128,6 @@ export async function novaOrdem(
 		`/vendas/encomendas/${id}/nova-ordem`,
 		{
 			method: 'POST',
-			headers: bearer(),
 			body: JSON.stringify({
 				valorFinal: Number(payload.valorFinal),
 				...(payload.dataPrevisaoEntrega ? { dataPrevisaoEntrega: payload.dataPrevisaoEntrega } : {}),
@@ -157,7 +154,7 @@ export async function getHistoricoStatus(
 ): Promise<import('$lib/types/vendas').HistoricoEncomenda[]> {
 	const raw = await apiFetch<RawHistorico[]>(
 		`/vendas/historico-status/${idEncomenda}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return (raw ?? []).map((h) => ({

@@ -1,6 +1,7 @@
 import type { Paginado, Prioridade, Tarefa, TarefaStatus } from '$lib/types/producao';
+import { paginarClient } from '$lib/utils/pagination';
 import { apiFetch } from '../client';
-import { bearer, paginarClient, PRIORIDADE_UPPER, STATUS_TAREFA_UPPER, unwrapLista } from './client';
+import { PRIORIDADE_UPPER, STATUS_TAREFA_UPPER, unwrapLista } from './client';
 
 const BASE = '/producao/tarefas';
 
@@ -76,7 +77,7 @@ export async function obterTarefas(
 	params: TarefaFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Tarefa>> {
-	const res = await apiFetch<RawTarefa[] | { data: RawTarefa[] }>(BASE, { headers: bearer() }, fetchFn);
+	const res = await apiFetch<RawTarefa[] | { data: RawTarefa[] }>(BASE, {}, fetchFn);
 	let todas = unwrapLista(res).map(mapTarefa);
 	if (params.projetoId) todas = todas.filter((t) => t.projeto?.id === params.projetoId);
 	if (params.status && params.status.length > 0) {
@@ -109,7 +110,6 @@ export function criarTarefa(payload: CriarTarefaPayload): Promise<Tarefa> {
 	if (payload.prioridade !== undefined) body['prioridade'] = PRIORIDADE_PARA_UPPER[payload.prioridade];
 	return apiFetch<Tarefa>(BASE, {
 		method: 'POST',
-		headers: bearer(),
 		body: JSON.stringify(body)
 	});
 }
@@ -123,7 +123,6 @@ export function moverTarefa(id: string, payload: MoverTarefaPayload): Promise<Ta
 	if (payload.dataConclusao) body['dataConclusao'] = payload.dataConclusao;
 	return apiFetch<Tarefa>(`${BASE}/${id}/status`, {
 		method: 'PUT',
-		headers: bearer(),
 		body: JSON.stringify(body)
 	});
 }

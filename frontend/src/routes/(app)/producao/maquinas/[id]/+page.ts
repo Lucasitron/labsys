@@ -4,7 +4,7 @@ import {
 	obterMaquinaPorId,
 	obterPreventivasDaMaquina,
 	obterChamadosDaMaquina
-} from '$lib/api/producao/client';
+} from '$lib/api/producao';
 import type { ChamadoMaquina, Maquina, Preventiva } from '$lib/types/producao';
 
 export const ssr = false;

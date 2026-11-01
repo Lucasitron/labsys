@@ -1,5 +1,5 @@
 import type { PageLoad } from './$types';
-import { obterResumo } from '$lib/api/producao/client';
+import { obterResumo } from '$lib/api/producao';
 import type { ResumoProducao } from '$lib/types/producao';
 
 export const ssr = false;

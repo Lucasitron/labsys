@@ -44,6 +44,18 @@ export function sanitizeRedirect(path: string | null): string {
 	return path;
 }
 
+export function readPersistedAccessToken(): string | null {
+	if (!browser) return null;
+	try {
+		const raw = localStorage.getItem('fablab.auth');
+		if (!raw) return null;
+		const data = JSON.parse(raw) as { token?: string | null };
+		return data.token ?? null;
+	} catch {
+		return null;
+	}
+}
+
 function isPublicAuthPath(path: string): boolean {
 	return AUTH_PUBLIC_PATHS.has(path);
 }
@@ -99,6 +111,11 @@ async function apiFetchResponse(
 	const isFormData = typeof FormData !== 'undefined' && init.body instanceof FormData;
 	if (!isFormData && !headers.has('Content-Type')) {
 		headers.set('Content-Type', 'application/json');
+	}
+
+	if (!isPublicAuthPath(path) && !headers.has('Authorization')) {
+		const token = readPersistedAccessToken();
+		if (token) headers.set('Authorization', `Bearer ${token}`);
 	}
 
 	let response: Response;
@@ -187,6 +204,25 @@ async function tryRefresh(fetchFn: typeof fetch): Promise<string | null> {
 
 function withRefreshedAuth(init: RequestInit, token: string): Headers {
 	const headers = new Headers(init.headers);
-	if (headers.has('Authorization')) headers.set('Authorization', `Bearer ${token}`);
+	headers.set('Authorization', `Bearer ${token}`);
 	return headers;
+}
+
+
+export function buildQuery(
+	params: Record<string, string | number | undefined | string[]>
+): string {
+	const search = new URLSearchParams();
+	for (const [key, value] of Object.entries(params)) {
+		if (value === undefined) continue;
+		if (Array.isArray(value)) {
+			for (const v of value) {
+				if (v) search.append(key, v);
+			}
+		} else if (String(value) !== '') {
+			search.append(key, String(value));
+		}
+	}
+	const qs = search.toString();
+	return qs ? `?${qs}` : '';
 }

@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type {
 	SolicitacaoCompra,
@@ -40,7 +39,7 @@ export function mapCompra(raw: RawCompra): SolicitacaoCompra {
 export async function listSolicitacoesCompra(
 	fetchFn: typeof fetch = fetch
 ): Promise<SolicitacaoCompra[]> {
-	const raw = await apiFetch<RawCompra[]>(BASE, { headers: bearer() }, fetchFn);
+	const raw = await apiFetch<RawCompra[]>(BASE, {}, fetchFn);
 	return (raw ?? []).map(mapCompra);
 }
 
@@ -59,7 +58,7 @@ export async function createSolicitacaoCompra(
 	if (payload.valorEstimado !== undefined) body['valorEstimado'] = Number(payload.valorEstimado);
 	const raw = await apiFetch<RawCompra>(
 		BASE,
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(body) },
+		{ method: 'POST', body: JSON.stringify(body) },
 		fetchFn
 	);
 	return mapCompra(raw);
@@ -73,7 +72,7 @@ export async function concluirCompra(
 	// O back ignora body e só conclui (sem lançamento gerado) — PUT sem corpo.
 	const raw = await apiFetch<RawCompra>(
 		`${BASE}/${encodeURIComponent(id)}/concluir`,
-		{ method: 'PUT', headers: bearer() },
+		{ method: 'PUT', },
 		fetchFn
 	);
 	return { status: UPPER_PARA_COMPRA[raw.status] ?? 'Concluída' };

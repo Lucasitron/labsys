@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type {
 	Cliente,
@@ -75,7 +74,7 @@ export async function listClientes(
 		paginacao: { page: number; pageSize: number; total: number; totalPages: number };
 	}>(
 		`/vendas/clientes${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return {
@@ -92,7 +91,7 @@ export async function listClientes(
 export async function getCliente(id: string, fetchFn: typeof fetch = fetch): Promise<Cliente> {
 	const res = await apiFetch<{ cliente: RawCliente }>(
 		`/vendas/clientes/${id}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return mapCliente(res.cliente);
@@ -104,7 +103,7 @@ export async function createCliente(
 ): Promise<Cliente> {
 	const raw = await apiFetch<RawCliente>(
 		'/vendas/clientes',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(toPayload(payload)) },
+		{ method: 'POST', body: JSON.stringify(toPayload(payload)) },
 		fetchFn
 	);
 	return mapCliente(raw);
@@ -117,18 +116,18 @@ export async function updateCliente(
 ): Promise<Cliente> {
 	const raw = await apiFetch<RawCliente>(
 		`/vendas/clientes/${id}`,
-		{ method: 'PUT', headers: bearer(), body: JSON.stringify(toPayload(payload)) },
+		{ method: 'PUT', body: JSON.stringify(toPayload(payload)) },
 		fetchFn
 	);
 	return mapCliente(raw);
 }
 
 export async function deleteCliente(id: string, fetchFn: typeof fetch = fetch): Promise<void> {
-	await apiFetch<void>(`/vendas/clientes/${id}`, { method: 'DELETE', headers: bearer() }, fetchFn);
+	await apiFetch<void>(`/vendas/clientes/${id}`, { method: 'DELETE', }, fetchFn);
 }
 
 export async function listTags(fetchFn: typeof fetch = fetch): Promise<Tag[]> {
-	return await apiFetch<Tag[]>('/vendas/tags', { headers: bearer() }, fetchFn);
+	return await apiFetch<Tag[]>('/vendas/tags', {}, fetchFn);
 }
 
 export async function createTag(
@@ -137,7 +136,7 @@ export async function createTag(
 ): Promise<Tag> {
 	return await apiFetch<Tag>(
 		'/vendas/tags',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
+		{ method: 'POST', body: JSON.stringify(payload) },
 		fetchFn
 	);
 }
@@ -151,7 +150,6 @@ export async function bulkAdicionarTag(
 		'/vendas/clientes/bulk-tag',
 		{
 			method: 'POST',
-			headers: bearer(),
 			body: JSON.stringify({ clienteIds: ids.map(Number), tagId: Number(tagId) })
 		},
 		fetchFn

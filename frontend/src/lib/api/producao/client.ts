@@ -1,27 +1,6 @@
 import type { Paginacao, Paginado } from '$lib/types/producao';
 import { PADRAO_TAMANHO_PAGINA, paginarClient, totalDePaginas } from '$lib/utils/pagination';
 
-export type { Paginacao, Paginado };
-export { bearer } from '$lib/api/bearer';
-export { PADRAO_TAMANHO_PAGINA, paginarClient, totalDePaginas };
-
-type QueryValue = string | number | undefined | string[];
-
-export function montarQuery(params: Record<string, QueryValue>): string {
-	const search = new URLSearchParams();
-	for (const [chave, valor] of Object.entries(params)) {
-		if (valor === undefined) continue;
-		if (Array.isArray(valor)) {
-			for (const v of valor) {
-				if (v !== '') search.append(chave, v);
-			}
-		} else if (valor !== '') {
-			search.append(chave, String(valor));
-		}
-	}
-	const qs = search.toString();
-	return qs ? `?${qs}` : '';
-}
 
 function lerNumero(url: URL, chave: string, fallback: number, max: number): number {
 	const valor = Number(url.searchParams.get(chave));
@@ -91,13 +70,3 @@ export const MAQUINA_STATUS_UPPER: Record<string, string> = {
 	MANUTENCAO: 'Em manutenção'
 };
 
-export * from './resumo';
-export * from './projetos';
-export * from './tarefas';
-export * from './maquinas';
-export * from './setores-5s';
-export * from './inspecoes-5s';
-export * from './pendencias-5s';
-export * from './ranking-5s';
-export * from './penalidades-5s';
-export * from './mesas';

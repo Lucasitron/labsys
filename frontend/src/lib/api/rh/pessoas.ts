@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import { NIVEL_PARA_INT } from './niveis';
 import type {
@@ -148,7 +147,7 @@ export async function listPessoas(
 		paginacao: { page: number; pageSize: number; total: number; totalPages: number };
 	}>(
 		`/rh/pessoas${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	let people = (res.pessoas ?? []).map((p) => mapPerson(p));
@@ -169,7 +168,7 @@ export async function listPessoas(
 export async function getPessoa(id: string, fetchFn: typeof fetch = fetch): Promise<PersonDetail> {
 	const raw = await apiFetch<RawPessoa>(
 		`/rh/pessoas/${id}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return mapPerson(raw);
@@ -181,7 +180,7 @@ export async function createPessoa(
 ): Promise<PersonDetail> {
 	const raw = await apiFetch<RawPessoa>(
 		'/rh/pessoas',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(toPayload(payload)) },
+		{ method: 'POST', body: JSON.stringify(toPayload(payload)) },
 		fetchFn
 	);
 	return mapPerson(raw);
@@ -194,14 +193,14 @@ export async function updatePessoa(
 ): Promise<PersonDetail> {
 	const raw = await apiFetch<RawPessoa>(
 		`/rh/pessoas/${id}`,
-		{ method: 'PUT', headers: bearer(), body: JSON.stringify(toPayload(payload)) },
+		{ method: 'PUT', body: JSON.stringify(toPayload(payload)) },
 		fetchFn
 	);
 	return mapPerson(raw);
 }
 
 export async function deletePessoa(id: string, fetchFn: typeof fetch = fetch): Promise<void> {
-	await apiFetch<void>(`/rh/pessoas/${id}`, { method: 'DELETE', headers: bearer() }, fetchFn);
+	await apiFetch<void>(`/rh/pessoas/${id}`, { method: 'DELETE', }, fetchFn);
 }
 
 

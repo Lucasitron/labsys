@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 
 const TAMANHO_MINIMO = 8;
@@ -20,7 +19,6 @@ export async function alterarSenha(
 
 	await apiFetch<void>('/auth/senha', {
 		method: 'PUT',
-		headers: bearer(),
 		body: JSON.stringify({ senhaAtual: atual, novaSenha: nova, confirmacaoSenha: confirmacao })
 	});
 }

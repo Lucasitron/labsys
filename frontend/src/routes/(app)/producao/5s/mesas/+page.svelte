@@ -5,7 +5,7 @@
 	import { SITUACOES } from './+page';
 	import type { Mesa5S, MesaAuditoriaResultado, NomeFunc, SituacaoMesas } from '$lib/types/producao';
 	import { MESA_AUDITORIA_META, MESA_STATUS_META } from '$lib/utils/producao-status';
-	import { registrarAuditoriaMesa } from '$lib/api/producao/client';
+	import { registrarAuditoriaMesa } from '$lib/api/producao';
 	import { ApiError, NetworkError } from '$lib/api/client';
 	import { toasts } from '$lib/stores/toast';
 	import ModalMesa from '$lib/components/producao/ModalMesa.svelte';

@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type { Interacao, RegistrarInteracaoPayload } from '$lib/types/vendas';
 
@@ -30,7 +29,7 @@ export async function listInteracoes(
 ): Promise<Interacao[]> {
 	const raw = await apiFetch<RawInteracao[]>(
 		`/vendas/interacoes/${clienteId}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return raw.map(mapInteracao);
@@ -44,7 +43,6 @@ export async function registrarInteracao(
 		'/vendas/interacoes',
 		{
 			method: 'POST',
-			headers: bearer(),
 			body: JSON.stringify({
 				clienteId: Number(payload.clienteId),
 				tipo: payload.tipo,

@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type {
 	AvaliarTreinamentoPayload,
@@ -36,7 +35,7 @@ export async function avaliarTreinamento(
 	if (!Number.isInteger(idFuncionario) && payload.pessoaId) {
 		const detalhe = await apiFetch<{ idFuncionario?: number | string | null }>(
 			`/rh/pessoas/${payload.pessoaId}/detalhe`,
-			{ headers: bearer() },
+			{},
 			fetchFn
 		);
 		idFuncionario = Number(detalhe.idFuncionario);
@@ -48,7 +47,6 @@ export async function avaliarTreinamento(
 		`/rh/treinamentos/${id}/avaliacoes`,
 		{
 			method: 'POST',
-			headers: bearer(),
 			body: JSON.stringify({
 				idFuncionario,
 				nota: Number(payload.nota),

@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type { ParametroSistema, TokenIntegracao } from '$lib/types/configuracoes';
 
@@ -47,7 +46,7 @@ export function mapSistema(raw: RawSistema): ParametroSistema {
 export async function obterSistema(fetchFn: typeof fetch = fetch): Promise<ParametroSistema> {
 	const raw = await apiFetch<RawSistema>(
 		'/configuracoes/sistema',
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return mapSistema(raw);
@@ -61,7 +60,6 @@ export async function atualizarSistema(
 		'/configuracoes/sistema',
 		{
 			method: 'PUT',
-			headers: bearer(),
 			body: JSON.stringify({
 				identidade: {
 					nomeFablab: payload.identidade.nome,
@@ -81,7 +79,7 @@ export async function atualizarSistema(
 export async function listarTokens(fetchFn: typeof fetch = fetch): Promise<TokenIntegracao[]> {
 	const raw = await apiFetch<RawToken[]>(
 		'/configuracoes/tokens',
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return (raw ?? []).map(mapToken);
@@ -94,7 +92,6 @@ export interface TokenCriado extends TokenIntegracao {
 export function criarToken(payload: { nome: string }): Promise<TokenCriado> {
 	return apiFetch<RawToken>('/configuracoes/tokens', {
 		method: 'POST',
-		headers: bearer(),
 		body: JSON.stringify(payload)
 	}).then((raw) => ({
 		...mapToken(raw),
@@ -105,6 +102,5 @@ export function criarToken(payload: { nome: string }): Promise<TokenCriado> {
 export function revogarToken(id: string): Promise<void> {
 	return apiFetch<void>(`/configuracoes/tokens/${id}`, {
 		method: 'DELETE',
-		headers: bearer()
-	});
+		});
 }

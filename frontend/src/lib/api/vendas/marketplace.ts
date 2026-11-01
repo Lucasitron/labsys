@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import type {
 	ListMarketplaceParams,
@@ -64,7 +63,7 @@ export async function listMarketplace(
 	const qs = query.toString();
 	const res = await apiFetch<{ registros: RawMarketplace[]; totais: RawMarketplaceTotais }>(
 		`/vendas/marketplace${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return {
@@ -83,7 +82,7 @@ export async function registrarVenda(
 ): Promise<RegistroMarketplace> {
 	const raw = await apiFetch<RawMarketplace>(
 		'/vendas/marketplace',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(payload) },
+		{ method: 'POST', body: JSON.stringify(payload) },
 		fetchFn
 	);
 	return mapRegistroMarketplace(raw);

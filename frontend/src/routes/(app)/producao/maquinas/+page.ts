@@ -4,7 +4,7 @@ import {
 	PADRAO_TAMANHO_PAGINA,
 	paginaDaUrl,
 	tamanhoDaPaginaDaUrl
-} from '$lib/api/producao/client';
+} from '$lib/api/producao';
 import type { Cartao5S, Maquina, NomeFunc, Paginado } from '$lib/types/producao';
 
 export const ssr = false;

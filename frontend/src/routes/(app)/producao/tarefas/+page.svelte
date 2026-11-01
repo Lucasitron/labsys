@@ -8,7 +8,7 @@ import {
 	atribuirTarefa,
 	moverTarefa,
 	resolverPendencia5S
-} from '$lib/api/producao/client';
+} from '$lib/api/producao';
 import { toastError, toasts } from '$lib/stores/toast';
 	import { isResponsavelAtribuido } from '$lib/utils/permissions';
 	import ModalNovaTarefa from '$lib/components/producao/ModalNovaTarefa.svelte';

@@ -8,7 +8,7 @@
 	import Dropdown from '$lib/components/ui/Dropdown.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { PENALIDADE_TIPO_META, PENALIDADE_STATUS_META } from '$lib/utils/producao-status';
-	import { criarPenalidade5S } from '$lib/api/producao/client';
+	import { criarPenalidade5S } from '$lib/api/producao';
 	import type { PenalidadeTipo } from '$lib/types/producao';
 
 	const kpiCls = 'bg-elevated border border-border rounded-xl p-4';

@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { apiFetch } from '$lib/api/client';
 import {
 	DOACAO_PARA_UPPER,
@@ -55,7 +54,7 @@ export async function listDoacoes(
 	const qs = query.toString();
 	const raw = await apiFetch<RawDoacao[]>(
 		`${BASE}${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	const registros = (raw ?? []).map(mapDoacao);
@@ -88,7 +87,7 @@ export async function createDoacao(
 	if (payload.idProjetoAssociado) body['idProjetoAssociado'] = Number(payload.idProjetoAssociado);
 	const raw = await apiFetch<RawDoacao>(
 		BASE,
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(body) },
+		{ method: 'POST', body: JSON.stringify(body) },
 		fetchFn
 	);
 	return mapDoacao(raw);

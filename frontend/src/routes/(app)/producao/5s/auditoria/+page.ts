@@ -1,6 +1,6 @@
 import type { PageLoad } from './$types';
-import { obterInspecoes5S } from '$lib/api/producao/client';
-import { PADRAO_TAMANHO_PAGINA, paginaDaUrl, tamanhoDaPaginaDaUrl } from '$lib/api/producao/client';
+import { obterInspecoes5S } from '$lib/api/producao';
+import { PADRAO_TAMANHO_PAGINA, paginaDaUrl, tamanhoDaPaginaDaUrl } from '$lib/api/producao';
 import type { InspecaoStatus } from '$lib/types/producao';
 
 export const ssr = false;

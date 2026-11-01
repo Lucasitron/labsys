@@ -4,7 +4,7 @@ import type {
 	EntradaResponse,
 	SaidaResponse
 } from '$lib/types/stock';
-import { buildQuery, stockFetch } from './request';
+import { apiFetch, buildQuery } from '$lib/api/client';
 
 // ---- Entradas ----
 
@@ -24,7 +24,7 @@ export async function listarEntradasPorItem(
 	idItem: string,
 	fetchFn: typeof fetch = fetch
 ): Promise<EntradaResponse[]> {
-	const raw = await stockFetch<EntradaResponse[]>(`/estoque/entradas${buildQuery({ idItem })}`, {}, fetchFn);
+	const raw = await apiFetch<EntradaResponse[]>(`/estoque/entradas${buildQuery({ idItem })}`, {}, fetchFn);
 	return raw.map(mapEntrada);
 }
 
@@ -32,11 +32,11 @@ export async function buscarEntrada(
 	id: string,
 	fetchFn: typeof fetch = fetch
 ): Promise<EntradaResponse> {
-	return mapEntrada(await stockFetch<EntradaResponse>(`/estoque/entradas/${id}`, {}, fetchFn));
+	return mapEntrada(await apiFetch<EntradaResponse>(`/estoque/entradas/${id}`, {}, fetchFn));
 }
 
 export async function criarEntrada(payload: CreateEntradaPayload): Promise<EntradaResponse> {
-	return mapEntrada(await stockFetch<EntradaResponse>('/estoque/entradas', {
+	return mapEntrada(await apiFetch<EntradaResponse>('/estoque/entradas', {
 		method: 'POST',
 		body: JSON.stringify(payload)
 	}));
@@ -48,7 +48,7 @@ export async function listarSaidasPorItem(
 	idItem: string,
 	fetchFn: typeof fetch = fetch
 ): Promise<SaidaResponse[]> {
-	const raw = await stockFetch<SaidaResponse[]>(`/estoque/saidas${buildQuery({ idItem })}`, {}, fetchFn);
+	const raw = await apiFetch<SaidaResponse[]>(`/estoque/saidas${buildQuery({ idItem })}`, {}, fetchFn);
 	return raw.map(mapSaida);
 }
 
@@ -56,11 +56,11 @@ export async function buscarSaida(
 	id: string,
 	fetchFn: typeof fetch = fetch
 ): Promise<SaidaResponse> {
-	return mapSaida(await stockFetch<SaidaResponse>(`/estoque/saidas/${id}`, {}, fetchFn));
+	return mapSaida(await apiFetch<SaidaResponse>(`/estoque/saidas/${id}`, {}, fetchFn));
 }
 
 export async function criarSaida(payload: CreateSaidaPayload): Promise<SaidaResponse> {
-	return mapSaida(await stockFetch<SaidaResponse>('/estoque/saidas', {
+	return mapSaida(await apiFetch<SaidaResponse>('/estoque/saidas', {
 		method: 'POST',
 		body: JSON.stringify(payload)
 	}));

@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import type { Inspecao5S } from '$lib/types/producao';
 	import { notaToCartao, CARTAO_META } from '$lib/utils/producao-status';
-	import { concluirInspecao5S } from '$lib/api/producao/client';
+	import { concluirInspecao5S } from '$lib/api/producao';
 		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {

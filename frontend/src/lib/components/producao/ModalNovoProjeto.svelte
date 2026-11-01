@@ -2,7 +2,7 @@
 	import { apiErrorMessage } from '$lib/utils/errors';
 	import { onMount } from 'svelte';
 	import type { NomeFunc, Projeto, ProjetoStatus } from '$lib/types/producao';
-	import { atualizarProjeto, criarProjeto } from '$lib/api/producao/client';
+	import { atualizarProjeto, criarProjeto } from '$lib/api/producao';
 		import Modal from '$lib/components/ui/Modal.svelte';
 
 	interface Props {

@@ -1,4 +1,3 @@
-import { bearer } from '$lib/api/bearer';
 import { ApiError, apiFetch } from '$lib/api/client';
 import type {
 	CreateSolicitacaoPayload,
@@ -86,7 +85,7 @@ export async function listSolicitacoes(
 	const qs = query.toString();
 	const res = await apiFetch<{ solicitacoes: RawSolicitacao[]; counts: Record<string, number> }>(
 		`/vendas/solicitacoes${qs ? `?${qs}` : ''}`,
-		{ headers: bearer() },
+		{},
 		fetchFn
 	);
 	return { solicitacoes: res.solicitacoes.map(mapSolicitacao), counts: res.counts };
@@ -107,7 +106,7 @@ export async function createSolicitacao(
 	if (payload.valorAtual !== undefined) body['valorAtual'] = payload.valorAtual;
 	const raw = await apiFetch<RawSolicitacao>(
 		'/vendas/solicitacoes',
-		{ method: 'POST', headers: bearer(), body: JSON.stringify(body) },
+		{ method: 'POST', body: JSON.stringify(body) },
 		fetchFn
 	);
 	return mapSolicitacao(raw);
@@ -127,7 +126,7 @@ export async function decidirSolicitacao(
 	if (decisao.motivo?.trim()) body['motivo'] = decisao.motivo.trim();
 	const raw = await apiFetch<RawSolicitacao>(
 		`/vendas/solicitacoes/${id}/decisao`,
-		{ method: 'PUT', headers: bearer(), body: JSON.stringify(body) },
+		{ method: 'PUT', body: JSON.stringify(body) },
 		fetchFn
 	);
 	return mapSolicitacao(raw);
