@@ -36,8 +36,6 @@ labSys/
 └── .opencode/          # specs, estado vivo e agentes (pipeline multiagente)
 ```
 
-> Diretórios `*-service/` restantes são resquícios do scaffold Java antigo (não fazem parte do alvo).
-
 ## Como executar
 
 ```sh
@@ -51,6 +49,19 @@ VITE_API_BASE_URL=http://localhost:8080/api npm run dev
 
 - App: `http://localhost:8080/api` · Front: `http://localhost:5173`
 - Admin de desenvolvimento (seed): `admin` / `admin123` — **dev-only**.
+
+## Testes
+
+```sh
+# backend (PHP 8.3 + PostgreSQL de teste em 127.0.0.1:5433)
+cd backend && php artisan test
+
+# frontend
+cd frontend && npm run check && npm run test
+```
+
+O CI roda as duas suítes por paths: `.github/workflows/backend-ci.yml` e
+`.github/workflows/frontend-ci.yml`.
 
 ## Git Flow
 
