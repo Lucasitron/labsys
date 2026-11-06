@@ -8,7 +8,7 @@ use App\Modules\Estoque\Enums\Categoria;
 use App\Modules\Estoque\Enums\StatusEmprestimo;
 use App\Modules\Estoque\Models\Emprestimo;
 use App\Modules\Estoque\Models\Item;
-use App\Modules\Notification\Models\Notificacao;
+use App\Models\Notification\Notificacao;
 use App\Modules\Producao\Enums\KanbanStatus;
 use App\Modules\Producao\Enums\MaquinaStatus;
 use App\Modules\Producao\Models\EncomendaKanban;

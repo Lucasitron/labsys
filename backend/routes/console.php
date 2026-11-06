@@ -3,7 +3,7 @@
 use App\Services\Auth\TokenBlacklistService;
 use App\Modules\Estoque\Services\EmprestimoService;
 use App\Modules\Financeiro\Services\LancamentoService;
-use App\Modules\Notification\Services\NotificationDispatchService;
+use App\Services\Notification\NotificationDispatchService;
 use App\Modules\Producao\Models\Parametro5S;
 use App\Modules\Producao\Services\ProjetoMesaService;
 use App\Modules\Rh\Services\ExtratoService;

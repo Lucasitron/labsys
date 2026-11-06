@@ -3,8 +3,8 @@
 namespace Tests\Feature\Notification;
 
 use App\Enums\Auth\Role;
-use App\Modules\Notification\Models\ConfiguracaoCanal;
-use App\Modules\Notification\Models\Notificacao;
+use App\Models\Notification\ConfiguracaoCanal;
+use App\Models\Notification\Notificacao;
 use Illuminate\Support\Facades\Event;
 
 /** Admin: preferências, histórico integral, revisão e canais. */
