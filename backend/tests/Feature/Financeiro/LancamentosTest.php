@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Financeiro;
 
-use App\Modules\Financeiro\Events\LancamentoVencidoEvent;
-use App\Modules\Financeiro\Models\LancamentoFinanceiro;
-use App\Modules\Financeiro\Services\LancamentoService;
+use App\Events\LancamentoVencidoEvent;
+use App\Models\Financeiro\LancamentoFinanceiro;
+use App\Services\Financeiro\LancamentoService;
 use Illuminate\Support\Facades\Event;
 
 /** Lançamentos: criar, filtros D-4/D-8, counts/resumo D-2, pagar, vencidos. */
@@ -177,7 +177,7 @@ class LancamentosTest extends FinanceiroTestCase
         ]), $headers)->assertCreated()->json('id');
 
         $lancamento = LancamentoFinanceiro::find($id);
-        $lancamento->status = \App\Modules\Financeiro\Enums\StatusLancamento::CANCELADO;
+        $lancamento->status = \App\Enums\Financeiro\StatusLancamento::CANCELADO;
         $lancamento->save();
 
         $this->getJson('/api/financeiro/lancamentos', $headers)->assertOk()

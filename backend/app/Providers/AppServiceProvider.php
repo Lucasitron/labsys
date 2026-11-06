@@ -17,10 +17,10 @@ use App\Contracts\EstoqueContract;
 use App\Events\EmprestimoAtrasadoEvent;
 use App\Events\EstoqueBaixoEvent;
 use App\Listeners\Estoque\ConsumoProducaoListener;
-use App\Modules\Financeiro\Events\LancamentoVencidoEvent;
-use App\Modules\Financeiro\Listeners\EncomendaCriadaListener;
-use App\Modules\Financeiro\Listeners\HorasValidadasListener;
-use App\Modules\Financeiro\Listeners\ProducaoConcluidaListener;
+use App\Events\LancamentoVencidoEvent;
+use App\Listeners\Financeiro\EncomendaCriadaListener;
+use App\Listeners\Financeiro\HorasValidadasListener;
+use App\Listeners\Financeiro\ProducaoConcluidaListener;
 use App\Contracts\DefaultNotificationContract;
 use App\Contracts\NotificationContract;
 use App\Listeners\Notification\EstoqueNotificacaoListener;
@@ -63,6 +63,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Preserva o comportamento pré-remap: listeners viviam em app/Modules e
+        // não eram auto-descobertos. Evita registro duplicado após a mudança
+        // layer-first (app/Listeners passa a ser varrido pelo framework).
+        \Illuminate\Foundation\Support\Providers\EventServiceProvider::disableEventDiscovery();
         // Fronteira in-process do Auth (único consumo permitido por outros módulos).
         $this->app->singleton(AuthContract::class, DefaultAuthContract::class);
 

@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Financeiro;
 
-use App\Modules\Financeiro\Services\RelatorioService;
+use App\Services\Financeiro\RelatorioService;
 use PHPUnit\Framework\TestCase;
 
 /** resolverPeriodo: dataInicio/dataFim vencem periodo; yyyy-MM vira o mês. */

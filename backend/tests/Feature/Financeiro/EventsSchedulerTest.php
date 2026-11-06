@@ -4,12 +4,12 @@ namespace Tests\Feature\Financeiro;
 
 use App\Events\ProducaoConcluidaEvent;
 use App\Events\CompraSolicitadaEvent;
-use App\Modules\Financeiro\Events\CustoCalculadoEvent;
-use App\Modules\Financeiro\Events\LancamentoVencidoEvent;
-use App\Modules\Financeiro\Models\CustoEncomenda;
-use App\Modules\Financeiro\Models\FechamentoEncomenda;
-use App\Modules\Financeiro\Models\HorasEncomenda;
-use App\Modules\Financeiro\Services\LancamentoService;
+use App\Events\CustoCalculadoEvent;
+use App\Events\LancamentoVencidoEvent;
+use App\Models\Financeiro\CustoEncomenda;
+use App\Models\Financeiro\FechamentoEncomenda;
+use App\Models\Financeiro\HorasEncomenda;
+use App\Services\Financeiro\LancamentoService;
 use App\Modules\Rh\Enums\TipoApontamento;
 use App\Modules\Rh\Events\HorasValidadasEvent;
 use App\Events\EncomendaCriadaEvent;

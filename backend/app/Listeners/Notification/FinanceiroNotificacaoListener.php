@@ -3,7 +3,7 @@
 namespace App\Listeners\Notification;
 
 use App\Events\CompraSolicitadaEvent;
-use App\Modules\Financeiro\Events\LancamentoVencidoEvent;
+use App\Events\LancamentoVencidoEvent;
 use App\Services\Notification\NotificationDispatchService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;

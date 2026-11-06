@@ -3,8 +3,8 @@
 namespace Tests\Unit\Financeiro;
 
 use App\Events\CompraSolicitadaEvent;
-use App\Modules\Financeiro\Events\CustoCalculadoEvent;
-use App\Modules\Financeiro\Events\LancamentoVencidoEvent;
+use App\Events\CustoCalculadoEvent;
+use App\Events\LancamentoVencidoEvent;
 use PHPUnit\Framework\TestCase;
 
 /** Eventos emitidos: nomes preservados + payloads do contrato. */

@@ -8,7 +8,7 @@ use App\Events\ProducaoConcluidaEvent;
 use App\Events\ProducaoStatusAlteradoEvent;
 use App\Events\EmprestimoAtrasadoEvent;
 use App\Events\EstoqueBaixoEvent;
-use App\Modules\Financeiro\Events\LancamentoVencidoEvent;
+use App\Events\LancamentoVencidoEvent;
 use App\Contracts\NotificationContract;
 use App\Listeners\Notification\EstoqueNotificacaoListener;
 use App\Listeners\Notification\FinanceiroNotificacaoListener;

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Financeiro;
 
-use App\Modules\Financeiro\Models\CustoEncomenda;
+use App\Models\Financeiro\CustoEncomenda;
 use Carbon\CarbonImmutable;
 
 /** 6 relatórios contra fixtures + allowlist de período. */
@@ -22,7 +22,7 @@ class RelatoriosTest extends FinanceiroTestCase
         $post(['valor' => '100.00', 'dataVencimento' => '2026-04-02', 'idReferenciaExterna' => 'MAQ-2']);
 
         // Cancelado fora das somas (sem rota de cancel — insert direto, como legado).
-        $cancel = \App\Modules\Financeiro\Models\LancamentoFinanceiro::create([
+        $cancel = \App\Models\Financeiro\LancamentoFinanceiro::create([
             'id_categoria' => $catId, 'tipo' => 'SAIDA', 'valor' => '999.00',
             'data_vencimento' => '2026-03-07', 'status' => 'CANCELADO',
         ]);

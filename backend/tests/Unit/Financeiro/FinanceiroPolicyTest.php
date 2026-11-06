@@ -4,7 +4,7 @@ namespace Tests\Unit\Financeiro;
 
 use App\Enums\Auth\Role;
 use App\Shared\Auth\Caller;
-use App\Modules\Financeiro\Policies\FinanceiroPolicy;
+use App\Policies\FinanceiroPolicy;
 use App\Shared\Exceptions\ForbiddenException;
 use PHPUnit\Framework\TestCase;
 
@@ -40,6 +40,6 @@ class FinanceiroPolicyTest extends TestCase
 
     public function test_custeio_default_nivel_dois(): void
     {
-        $this->assertSame(2, \App\Modules\Financeiro\Services\CusteioService::NIVEL_DEFAULT);
+        $this->assertSame(2, \App\Services\Financeiro\CusteioService::NIVEL_DEFAULT);
     }
 }

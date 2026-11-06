@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Http\Controllers\Financeiro;
+
+use App\Http\Controllers\Controller;
+
+use App\Models\Auth\Login;
+use App\Shared\Auth\Caller;
+use App\Http\Requests\Financeiro\LancamentoRequest;
+use App\Http\Requests\Financeiro\PagamentoRequest;
+use App\Http\Resources\Financeiro\LancamentoResource;
+use App\Services\Financeiro\LancamentoService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+/** Lançamentos (contas a pagar/receber) — só HTTP. Sem endpoint bulk. */
+class LancamentoController extends Controller
+{
+    public function __construct(private LancamentoService $lancamentos) {}
+
+    public function store(LancamentoRequest $request): JsonResponse
+    {
+        $lancamento = $this->lancamentos->criar($request->validated(), $this->principal($request));
+
+        return response()->json((new LancamentoResource($lancamento))->toArray($request), 201);
+    }
+
+    public function index(Request $request): JsonResponse
+    {
+        $filtros = $request->validate([
+            'status' => ['nullable', 'string', 'in:PENDENTE,PAGO,ATRASADO,CANCELADO'],
+            'tipo' => ['nullable', 'string', 'in:ENTRADA,SAIDA'],
+            'idCategoria' => ['nullable', 'integer'],
+            'dataInicio' => ['nullable', 'date'],
+            'dataFim' => ['nullable', 'date'],
+            'origem' => ['nullable', 'string', 'max:100'],
+            'vencimentoDe' => ['nullable', 'date'],
+            'vencimentoAte' => ['nullable', 'date'],
+        ]);
+
+        $dados = $this->lancamentos->listar($filtros, $this->principal($request));
+
+        return response()->json([
+            'lancamentos' => array_map(
+                fn ($l) => (new LancamentoResource($l))->toArray($request),
+                $dados['lancamentos'],
+            ),
+            'counts' => $dados['counts'],
+            'resumo' => $dados['resumo'],
+        ]);
+    }
+
+    public function pagar(PagamentoRequest $request, int $id): JsonResponse
+    {
+        $lancamento = $this->lancamentos->registrarPagamento(
+            $id, $request->validated(), $this->principal($request),
+        );
+
+        return response()->json((new LancamentoResource($lancamento))->toArray($request));
+    }
+
+}
