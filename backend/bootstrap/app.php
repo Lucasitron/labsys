@@ -19,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'blacklist' => \App\Modules\Auth\Http\Middleware\CheckBlacklist::class,
+            'blacklist' => \App\Http\Middleware\CheckBlacklist::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

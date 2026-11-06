@@ -2,7 +2,7 @@
 
 namespace App\Modules\Rh\Listeners;
 
-use App\Modules\Auth\Events\RfidAccessEvent;
+use App\Events\RfidAccessEvent;
 use App\Modules\Rh\Services\PontoService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 

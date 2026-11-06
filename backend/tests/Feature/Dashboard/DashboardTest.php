@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Dashboard;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Producao\Enums\KanbanStatus;
 use App\Modules\Producao\Enums\MaquinaStatus;
 use App\Modules\Producao\Enums\TarefaStatus;

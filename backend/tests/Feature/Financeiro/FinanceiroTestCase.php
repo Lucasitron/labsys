@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Financeiro;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Models\Login;
+use App\Enums\Auth\Role;
+use App\Models\Auth\Login;
 use App\Modules\Financeiro\Models\CategoriaFinanceira;
 use Tests\TestCase;
 

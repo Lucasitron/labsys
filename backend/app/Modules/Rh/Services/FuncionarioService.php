@@ -2,8 +2,8 @@
 
 namespace App\Modules\Rh\Services;
 
-use App\Modules\Auth\Contracts\AuthContract;
-use App\Modules\Auth\Enums\Role;
+use App\Contracts\AuthContract;
+use App\Enums\Auth\Role;
 use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Enums\StatusApontamento;
 use App\Modules\Rh\Enums\TipoApontamento;

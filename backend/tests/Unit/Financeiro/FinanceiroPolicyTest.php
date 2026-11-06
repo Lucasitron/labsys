@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Financeiro;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Policies\FinanceiroPolicy;
 use App\Shared\Exceptions\ForbiddenException;

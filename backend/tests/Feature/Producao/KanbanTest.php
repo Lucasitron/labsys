@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Producao;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Events\ProducaoConcluidaEvent;
 use App\Events\ProducaoStatusAlteradoEvent;
 use App\Modules\Estoque\Models\Item;

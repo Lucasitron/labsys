@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Notification;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Models\Login;
+use App\Enums\Auth\Role;
+use App\Models\Auth\Login;
 use Tests\TestCase;
 
 /** Base dos testes do Notification: papéis + fábricas de destinatários. */

@@ -4,7 +4,7 @@ namespace App\Modules\Producao\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
-use App\Modules\Auth\Models\Login;
+use App\Models\Auth\Login;
 use App\Modules\Producao\Enums\ProjetoStatus;
 use App\Modules\Producao\Http\Requests\ProjetoRequest;
 use App\Modules\Producao\Http\Requests\ProjetoStatusRequest;

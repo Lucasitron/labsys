@@ -4,7 +4,7 @@ namespace App\Modules\Vendas\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
-use App\Modules\Auth\Models\Login;
+use App\Models\Auth\Login;
 use App\Modules\Vendas\Enums\StatusSolicitacao;
 use App\Modules\Vendas\Http\Requests\DecisaoRequest;
 use App\Modules\Vendas\Http\Requests\SolicitacaoRequest;

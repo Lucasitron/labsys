@@ -4,7 +4,7 @@ namespace App\Modules\Vendas\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
-use App\Modules\Auth\Models\Login;
+use App\Models\Auth\Login;
 use App\Modules\Vendas\Enums\TipoPessoa;
 use App\Modules\Vendas\Http\Requests\BulkTagRequest;
 use App\Modules\Vendas\Http\Requests\ClienteRequest;

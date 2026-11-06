@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Estoque;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 
 /** Slice 401/403 por rota do Estoque (incl. vínculo e Recrutando). */
 class SecuritySliceTest extends EstoqueTestCase

@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Rh;
 
-use App\Modules\Auth\Enums\AccessLogType;
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Events\RfidAccessEvent;
+use App\Enums\Auth\AccessLogType;
+use App\Enums\Auth\Role;
+use App\Events\RfidAccessEvent;
 use App\Modules\Rh\Enums\StatusApontamento;
 use App\Modules\Rh\Enums\TipoApontamento;
 use App\Modules\Rh\Events\ExtratoMensalHorasEvent;

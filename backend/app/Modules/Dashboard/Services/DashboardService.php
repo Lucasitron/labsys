@@ -2,7 +2,7 @@
 
 namespace App\Modules\Dashboard\Services;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Dashboard\Policies\DashboardPolicy;
 use App\Modules\Estoque\Contracts\EstoqueContract;
 use App\Modules\Notification\Contracts\NotificationContract;

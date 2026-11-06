@@ -4,7 +4,7 @@ namespace App\Modules\Producao\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
-use App\Modules\Auth\Models\Login;
+use App\Models\Auth\Login;
 use App\Modules\Producao\Enums\TarefaStatus;
 use App\Modules\Producao\Http\Requests\TarefaRequest;
 use App\Modules\Producao\Http\Requests\TarefaStatusRequest;

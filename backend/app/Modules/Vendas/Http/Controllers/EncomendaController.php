@@ -4,7 +4,7 @@ namespace App\Modules\Vendas\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
-use App\Modules\Auth\Models\Login;
+use App\Models\Auth\Login;
 use App\Modules\Vendas\Enums\StatusKanban;
 use App\Modules\Vendas\Http\Requests\EncomendaRequest;
 use App\Modules\Vendas\Http\Requests\KanbanRequest;

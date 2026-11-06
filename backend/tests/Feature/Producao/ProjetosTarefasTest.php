@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Producao;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Producao\Models\Projeto;
 
 /** Projetos/tarefas: vínculo do responsável, carimbos, `PATCH` próprio. */

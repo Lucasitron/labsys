@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Vendas;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Vendas\Models\Cliente;
 
 /** Clientes/tags: CRUD, filtros, vínculo, bulk-tag, guarda de exclusão, LGPD. */

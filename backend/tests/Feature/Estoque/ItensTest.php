@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Estoque;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Estoque\Models\Item;
 use Illuminate\Http\UploadedFile;
 

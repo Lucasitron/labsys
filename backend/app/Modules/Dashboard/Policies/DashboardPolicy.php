@@ -2,7 +2,7 @@
 
 namespace App\Modules\Dashboard\Policies;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Shared\Exceptions\ForbiddenException;
 
 /**

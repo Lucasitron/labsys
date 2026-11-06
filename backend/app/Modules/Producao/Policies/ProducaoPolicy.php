@@ -2,7 +2,7 @@
 
 namespace App\Modules\Producao\Policies;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Producao\Models\SetorResponsavel;
 use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ForbiddenException;

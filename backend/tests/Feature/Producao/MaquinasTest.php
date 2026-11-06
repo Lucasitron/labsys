@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Producao;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Producao\Models\Maquina;
 
 /** Máquinas: cadastro/status Admin, uso abre/fecha, `horas_uso`, 409/422. */

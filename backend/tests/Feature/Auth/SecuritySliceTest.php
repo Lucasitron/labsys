@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use Tests\TestCase;
 
 /** Slice de segurança: 401 sem token e 403 com papel ≠ ADMIN por rota sensível. */

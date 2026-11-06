@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Vendas;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Vendas\Events\EncomendaCriadaEvent;
 use App\Modules\Vendas\Events\EncomendaStatusAlteradoEvent;
 use App\Modules\Vendas\Models\Encomenda;

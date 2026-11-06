@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Notification;
 
-use App\Modules\Auth\Contracts\AuthContract;
+use App\Contracts\AuthContract;
 use App\Events\CompraSolicitadaEvent;
 use App\Events\ProducaoConcluidaEvent;
 use App\Events\ProducaoStatusAlteradoEvent;
@@ -191,7 +191,7 @@ class DispatchTest extends NotificationTestCase
         $this->assertSame(1, Notificacao::where('id_usuario', $func['login']->id_user)->where('canal', 'email')->count());
 
         // Sem e-mail do destinatário → sem row email, sem 500.
-        $semEmail = $this->funcionarioComEmail(\App\Modules\Auth\Enums\Role::BOLSISTA, 'sem-email');
+        $semEmail = $this->funcionarioComEmail(\App\Enums\Auth\Role::BOLSISTA, 'sem-email');
         app(RhNotificacaoListener::class)->handleHorasValidadas(
             new HorasValidadasEvent((int) $semEmail['funcionario']->getKey(), TipoApontamento::PROJETO, 6, '2.00', '2026-10-02')
         );

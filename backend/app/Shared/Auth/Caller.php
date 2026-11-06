@@ -2,9 +2,9 @@
 
 namespace App\Shared\Auth;
 
-use App\Modules\Auth\Contracts\AuthContract;
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Models\Login;
+use App\Contracts\AuthContract;
+use App\Enums\Auth\Role;
+use App\Models\Auth\Login;
 
 class Caller
 {

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Enums\SituacaoUsuario;
-use App\Modules\Auth\Models\Login;
-use App\Modules\Auth\Models\UserPermission;
+use App\Enums\Auth\Role;
+use App\Enums\Auth\SituacaoUsuario;
+use App\Models\Auth\Login;
+use App\Models\Auth\UserPermission;
 use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Enums\PessoaStatus;
 use App\Modules\Rh\Models\Funcionario;

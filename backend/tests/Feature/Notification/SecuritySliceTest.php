@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Notification;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 
 /** Slice security: 401 sem token em tudo; B/V/E → 403 no admin; Recrutando inbox 200. */
 class SecuritySliceTest extends NotificationTestCase

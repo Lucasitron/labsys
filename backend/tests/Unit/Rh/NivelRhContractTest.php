@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Rh;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Rh\Contracts\RhContract;
 use App\Modules\Rh\Enums\StatusApontamento;
 use App\Modules\Rh\Enums\TipoApontamento;

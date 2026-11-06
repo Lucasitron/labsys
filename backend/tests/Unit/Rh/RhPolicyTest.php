@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Rh;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Models\Funcionario;
 use App\Modules\Rh\Policies\RhPolicy;

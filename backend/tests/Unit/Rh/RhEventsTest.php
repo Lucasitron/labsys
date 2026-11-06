@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Rh;
 
-use App\Modules\Auth\Events\RfidAccessEvent;
+use App\Events\RfidAccessEvent;
 use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Enums\PessoaStatus;
 use App\Modules\Rh\Enums\StatusApontamento;

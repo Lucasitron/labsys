@@ -2,7 +2,7 @@
 
 namespace App\Modules\Estoque\Policies;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Estoque\EstoquePrincipal;
 use App\Shared\Exceptions\ForbiddenException;
 

@@ -2,7 +2,7 @@
 
 namespace App\Modules\Producao\Http\Requests;
 
-use App\Modules\Auth\Models\Login;
+use App\Models\Auth\Login;
 use App\Modules\Producao\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
 use Illuminate\Foundation\Http\FormRequest;

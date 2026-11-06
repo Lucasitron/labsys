@@ -1,6 +1,6 @@
 <?php
 
-use App\Modules\Auth\Services\LoginIdUserDedupService;
+use App\Services\Auth\LoginIdUserDedupService;
 use Illuminate\Database\Migrations\Migration;
 
 // V9a — backfill/dedup ANTES da UNIQUE de `auth.login.id_user` (V9).

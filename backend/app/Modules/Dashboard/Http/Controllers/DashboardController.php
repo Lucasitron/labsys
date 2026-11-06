@@ -4,8 +4,8 @@ namespace App\Modules\Dashboard\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
-use App\Modules\Auth\Contracts\AuthContract;
-use App\Modules\Auth\Models\Login;
+use App\Contracts\AuthContract;
+use App\Models\Auth\Login;
 use App\Modules\Dashboard\Http\Resources\DashboardSummaryResource;
 use App\Modules\Dashboard\Services\DashboardService;
 use Illuminate\Http\JsonResponse;

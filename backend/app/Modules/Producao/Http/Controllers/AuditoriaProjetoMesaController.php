@@ -4,7 +4,7 @@ namespace App\Modules\Producao\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
-use App\Modules\Auth\Models\Login;
+use App\Models\Auth\Login;
 use App\Modules\Producao\Http\Requests\AuditoriaRequest;
 use App\Modules\Producao\Http\Resources\AuditoriaResource;
 use App\Shared\Auth\Caller;

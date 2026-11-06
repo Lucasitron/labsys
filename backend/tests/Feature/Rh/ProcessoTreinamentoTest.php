@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Rh;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Enums\PessoaStatus;
 use App\Modules\Rh\Models\Pessoa;

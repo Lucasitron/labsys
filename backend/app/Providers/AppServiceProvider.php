@@ -2,12 +2,12 @@
 
 namespace App\Providers;
 
-use App\Modules\Auth\Contracts\AuthContract;
-use App\Modules\Auth\Contracts\DefaultAuthContract;
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Events\RfidAccessEvent;
-use App\Modules\Auth\Models\Login;
-use App\Modules\Auth\Models\UserPermission;
+use App\Contracts\AuthContract;
+use App\Contracts\DefaultAuthContract;
+use App\Enums\Auth\Role;
+use App\Events\RfidAccessEvent;
+use App\Models\Auth\Login;
+use App\Models\Auth\UserPermission;
 use App\Modules\Dashboard\Policies\DashboardPolicy;
 use App\Events\CompraSolicitadaEvent;
 use App\Events\ProducaoConcluidaEvent;

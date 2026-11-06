@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Rh;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Models\UserPermission;
+use App\Enums\Auth\Role;
+use App\Models\Auth\UserPermission;
 use App\Modules\Rh\Enums\StatusApontamento;
 use App\Modules\Rh\Enums\TipoApontamento;
 use App\Modules\Rh\Events\NivelAlteradoEvent;

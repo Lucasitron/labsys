@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Modules\Auth\Models\Login;
+use App\Models\Auth\Login;
 use App\Shared\Auth\Caller;
 use Illuminate\Http\Request;
 

@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Estoque;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Models\Login;
+use App\Enums\Auth\Role;
+use App\Models\Auth\Login;
 use App\Modules\Estoque\Enums\Categoria;
 use App\Modules\Estoque\Models\Fornecedor;
 use App\Modules\Estoque\Models\Item;

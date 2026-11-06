@@ -2,7 +2,7 @@
 
 namespace App\Modules\Notification\Services;
 
-use App\Modules\Auth\Contracts\AuthContract;
+use App\Contracts\AuthContract;
 use App\Modules\Notification\Enums\StatusEntrega;
 use App\Modules\Notification\Models\Notificacao;
 use App\Modules\Notification\Models\NotificacaoHistorico;

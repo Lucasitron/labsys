@@ -4,7 +4,7 @@ namespace App\Modules\Financeiro\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
-use App\Modules\Auth\Models\Login;
+use App\Models\Auth\Login;
 use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Http\Requests\OverheadRequest;
 use App\Modules\Financeiro\Http\Requests\ValorHoraRequest;

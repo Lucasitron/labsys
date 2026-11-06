@@ -2,10 +2,10 @@
 
 namespace Tests\Unit\Auth;
 
-use App\Modules\Auth\Enums\PermissaoNivel;
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Models\PermissaoMatriz;
-use App\Modules\Auth\Services\RbacService;
+use App\Enums\Auth\PermissaoNivel;
+use App\Enums\Auth\Role;
+use App\Models\Auth\PermissaoMatriz;
+use App\Services\Auth\RbacService;
 use App\Shared\Exceptions\PermissaoInvalidaException;
 use Tests\TestCase;
 

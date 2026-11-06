@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Notification;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Notification\Models\ConfiguracaoCanal;
 use App\Modules\Notification\Models\Notificacao;
 use Illuminate\Support\Facades\Event;

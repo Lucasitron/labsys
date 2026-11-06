@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Producao;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Producao\Events\ProjetoMesaAbandonadoEvent;
 use App\Modules\Producao\Models\Parametro5S;
 use App\Modules\Producao\Services\ProjetoMesaService;

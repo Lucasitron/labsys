@@ -1,6 +1,6 @@
 <?php
 
-use App\Modules\Auth\Services\TokenBlacklistService;
+use App\Services\Auth\TokenBlacklistService;
 use App\Modules\Estoque\Services\EmprestimoService;
 use App\Modules\Financeiro\Services\LancamentoService;
 use App\Modules\Notification\Services\NotificationDispatchService;

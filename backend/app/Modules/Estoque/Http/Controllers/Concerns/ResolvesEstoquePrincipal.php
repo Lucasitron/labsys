@@ -2,7 +2,7 @@
 
 namespace App\Modules\Estoque\Http\Controllers\Concerns;
 
-use App\Modules\Auth\Models\Login;
+use App\Models\Auth\Login;
 use App\Modules\Estoque\EstoquePrincipal;
 use Illuminate\Http\Request;
 

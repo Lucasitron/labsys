@@ -4,7 +4,7 @@ namespace App\Modules\Financeiro\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
-use App\Modules\Auth\Models\Login;
+use App\Models\Auth\Login;
 use App\Modules\Financeiro\Enums\TipoDoacao;
 use App\Shared\Auth\Caller;
 use App\Modules\Financeiro\Http\Requests\DoacaoRequest;

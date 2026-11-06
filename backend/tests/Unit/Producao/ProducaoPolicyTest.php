@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Producao;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Producao\Enums\KanbanStatus;
 use App\Modules\Producao\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;

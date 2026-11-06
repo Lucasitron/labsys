@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Producao;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Producao\Contracts\ProducaoContract;
 use App\Modules\Producao\Enums\TarefaStatus;
 use App\Modules\Producao\Models\Tarefa;

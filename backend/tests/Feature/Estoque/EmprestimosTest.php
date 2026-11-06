@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Estoque;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use App\Modules\Estoque\Enums\StatusEmprestimo;
 use App\Modules\Estoque\Events\EmprestimoAtrasadoEvent;
 use App\Modules\Estoque\Models\Emprestimo;

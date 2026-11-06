@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Vendas;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 
 /** Slice 401/403 por rota do Vendas (escrita Admin, leitura sem Recrutando). */
 class SecuritySliceTest extends VendasTestCase
