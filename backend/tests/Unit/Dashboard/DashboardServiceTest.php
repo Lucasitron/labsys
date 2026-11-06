@@ -3,7 +3,7 @@
 namespace Tests\Unit\Dashboard;
 
 use App\Enums\Auth\Role;
-use App\Modules\Dashboard\Services\DashboardService;
+use App\Services\Dashboard\DashboardService;
 use App\Contracts\EstoqueContract;
 use App\Contracts\NotificationContract;
 use App\Contracts\ProducaoContract;

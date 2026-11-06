@@ -8,7 +8,7 @@ use App\Enums\Auth\Role;
 use App\Events\RfidAccessEvent;
 use App\Models\Auth\Login;
 use App\Models\Auth\UserPermission;
-use App\Modules\Dashboard\Policies\DashboardPolicy;
+use App\Policies\DashboardPolicy;
 use App\Events\CompraSolicitadaEvent;
 use App\Events\ProducaoConcluidaEvent;
 use App\Events\ProducaoStatusAlteradoEvent;

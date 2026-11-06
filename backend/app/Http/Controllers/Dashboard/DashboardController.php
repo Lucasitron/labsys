@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Modules\Dashboard\Http\Controllers;
+namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 
 use App\Contracts\AuthContract;
 use App\Models\Auth\Login;
-use App\Modules\Dashboard\Http\Resources\DashboardSummaryResource;
-use App\Modules\Dashboard\Services\DashboardService;
+use App\Http\Resources\Dashboard\DashboardSummaryResource;
+use App\Services\Dashboard\DashboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

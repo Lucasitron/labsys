@@ -1,6 +1,6 @@
 <?php
 
-use App\Modules\Dashboard\Http\Controllers\DashboardController;
+use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Producao\TarefaController;
 use Illuminate\Support\Facades\Route;
 

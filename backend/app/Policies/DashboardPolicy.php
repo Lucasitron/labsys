@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Dashboard\Policies;
+namespace App\Policies;
 
 use App\Enums\Auth\Role;
 use App\Shared\Exceptions\ForbiddenException;

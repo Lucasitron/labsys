@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Modules\Dashboard\Services;
+namespace App\Services\Dashboard;
 
 use App\Enums\Auth\Role;
-use App\Modules\Dashboard\Policies\DashboardPolicy;
+use App\Policies\DashboardPolicy;
 use App\Contracts\EstoqueContract;
 use App\Contracts\NotificationContract;
 use App\Contracts\ProducaoContract;
