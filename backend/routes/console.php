@@ -6,7 +6,7 @@ use App\Services\Financeiro\LancamentoService;
 use App\Services\Notification\NotificationDispatchService;
 use App\Models\Producao\Parametro5S;
 use App\Services\Producao\ProjetoMesaService;
-use App\Modules\Rh\Services\ExtratoService;
+use App\Services\Rh\ExtratoService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 

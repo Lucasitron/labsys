@@ -7,7 +7,7 @@ use App\Modules\Dashboard\Services\DashboardService;
 use App\Contracts\EstoqueContract;
 use App\Contracts\NotificationContract;
 use App\Contracts\ProducaoContract;
-use App\Modules\Rh\Contracts\RhContract;
+use App\Contracts\RhContract;
 use App\Shared\Exceptions\ForbiddenException;
 use Tests\TestCase;
 

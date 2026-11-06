@@ -2,7 +2,7 @@
 
 namespace App\Listeners\Producao;
 
-use App\Modules\Rh\Events\NivelAlteradoEvent;
+use App\Events\NivelAlteradoEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

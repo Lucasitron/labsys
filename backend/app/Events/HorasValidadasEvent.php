@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Events;
+
+use App\Enums\Rh\TipoApontamento;
+use Illuminate\Foundation\Events\Dispatchable;
+
+/** Horas validadas → Financeiro (custo/coerência). Nome preservado. */
+class HorasValidadasEvent
+{
+    use Dispatchable;
+
+    public const NAME = 'horas.validadas.event';
+
+    public function __construct(
+        public readonly int $idFuncionario,
+        public readonly TipoApontamento $tipo,
+        public readonly int $idReferencia,
+        public readonly string $horas,
+        public readonly string $data,
+    ) {}
+
+    /** @return array{idFuncionario:int,tipo:string,idReferencia:int,horas:string,data:string} */
+    public function payload(): array
+    {
+        return [
+            'idFuncionario' => $this->idFuncionario,
+            'tipo' => $this->tipo->value,
+            'idReferencia' => $this->idReferencia,
+            'horas' => $this->horas,
+            'data' => $this->data,
+        ];
+    }
+}

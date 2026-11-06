@@ -8,7 +8,7 @@ use App\Contracts\EstoqueContract;
 use App\Models\Estoque\Item;
 use App\Models\Estoque\ListaMateriais;
 use App\Models\Estoque\SaidaEstoque;
-use App\Modules\Rh\Contracts\RhContract;
+use App\Contracts\RhContract;
 
 class BomTest extends EstoqueTestCase
 {

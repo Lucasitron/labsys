@@ -10,8 +10,8 @@ use App\Models\Financeiro\CustoEncomenda;
 use App\Models\Financeiro\FechamentoEncomenda;
 use App\Models\Financeiro\HorasEncomenda;
 use App\Services\Financeiro\LancamentoService;
-use App\Modules\Rh\Enums\TipoApontamento;
-use App\Modules\Rh\Events\HorasValidadasEvent;
+use App\Enums\Rh\TipoApontamento;
+use App\Events\HorasValidadasEvent;
 use App\Events\EncomendaCriadaEvent;
 use Illuminate\Support\Facades\Event;
 

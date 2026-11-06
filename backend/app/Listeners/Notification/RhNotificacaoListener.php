@@ -3,12 +3,12 @@
 namespace App\Listeners\Notification;
 
 use App\Services\Notification\NotificationDispatchService;
-use App\Modules\Rh\Events\CertificadoAprovadoEvent;
-use App\Modules\Rh\Events\CertificadoRejeitadoEvent;
-use App\Modules\Rh\Events\CertificadoSolicitadoEvent;
-use App\Modules\Rh\Events\ExtratoMensalHorasEvent;
-use App\Modules\Rh\Events\HorasValidadasEvent;
-use App\Modules\Rh\Events\NivelAlteradoEvent;
+use App\Events\CertificadoAprovadoEvent;
+use App\Events\CertificadoRejeitadoEvent;
+use App\Events\CertificadoSolicitadoEvent;
+use App\Events\ExtratoMensalHorasEvent;
+use App\Events\HorasValidadasEvent;
+use App\Events\NivelAlteradoEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Events;
+
+use App\Enums\Rh\NivelAcesso;
+use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Events\Dispatchable;
+
+/** Nível alterado → Auth (claims) + Notification. Nome preservado. */
+class NivelAlteradoEvent
+{
+    use Dispatchable;
+
+    public const NAME = 'nivel.alterado.event';
+
+    public function __construct(
+        public readonly int $idFuncionario,
+        public readonly NivelAcesso $nivelAntigo,
+        public readonly NivelAcesso $nivelNovo,
+        public readonly CarbonImmutable $data,
+    ) {}
+
+    /** @return array{idFuncionario:int,nivelAntigo:int,nivelNovo:int,data:string} */
+    public function payload(): array
+    {
+        return [
+            'idFuncionario' => $this->idFuncionario,
+            'nivelAntigo' => $this->nivelAntigo->value,
+            'nivelNovo' => $this->nivelNovo->value,
+            'data' => $this->data->toIso8601String(),
+        ];
+    }
+}

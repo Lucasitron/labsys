@@ -27,7 +27,7 @@ abstract class NotificationTestCase extends TestCase
     /**
      * Funcionário com pessoa vinculada ao login (`contato` = e-mail por padrão).
      *
-     * @return array{login:Login,pessoa:\App\Modules\Rh\Models\Pessoa,funcionario:\App\Modules\Rh\Models\Funcionario}
+     * @return array{login:Login,pessoa:\App\Models\Rh\Pessoa,funcionario:\App\Models\Rh\Funcionario}
      */
     protected function funcionarioComEmail(Role $role = Role::BOLSISTA, ?string $contato = null): array
     {

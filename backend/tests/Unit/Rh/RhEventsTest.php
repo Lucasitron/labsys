@@ -3,17 +3,17 @@
 namespace Tests\Unit\Rh;
 
 use App\Events\RfidAccessEvent;
-use App\Modules\Rh\Enums\NivelAcesso;
-use App\Modules\Rh\Enums\PessoaStatus;
-use App\Modules\Rh\Enums\StatusApontamento;
-use App\Modules\Rh\Enums\TipoApontamento;
-use App\Modules\Rh\Enums\TipoCertificado;
-use App\Modules\Rh\Events\CertificadoAprovadoEvent;
-use App\Modules\Rh\Events\CertificadoRejeitadoEvent;
-use App\Modules\Rh\Events\CertificadoSolicitadoEvent;
-use App\Modules\Rh\Events\ExtratoMensalHorasEvent;
-use App\Modules\Rh\Events\HorasValidadasEvent;
-use App\Modules\Rh\Events\NivelAlteradoEvent;
+use App\Enums\Rh\NivelAcesso;
+use App\Enums\Rh\PessoaStatus;
+use App\Enums\Rh\StatusApontamento;
+use App\Enums\Rh\TipoApontamento;
+use App\Enums\Rh\TipoCertificado;
+use App\Events\CertificadoAprovadoEvent;
+use App\Events\CertificadoRejeitadoEvent;
+use App\Events\CertificadoSolicitadoEvent;
+use App\Events\ExtratoMensalHorasEvent;
+use App\Events\HorasValidadasEvent;
+use App\Events\NivelAlteradoEvent;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
 

@@ -3,21 +3,21 @@
 namespace Tests\Feature\Rh;
 
 use App\Enums\Auth\Role;
-use App\Modules\Rh\Enums\StatusApontamento;
-use App\Modules\Rh\Enums\StatusProcesso;
-use App\Modules\Rh\Enums\TipoApontamento;
-use App\Modules\Rh\Models\ApontamentoHoras;
-use App\Modules\Rh\Models\AvaliacaoTreinamento;
-use App\Modules\Rh\Models\CertificadoEmitido;
-use App\Modules\Rh\Models\GrupoProcessoSeletivo;
-use App\Modules\Rh\Models\HistoricoNivel;
-use App\Modules\Rh\Models\HoraConsolidada;
-use App\Modules\Rh\Models\Pessoa;
-use App\Modules\Rh\Models\ProcessoSeletivo;
-use App\Modules\Rh\Models\RegistroPontoDiario;
-use App\Modules\Rh\Models\SolicitacaoCertificado;
-use App\Modules\Rh\Models\Treinamento;
-use App\Modules\Rh\Models\Tutor;
+use App\Enums\Rh\StatusApontamento;
+use App\Enums\Rh\StatusProcesso;
+use App\Enums\Rh\TipoApontamento;
+use App\Models\Rh\ApontamentoHoras;
+use App\Models\Rh\AvaliacaoTreinamento;
+use App\Models\Rh\CertificadoEmitido;
+use App\Models\Rh\GrupoProcessoSeletivo;
+use App\Models\Rh\HistoricoNivel;
+use App\Models\Rh\HoraConsolidada;
+use App\Models\Rh\Pessoa;
+use App\Models\Rh\ProcessoSeletivo;
+use App\Models\Rh\RegistroPontoDiario;
+use App\Models\Rh\SolicitacaoCertificado;
+use App\Models\Rh\Treinamento;
+use App\Models\Rh\Tutor;
 use Tests\TestCase;
 
 /** Bordas dos services (404/403/422) + fiação das relations Eloquent. */

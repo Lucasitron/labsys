@@ -9,7 +9,7 @@ use App\Contracts\NotificationContract;
 use App\Contracts\ProducaoContract;
 use App\Enums\Producao\KanbanStatus;
 use App\Enums\Producao\MaquinaStatus;
-use App\Modules\Rh\Contracts\RhContract;
+use App\Contracts\RhContract;
 use Illuminate\Support\Carbon;
 
 /**

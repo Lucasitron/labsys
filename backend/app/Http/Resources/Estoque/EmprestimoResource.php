@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources\Estoque;
 
-use App\Modules\Rh\Contracts\RhContract;
+use App\Contracts\RhContract;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

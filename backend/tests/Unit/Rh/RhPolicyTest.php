@@ -3,11 +3,11 @@
 namespace Tests\Unit\Rh;
 
 use App\Enums\Auth\Role;
-use App\Modules\Rh\Enums\NivelAcesso;
-use App\Modules\Rh\Models\Funcionario;
-use App\Modules\Rh\Policies\RhPolicy;
-use App\Modules\Rh\RhPrincipal;
-use App\Modules\Rh\Rules\CpfRule;
+use App\Enums\Rh\NivelAcesso;
+use App\Models\Rh\Funcionario;
+use App\Policies\RhPolicy;
+use App\Services\Rh\RhPrincipal;
+use App\Rules\CpfRule;
 use App\Shared\Exceptions\ForbiddenException;
 use Tests\TestCase;
 

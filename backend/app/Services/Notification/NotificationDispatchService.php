@@ -6,7 +6,7 @@ use App\Contracts\AuthContract;
 use App\Enums\Notification\StatusEntrega;
 use App\Models\Notification\Notificacao;
 use App\Models\Notification\NotificacaoHistorico;
-use App\Modules\Rh\Contracts\RhContract;
+use App\Contracts\RhContract;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 

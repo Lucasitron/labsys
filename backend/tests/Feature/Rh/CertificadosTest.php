@@ -3,15 +3,15 @@
 namespace Tests\Feature\Rh;
 
 use App\Enums\Auth\Role;
-use App\Modules\Rh\Enums\StatusApontamento;
-use App\Modules\Rh\Enums\TipoApontamento;
-use App\Modules\Rh\Events\CertificadoAprovadoEvent;
-use App\Modules\Rh\Events\CertificadoRejeitadoEvent;
-use App\Modules\Rh\Events\CertificadoSolicitadoEvent;
-use App\Modules\Rh\Models\ApontamentoHoras;
-use App\Modules\Rh\Models\CertificadoEmitido;
-use App\Modules\Rh\Models\HoraConsolidada;
-use App\Modules\Rh\Models\RegistroPontoDiario;
+use App\Enums\Rh\StatusApontamento;
+use App\Enums\Rh\TipoApontamento;
+use App\Events\CertificadoAprovadoEvent;
+use App\Events\CertificadoRejeitadoEvent;
+use App\Events\CertificadoSolicitadoEvent;
+use App\Models\Rh\ApontamentoHoras;
+use App\Models\Rh\CertificadoEmitido;
+use App\Models\Rh\HoraConsolidada;
+use App\Models\Rh\RegistroPontoDiario;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 

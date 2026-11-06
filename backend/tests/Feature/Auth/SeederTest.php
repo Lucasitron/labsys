@@ -3,10 +3,10 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\Auth\Login;
-use App\Modules\Rh\Enums\NivelAcesso;
-use App\Modules\Rh\Enums\PessoaStatus;
-use App\Modules\Rh\Models\Pessoa;
-use App\Modules\Rh\Services\PessoaService;
+use App\Enums\Rh\NivelAcesso;
+use App\Enums\Rh\PessoaStatus;
+use App\Models\Rh\Pessoa;
+use App\Services\Rh\PessoaService;
 use Database\Seeders\AuthSeeder;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;

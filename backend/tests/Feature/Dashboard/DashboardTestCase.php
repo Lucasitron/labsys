@@ -15,9 +15,9 @@ use App\Models\Producao\EncomendaKanban;
 use App\Models\Producao\Maquina;
 use App\Models\Producao\Projeto;
 use App\Models\Producao\Tarefa;
-use App\Modules\Rh\Models\CertificadoEmitido;
-use App\Modules\Rh\Models\Funcionario;
-use App\Modules\Rh\Models\SolicitacaoCertificado;
+use App\Models\Rh\CertificadoEmitido;
+use App\Models\Rh\Funcionario;
+use App\Models\Rh\SolicitacaoCertificado;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 

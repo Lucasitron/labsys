@@ -3,12 +3,12 @@
 namespace Tests\Unit\Rh;
 
 use App\Enums\Auth\Role;
-use App\Modules\Rh\Enums\StatusApontamento;
-use App\Modules\Rh\Enums\TipoApontamento;
-use App\Modules\Rh\Events\ExtratoMensalHorasEvent;
-use App\Modules\Rh\Models\ApontamentoHoras;
-use App\Modules\Rh\Models\RegistroPontoDiario;
-use App\Modules\Rh\Services\ExtratoService;
+use App\Enums\Rh\StatusApontamento;
+use App\Enums\Rh\TipoApontamento;
+use App\Events\ExtratoMensalHorasEvent;
+use App\Models\Rh\ApontamentoHoras;
+use App\Models\Rh\RegistroPontoDiario;
+use App\Services\Rh\ExtratoService;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 

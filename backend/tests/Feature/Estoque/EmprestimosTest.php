@@ -202,15 +202,15 @@ class EmprestimosTest extends EstoqueTestCase
             'status' => StatusEmprestimo::ATIVO,
         ])->getKey();
 
-        $quebrado = \Mockery::mock(\App\Modules\Rh\Contracts\RhContract::class);
+        $quebrado = \Mockery::mock(\App\Contracts\RhContract::class);
         $quebrado->shouldReceive('nomePessoa')->andThrow(new \RuntimeException('RH fora'));
-        app()->instance(\App\Modules\Rh\Contracts\RhContract::class, $quebrado);
+        app()->instance(\App\Contracts\RhContract::class, $quebrado);
 
         try {
             $this->getJson("/api/estoque/emprestimos/{$id}", $admin)
                 ->assertOk()->assertJsonPath('tomador', 'Pessoa #555');
         } finally {
-            app()->forgetInstance(\App\Modules\Rh\Contracts\RhContract::class);
+            app()->forgetInstance(\App\Contracts\RhContract::class);
         }
     }
 }

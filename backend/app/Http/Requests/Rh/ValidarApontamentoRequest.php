@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Http\Requests\Rh;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+/** PUT validar — status VALIDADO|REJEITADO (motivo exigido no service p/ rejeitar). */
+class ValidarApontamentoRequest extends FormRequest
+{
+    /** @return array<string, mixed> */
+    public function rules(): array
+    {
+        return [
+            'status' => ['required', 'in:VALIDADO,REJEITADO'],
+            'motivo' => ['nullable', 'string', 'max:500'],
+        ];
+    }
+}

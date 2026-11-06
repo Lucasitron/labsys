@@ -4,13 +4,13 @@ namespace Tests\Feature\Rh;
 
 use App\Enums\Auth\Role;
 use App\Models\Auth\UserPermission;
-use App\Modules\Rh\Enums\StatusApontamento;
-use App\Modules\Rh\Enums\TipoApontamento;
-use App\Modules\Rh\Events\NivelAlteradoEvent;
-use App\Modules\Rh\Models\ApontamentoHoras;
-use App\Modules\Rh\Models\Funcionario;
-use App\Modules\Rh\Models\HistoricoNivel;
-use App\Modules\Rh\Models\RegistroPontoDiario;
+use App\Enums\Rh\StatusApontamento;
+use App\Enums\Rh\TipoApontamento;
+use App\Events\NivelAlteradoEvent;
+use App\Models\Rh\ApontamentoHoras;
+use App\Models\Rh\Funcionario;
+use App\Models\Rh\HistoricoNivel;
+use App\Models\Rh\RegistroPontoDiario;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 

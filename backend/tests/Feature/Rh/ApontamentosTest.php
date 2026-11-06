@@ -3,10 +3,10 @@
 namespace Tests\Feature\Rh;
 
 use App\Enums\Auth\Role;
-use App\Modules\Rh\Enums\StatusApontamento;
-use App\Modules\Rh\Events\HorasValidadasEvent;
-use App\Modules\Rh\Models\ApontamentoHoras;
-use App\Modules\Rh\Models\RegistroPontoDiario;
+use App\Enums\Rh\StatusApontamento;
+use App\Events\HorasValidadasEvent;
+use App\Models\Rh\ApontamentoHoras;
+use App\Models\Rh\RegistroPontoDiario;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
