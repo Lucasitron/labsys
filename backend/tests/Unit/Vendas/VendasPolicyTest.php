@@ -3,7 +3,7 @@
 namespace Tests\Unit\Vendas;
 
 use App\Enums\Auth\Role;
-use App\Modules\Vendas\Policies\VendasPolicy;
+use App\Policies\VendasPolicy;
 use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ForbiddenException;
 use PHPUnit\Framework\TestCase;

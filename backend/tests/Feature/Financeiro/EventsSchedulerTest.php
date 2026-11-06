@@ -12,7 +12,7 @@ use App\Modules\Financeiro\Models\HorasEncomenda;
 use App\Modules\Financeiro\Services\LancamentoService;
 use App\Modules\Rh\Enums\TipoApontamento;
 use App\Modules\Rh\Events\HorasValidadasEvent;
-use App\Modules\Vendas\Events\EncomendaCriadaEvent;
+use App\Events\EncomendaCriadaEvent;
 use Illuminate\Support\Facades\Event;
 
 /** Listeners (3 consumidos), emissões (3) e scheduler manual. */

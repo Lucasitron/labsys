@@ -3,7 +3,7 @@
 namespace App\Modules\Financeiro\Listeners;
 
 use App\Modules\Financeiro\Services\FechamentoService;
-use App\Modules\Vendas\Events\EncomendaCriadaEvent;
+use App\Events\EncomendaCriadaEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

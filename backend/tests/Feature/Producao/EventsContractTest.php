@@ -8,7 +8,7 @@ use App\Modules\Producao\Enums\TarefaStatus;
 use App\Modules\Producao\Models\Tarefa;
 use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Events\NivelAlteradoEvent;
-use App\Modules\Vendas\Events\EncomendaCriadaEvent;
+use App\Events\EncomendaCriadaEvent;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 

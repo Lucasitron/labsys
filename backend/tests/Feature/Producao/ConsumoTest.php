@@ -3,7 +3,7 @@
 namespace Tests\Feature\Producao;
 
 use App\Enums\Auth\Role;
-use App\Modules\Vendas\Events\EncomendaCriadaEvent;
+use App\Events\EncomendaCriadaEvent;
 use Illuminate\Support\Facades\Event;
 
 /** Consumo (BOM final): upsert soma, item estranho 422, lista. */

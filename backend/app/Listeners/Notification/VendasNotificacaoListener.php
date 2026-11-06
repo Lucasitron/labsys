@@ -3,9 +3,9 @@
 namespace App\Listeners\Notification;
 
 use App\Services\Notification\NotificationDispatchService;
-use App\Modules\Vendas\Events\EncomendaCriadaEvent;
-use App\Modules\Vendas\Events\EncomendaStatusAlteradoEvent;
-use App\Modules\Vendas\Events\OrcamentoAprovadoEvent;
+use App\Events\EncomendaCriadaEvent;
+use App\Events\EncomendaStatusAlteradoEvent;
+use App\Events\OrcamentoAprovadoEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

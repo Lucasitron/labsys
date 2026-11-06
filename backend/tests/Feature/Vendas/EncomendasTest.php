@@ -3,9 +3,9 @@
 namespace Tests\Feature\Vendas;
 
 use App\Enums\Auth\Role;
-use App\Modules\Vendas\Events\EncomendaCriadaEvent;
-use App\Modules\Vendas\Events\EncomendaStatusAlteradoEvent;
-use App\Modules\Vendas\Models\Encomenda;
+use App\Events\EncomendaCriadaEvent;
+use App\Events\EncomendaStatusAlteradoEvent;
+use App\Models\Vendas\Encomenda;
 use Illuminate\Support\Facades\Event;
 
 /** Encomendas: conversão, venda direta, Kanban+versão, nova ordem, criador+Admin, eventos. */

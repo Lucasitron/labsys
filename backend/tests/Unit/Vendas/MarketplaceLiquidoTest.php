@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Vendas;
 
-use App\Modules\Vendas\Services\MarketplaceService;
+use App\Services\Vendas\MarketplaceService;
 use PHPUnit\Framework\TestCase;
 
 class MarketplaceLiquidoTest extends TestCase

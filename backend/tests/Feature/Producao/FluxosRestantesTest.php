@@ -4,7 +4,7 @@ namespace Tests\Feature\Producao;
 
 use App\Enums\Auth\Role;
 use App\Modules\Producao\Models\Tarefa;
-use App\Modules\Vendas\Events\EncomendaCriadaEvent;
+use App\Events\EncomendaCriadaEvent;
 use Illuminate\Support\Facades\Event;
 
 /** Cobertura dos fluxos restantes: update/status/destroy de tarefa, mesa e máquina, destroy do kanban. */

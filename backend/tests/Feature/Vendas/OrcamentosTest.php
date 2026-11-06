@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Vendas;
 
-use App\Modules\Vendas\Models\Orcamento;
+use App\Models\Vendas\Orcamento;
 use Illuminate\Support\Facades\Event;
-use App\Modules\Vendas\Events\OrcamentoAprovadoEvent;
+use App\Events\OrcamentoAprovadoEvent;
 
 /** Orçamentos: total, ajustes, aprovação+evento, duplicar, trava pós-conversão, estoque. */
 class OrcamentosTest extends VendasTestCase

@@ -4,7 +4,7 @@ namespace App\Modules\Producao\Listeners;
 
 use App\Modules\Producao\Enums\KanbanStatus;
 use App\Modules\Producao\Models\EncomendaKanban;
-use App\Modules\Vendas\Events\EncomendaCriadaEvent;
+use App\Events\EncomendaCriadaEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

@@ -6,8 +6,8 @@ use App\Enums\Auth\Role;
 use App\Models\Auth\Login;
 use App\Enums\Estoque\Categoria;
 use App\Models\Estoque\Item;
-use App\Modules\Vendas\Models\Cliente;
-use App\Modules\Vendas\Models\TagCliente;
+use App\Models\Vendas\Cliente;
+use App\Models\Vendas\TagCliente;
 use Tests\TestCase;
 
 /** Base dos testes do Vendas: papéis + fábricas mínimas + documentos válidos. */

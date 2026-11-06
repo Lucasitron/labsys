@@ -3,12 +3,12 @@
 namespace Tests\Feature\Vendas;
 
 use App\Events\ProducaoStatusAlteradoEvent;
-use App\Modules\Vendas\Contracts\VendasContract;
-use App\Modules\Vendas\Events\EncomendaCriadaEvent;
-use App\Modules\Vendas\Events\EncomendaStatusAlteradoEvent;
-use App\Modules\Vendas\Events\OrcamentoAprovadoEvent;
-use App\Modules\Vendas\Models\Encomenda;
-use App\Modules\Vendas\Models\HistoricoStatusEncomenda;
+use App\Contracts\VendasContract;
+use App\Events\EncomendaCriadaEvent;
+use App\Events\EncomendaStatusAlteradoEvent;
+use App\Events\OrcamentoAprovadoEvent;
+use App\Models\Vendas\Encomenda;
+use App\Models\Vendas\HistoricoStatusEncomenda;
 
 /** Eventos (3 emitidos + consumo da produção) e VendasContract (2 métodos). */
 class EventsContractTest extends VendasTestCase

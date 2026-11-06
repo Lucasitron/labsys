@@ -9,7 +9,7 @@ use App\Modules\Producao\Models\EncomendaKanban;
 use App\Modules\Producao\Models\HistoricoKanban;
 use App\Modules\Producao\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
-use App\Modules\Vendas\Contracts\VendasContract;
+use App\Contracts\VendasContract;
 use App\Shared\Exceptions\ConflitoException;
 use App\Shared\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
