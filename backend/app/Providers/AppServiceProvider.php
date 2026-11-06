@@ -63,10 +63,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Preserva o comportamento pré-remap: listeners viviam em app/Modules e
-        // não eram auto-descobertos. Evita registro duplicado após a mudança
-        // layer-first (app/Listeners passa a ser varrido pelo framework).
-        \Illuminate\Foundation\Support\Providers\EventServiceProvider::disableEventDiscovery();
         // Fronteira in-process do Auth (único consumo permitido por outros módulos).
         $this->app->singleton(AuthContract::class, DefaultAuthContract::class);
 
