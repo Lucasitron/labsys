@@ -3,10 +3,10 @@
 namespace Tests\Feature\Financeiro;
 
 use App\Events\ProducaoConcluidaEvent;
-use App\Modules\Estoque\Enums\Categoria as CategoriaEstoque;
-use App\Modules\Estoque\Models\EntradaEstoque;
-use App\Modules\Estoque\Models\Fornecedor;
-use App\Modules\Estoque\Models\Item;
+use App\Enums\Estoque\Categoria as CategoriaEstoque;
+use App\Models\Estoque\EntradaEstoque;
+use App\Models\Estoque\Fornecedor;
+use App\Models\Estoque\Item;
 use App\Modules\Financeiro\Events\CustoCalculadoEvent;
 use App\Modules\Financeiro\Models\CustoEncomenda;
 use App\Modules\Financeiro\Models\FechamentoEncomenda;

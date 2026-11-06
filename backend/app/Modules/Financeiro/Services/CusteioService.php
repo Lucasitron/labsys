@@ -2,7 +2,7 @@
 
 namespace App\Modules\Financeiro\Services;
 
-use App\Modules\Estoque\Contracts\EstoqueContract;
+use App\Contracts\EstoqueContract;
 use App\Modules\Financeiro\Enums\StatusLancamento;
 use App\Modules\Financeiro\Enums\TipoCategoria;
 use App\Modules\Financeiro\Enums\TipoLancamento;

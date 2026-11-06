@@ -1,7 +1,7 @@
 <?php
 
 use App\Services\Auth\TokenBlacklistService;
-use App\Modules\Estoque\Services\EmprestimoService;
+use App\Services\Estoque\EmprestimoService;
 use App\Modules\Financeiro\Services\LancamentoService;
 use App\Services\Notification\NotificationDispatchService;
 use App\Modules\Producao\Models\Parametro5S;

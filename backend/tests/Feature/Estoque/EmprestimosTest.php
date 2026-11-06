@@ -3,12 +3,12 @@
 namespace Tests\Feature\Estoque;
 
 use App\Enums\Auth\Role;
-use App\Modules\Estoque\Enums\StatusEmprestimo;
-use App\Modules\Estoque\Events\EmprestimoAtrasadoEvent;
-use App\Modules\Estoque\Models\Emprestimo;
-use App\Modules\Estoque\Models\Item;
-use App\Modules\Estoque\Models\SaidaEstoque;
-use App\Modules\Estoque\Services\EmprestimoService;
+use App\Enums\Estoque\StatusEmprestimo;
+use App\Events\EmprestimoAtrasadoEvent;
+use App\Models\Estoque\Emprestimo;
+use App\Models\Estoque\Item;
+use App\Models\Estoque\SaidaEstoque;
+use App\Services\Estoque\EmprestimoService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Event;
 

@@ -5,7 +5,7 @@ namespace Tests\Feature\Producao;
 use App\Enums\Auth\Role;
 use App\Events\ProducaoConcluidaEvent;
 use App\Events\ProducaoStatusAlteradoEvent;
-use App\Modules\Estoque\Models\Item;
+use App\Models\Estoque\Item;
 use App\Modules\Producao\Events\KanbanStatusAlteradoEvent;
 use App\Modules\Producao\Models\EncomendaKanban;
 use Illuminate\Support\Facades\Event;

@@ -4,8 +4,8 @@ namespace Tests\Feature\Producao;
 
 use App\Enums\Auth\Role;
 use App\Models\Auth\Login;
-use App\Modules\Estoque\Enums\Categoria;
-use App\Modules\Estoque\Models\Item;
+use App\Enums\Estoque\Categoria;
+use App\Models\Estoque\Item;
 use App\Modules\Producao\Enums\KanbanStatus;
 use App\Modules\Producao\Models\EncomendaKanban;
 use App\Modules\Producao\Models\Projeto;

@@ -3,8 +3,8 @@
 namespace Tests\Unit\Estoque;
 
 use App\Enums\Auth\Role;
-use App\Modules\Estoque\EstoquePrincipal;
-use App\Modules\Estoque\Policies\EstoquePolicy;
+use App\Services\Estoque\EstoquePrincipal;
+use App\Policies\EstoquePolicy;
 use App\Shared\Exceptions\ForbiddenException;
 use PHPUnit\Framework\TestCase;
 

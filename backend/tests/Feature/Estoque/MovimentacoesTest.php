@@ -4,9 +4,9 @@ namespace Tests\Feature\Estoque;
 
 use App\Events\CompraSolicitadaEvent;
 use App\Enums\Auth\Role;
-use App\Modules\Estoque\Events\EstoqueBaixoEvent;
-use App\Modules\Estoque\Models\EntradaEstoque;
-use App\Modules\Estoque\Models\Item;
+use App\Events\EstoqueBaixoEvent;
+use App\Models\Estoque\EntradaEstoque;
+use App\Models\Estoque\Item;
 use Illuminate\Support\Facades\Event;
 
 class MovimentacoesTest extends EstoqueTestCase
@@ -123,9 +123,9 @@ class MovimentacoesTest extends EstoqueTestCase
         $headers = $this->headersAdmin();
         $item = $this->criarItem();
 
-        $saida = \App\Modules\Estoque\Models\SaidaEstoque::create([
+        $saida = \App\Models\Estoque\SaidaEstoque::create([
             'id_item' => $item->getKey(), 'quantidade' => '2.00',
-            'tipo_saida' => \App\Modules\Estoque\Enums\TipoSaida::AJUSTE,
+            'tipo_saida' => \App\Enums\Estoque\TipoSaida::AJUSTE,
             'data_saida' => now(),
         ]);
 

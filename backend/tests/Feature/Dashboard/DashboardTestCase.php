@@ -4,10 +4,10 @@ namespace Tests\Feature\Dashboard;
 
 use App\Enums\Auth\Role;
 use App\Models\Auth\Login;
-use App\Modules\Estoque\Enums\Categoria;
-use App\Modules\Estoque\Enums\StatusEmprestimo;
-use App\Modules\Estoque\Models\Emprestimo;
-use App\Modules\Estoque\Models\Item;
+use App\Enums\Estoque\Categoria;
+use App\Enums\Estoque\StatusEmprestimo;
+use App\Models\Estoque\Emprestimo;
+use App\Models\Estoque\Item;
 use App\Models\Notification\Notificacao;
 use App\Modules\Producao\Enums\KanbanStatus;
 use App\Modules\Producao\Enums\MaquinaStatus;

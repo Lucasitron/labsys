@@ -2,7 +2,7 @@
 
 namespace App\Modules\Vendas\Services;
 
-use App\Modules\Estoque\Contracts\EstoqueContract;
+use App\Contracts\EstoqueContract;
 use App\Modules\Vendas\Enums\StatusOrcamento;
 use App\Modules\Vendas\Events\OrcamentoAprovadoEvent;
 use App\Modules\Vendas\Models\Cliente;

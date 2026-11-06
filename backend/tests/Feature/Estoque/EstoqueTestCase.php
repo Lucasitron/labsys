@@ -4,9 +4,9 @@ namespace Tests\Feature\Estoque;
 
 use App\Enums\Auth\Role;
 use App\Models\Auth\Login;
-use App\Modules\Estoque\Enums\Categoria;
-use App\Modules\Estoque\Models\Fornecedor;
-use App\Modules\Estoque\Models\Item;
+use App\Enums\Estoque\Categoria;
+use App\Models\Estoque\Fornecedor;
+use App\Models\Estoque\Item;
 use Tests\TestCase;
 
 /** Base dos testes do Estoque: papéis/vínculos + fábricas mínimas. */

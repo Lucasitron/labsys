@@ -4,10 +4,10 @@ namespace Tests\Feature\Estoque;
 
 use App\Events\ProducaoConcluidaEvent;
 use App\Enums\Auth\Role;
-use App\Modules\Estoque\Contracts\EstoqueContract;
-use App\Modules\Estoque\Models\Item;
-use App\Modules\Estoque\Models\ListaMateriais;
-use App\Modules\Estoque\Models\SaidaEstoque;
+use App\Contracts\EstoqueContract;
+use App\Models\Estoque\Item;
+use App\Models\Estoque\ListaMateriais;
+use App\Models\Estoque\SaidaEstoque;
 use App\Modules\Rh\Contracts\RhContract;
 
 class BomTest extends EstoqueTestCase
@@ -39,7 +39,7 @@ class BomTest extends EstoqueTestCase
             ->assertJsonCount(2, 'itens');
 
         // Relações do ItemBom (bom ↔ item).
-        $itemBom = \App\Modules\Estoque\Models\ItemBom::where('id_bom', $id)->first();
+        $itemBom = \App\Models\Estoque\ItemBom::where('id_bom', $id)->first();
         $this->assertSame('BOM Mesa', $itemBom->bom->nome);
         $this->assertNotNull($itemBom->item->nome);
     }

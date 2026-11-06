@@ -3,8 +3,8 @@
 namespace App\Listeners\Notification;
 
 use App\Events\CompraSolicitadaEvent;
-use App\Modules\Estoque\Events\EmprestimoAtrasadoEvent;
-use App\Modules\Estoque\Events\EstoqueBaixoEvent;
+use App\Events\EmprestimoAtrasadoEvent;
+use App\Events\EstoqueBaixoEvent;
 use App\Services\Notification\NotificationDispatchService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;

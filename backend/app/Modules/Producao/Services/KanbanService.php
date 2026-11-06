@@ -2,7 +2,7 @@
 
 namespace App\Modules\Producao\Services;
 
-use App\Modules\Estoque\Contracts\EstoqueContract;
+use App\Contracts\EstoqueContract;
 use App\Modules\Producao\Enums\KanbanStatus;
 use App\Modules\Producao\Models\ConsumoEncomenda;
 use App\Modules\Producao\Models\EncomendaKanban;
