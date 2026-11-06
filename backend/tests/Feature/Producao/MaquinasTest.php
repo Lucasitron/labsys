@@ -3,7 +3,7 @@
 namespace Tests\Feature\Producao;
 
 use App\Enums\Auth\Role;
-use App\Modules\Producao\Models\Maquina;
+use App\Models\Producao\Maquina;
 
 /** Máquinas: cadastro/status Admin, uso abre/fecha, `horas_uso`, 409/422. */
 class MaquinasTest extends ProducaoTestCase

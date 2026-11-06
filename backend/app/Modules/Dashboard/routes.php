@@ -1,7 +1,7 @@
 <?php
 
 use App\Modules\Dashboard\Http\Controllers\DashboardController;
-use App\Modules\Producao\Http\Controllers\TarefaController;
+use App\Http\Controllers\Producao\TarefaController;
 use Illuminate\Support\Facades\Route;
 
 // Módulo Dashboard — AGREGADOR sem persistência (sem Model/Migration).

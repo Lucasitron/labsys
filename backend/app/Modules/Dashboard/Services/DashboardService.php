@@ -6,9 +6,9 @@ use App\Enums\Auth\Role;
 use App\Modules\Dashboard\Policies\DashboardPolicy;
 use App\Contracts\EstoqueContract;
 use App\Contracts\NotificationContract;
-use App\Modules\Producao\Contracts\ProducaoContract;
-use App\Modules\Producao\Enums\KanbanStatus;
-use App\Modules\Producao\Enums\MaquinaStatus;
+use App\Contracts\ProducaoContract;
+use App\Enums\Producao\KanbanStatus;
+use App\Enums\Producao\MaquinaStatus;
 use App\Modules\Rh\Contracts\RhContract;
 use Illuminate\Support\Carbon;
 

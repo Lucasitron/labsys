@@ -3,12 +3,12 @@
 namespace App\Listeners\Notification;
 
 use App\Services\Notification\NotificationDispatchService;
-use App\Modules\Producao\Events\AdvertenciaLimiteAtingidoEvent;
-use App\Modules\Producao\Events\AdvertenciaRegistradaEvent;
-use App\Modules\Producao\Events\KanbanStatusAlteradoEvent;
+use App\Events\AdvertenciaLimiteAtingidoEvent;
+use App\Events\AdvertenciaRegistradaEvent;
+use App\Events\KanbanStatusAlteradoEvent;
 use App\Events\ProducaoConcluidaEvent;
 use App\Events\ProducaoStatusAlteradoEvent;
-use App\Modules\Producao\Events\ProjetoMesaAbandonadoEvent;
+use App\Events\ProjetoMesaAbandonadoEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

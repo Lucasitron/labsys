@@ -8,6 +8,6 @@ require __DIR__.'/../app/Modules/Rh/routes.php';
 require __DIR__.'/modules/estoque.php';
 require __DIR__.'/modules/vendas.php';
 require __DIR__.'/modules/financeiro.php';
-require __DIR__.'/../app/Modules/Producao/routes.php';
+require __DIR__.'/modules/producao.php';
 require __DIR__.'/modules/notification.php';
 require __DIR__.'/../app/Modules/Dashboard/routes.php';

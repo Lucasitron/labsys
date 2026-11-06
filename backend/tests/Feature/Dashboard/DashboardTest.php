@@ -3,9 +3,9 @@
 namespace Tests\Feature\Dashboard;
 
 use App\Enums\Auth\Role;
-use App\Modules\Producao\Enums\KanbanStatus;
-use App\Modules\Producao\Enums\MaquinaStatus;
-use App\Modules\Producao\Enums\TarefaStatus;
+use App\Enums\Producao\KanbanStatus;
+use App\Enums\Producao\MaquinaStatus;
+use App\Enums\Producao\TarefaStatus;
 
 /** Resumo agregado (401/403, filtro restricted por papel, aliases, sem regressão). */
 class DashboardTest extends DashboardTestCase

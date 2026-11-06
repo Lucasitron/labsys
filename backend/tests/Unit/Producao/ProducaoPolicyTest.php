@@ -3,8 +3,8 @@
 namespace Tests\Unit\Producao;
 
 use App\Enums\Auth\Role;
-use App\Modules\Producao\Enums\KanbanStatus;
-use App\Modules\Producao\Policies\ProducaoPolicy;
+use App\Enums\Producao\KanbanStatus;
+use App\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
 use App\Shared\Exceptions\ForbiddenException;
 use PHPUnit\Framework\TestCase;

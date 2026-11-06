@@ -3,9 +3,9 @@
 namespace Tests\Feature\Producao;
 
 use App\Enums\Auth\Role;
-use App\Modules\Producao\Contracts\ProducaoContract;
-use App\Modules\Producao\Enums\TarefaStatus;
-use App\Modules\Producao\Models\Tarefa;
+use App\Contracts\ProducaoContract;
+use App\Enums\Producao\TarefaStatus;
+use App\Models\Producao\Tarefa;
 use App\Modules\Rh\Enums\NivelAcesso;
 use App\Modules\Rh\Events\NivelAlteradoEvent;
 use App\Events\EncomendaCriadaEvent;
@@ -21,19 +21,19 @@ class EventsContractTest extends ProducaoTestCase
         $admin = $this->headersAdmin();
         $idEncomenda = $this->criarEncomendaVendas($admin);
 
-        $listener = app(\App\Modules\Producao\Listeners\EncomendaCriadaListener::class);
+        $listener = app(\App\Listeners\Producao\EncomendaCriadaListener::class);
         $evento = new EncomendaCriadaEvent($idEncomenda, 1, '100.00', today()->toDateString());
 
         $listener->handle($evento);
         $listener->handle($evento);
 
-        $this->assertSame(1, \App\Modules\Producao\Models\EncomendaKanban::where('id_encomenda', $idEncomenda)->count());
-        $this->assertSame('FILA', \App\Modules\Producao\Models\EncomendaKanban::where('id_encomenda', $idEncomenda)->first()->status->value);
+        $this->assertSame(1, \App\Models\Producao\EncomendaKanban::where('id_encomenda', $idEncomenda)->count());
+        $this->assertSame('FILA', \App\Models\Producao\EncomendaKanban::where('id_encomenda', $idEncomenda)->first()->status->value);
     }
 
     public function test_nivel_alterado_so_registra_trilha(): void
     {
-        $listener = app(\App\Modules\Producao\Listeners\NivelAlteradoListener::class);
+        $listener = app(\App\Listeners\Producao\NivelAlteradoListener::class);
         $listener->handle(new NivelAlteradoEvent(71, NivelAcesso::BOLSISTA, NivelAcesso::ADMIN, CarbonImmutable::now()));
 
         $this->assertTrue(true);

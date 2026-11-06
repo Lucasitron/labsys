@@ -3,7 +3,7 @@
 namespace Tests\Feature\Producao;
 
 use App\Enums\Auth\Role;
-use App\Modules\Producao\Models\Tarefa;
+use App\Models\Producao\Tarefa;
 use App\Events\EncomendaCriadaEvent;
 use Illuminate\Support\Facades\Event;
 

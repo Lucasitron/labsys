@@ -6,8 +6,8 @@ use App\Enums\Auth\Role;
 use App\Events\ProducaoConcluidaEvent;
 use App\Events\ProducaoStatusAlteradoEvent;
 use App\Models\Estoque\Item;
-use App\Modules\Producao\Events\KanbanStatusAlteradoEvent;
-use App\Modules\Producao\Models\EncomendaKanban;
+use App\Events\KanbanStatusAlteradoEvent;
+use App\Models\Producao\EncomendaKanban;
 use Illuminate\Support\Facades\Event;
 
 /** Kanban: LINKA Vendas, `version` 409, histórico, eventos e baixa no `ENTREGUE`. */

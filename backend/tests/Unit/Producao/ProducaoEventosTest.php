@@ -4,11 +4,11 @@ namespace Tests\Unit\Producao;
 
 use App\Events\ProducaoConcluidaEvent;
 use App\Events\ProducaoStatusAlteradoEvent;
-use App\Modules\Producao\Enums\KanbanStatus;
-use App\Modules\Producao\Events\AdvertenciaLimiteAtingidoEvent;
-use App\Modules\Producao\Events\AdvertenciaRegistradaEvent;
-use App\Modules\Producao\Events\KanbanStatusAlteradoEvent;
-use App\Modules\Producao\Events\ProjetoMesaAbandonadoEvent;
+use App\Enums\Producao\KanbanStatus;
+use App\Events\AdvertenciaLimiteAtingidoEvent;
+use App\Events\AdvertenciaRegistradaEvent;
+use App\Events\KanbanStatusAlteradoEvent;
+use App\Events\ProjetoMesaAbandonadoEvent;
 use PHPUnit\Framework\TestCase;
 
 /** Nomes preservados + payloads dos 6 eventos emitidos. */

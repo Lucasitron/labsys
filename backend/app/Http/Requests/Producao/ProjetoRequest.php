@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Http\Requests\Producao;
+
+use App\Models\Auth\Login;
+use App\Policies\ProducaoPolicy;
+use App\Shared\Auth\Caller;
+use Illuminate\Foundation\Http\FormRequest;
+
+/** Criação/atualização de projeto (F1). Vínculo do responsável no service. */
+class ProjetoRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        $login = $this->user();
+
+        if (! $login instanceof Login) {
+            return false;
+        }
+
+        // RBAC antes da validação: Recrutando → 403 em tudo (convenção
+        // "FormRequest valida+autoriza"; vínculos finos ficam no service).
+        ProducaoPolicy::exigeLeitura(Caller::from($login));
+
+        return true;
+    }
+
+    /** @return array<string, mixed> */
+    public function rules(): array
+    {
+        return [
+            'nome' => ['required', 'string', 'max:150'],
+            'descricao' => ['nullable', 'string', 'max:1000'],
+            'dataInicio' => ['required', 'date'],
+            'dataFimPrevista' => ['nullable', 'date'],
+            'idResponsavel' => ['required', 'integer'],
+            'status' => ['nullable', 'string', 'in:PLANEJADO,EM_ANDAMENTO,CONCLUIDO,CANCELADO'],
+        ];
+    }
+}

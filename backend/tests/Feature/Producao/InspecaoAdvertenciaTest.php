@@ -3,9 +3,9 @@
 namespace Tests\Feature\Producao;
 
 use App\Enums\Auth\Role;
-use App\Modules\Producao\Events\AdvertenciaLimiteAtingidoEvent;
-use App\Modules\Producao\Events\AdvertenciaRegistradaEvent;
-use App\Modules\Producao\Models\Parametro5S;
+use App\Events\AdvertenciaLimiteAtingidoEvent;
+use App\Events\AdvertenciaRegistradaEvent;
+use App\Models\Producao\Parametro5S;
 use Illuminate\Support\Facades\Event;
 
 /** Inspeção 5S + advertências: status server-side, contador, limite e experimental. */

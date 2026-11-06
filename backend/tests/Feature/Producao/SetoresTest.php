@@ -3,7 +3,7 @@
 namespace Tests\Feature\Producao;
 
 use App\Enums\Auth\Role;
-use App\Modules\Producao\Models\SetorResponsavel;
+use App\Models\Producao\SetorResponsavel;
 
 /** Setores: vínculo de responsável ativo, checklist mínimo, rotação. */
 class SetoresTest extends ProducaoTestCase
