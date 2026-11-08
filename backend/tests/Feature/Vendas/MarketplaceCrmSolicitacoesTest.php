@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Vendas;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Vendas\Models\Cliente;
+use App\Enums\Auth\Role;
+use App\Models\Vendas\Cliente;
 
 /** Marketplace, CRM e solicitações: registro, totais, escopo, D-4, counts. */
 class MarketplaceCrmSolicitacoesTest extends VendasTestCase

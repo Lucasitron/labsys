@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Financeiro;
 
-use App\Modules\Financeiro\Events\CompraSolicitadaEvent;
+use App\Events\CompraSolicitadaEvent;
 use Illuminate\Support\Facades\Event;
 
 /** Doações, compras e parâmetros (append-only + vigentes). */

@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Rh;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Models\Login;
-use App\Modules\Auth\Models\UserPermission;
-use App\Modules\Rh\Enums\PessoaStatus;
-use App\Modules\Rh\Models\Funcionario;
-use App\Modules\Rh\Models\HistoricoNivel;
-use App\Modules\Rh\Models\Pessoa;
+use App\Enums\Auth\Role;
+use App\Enums\Rh\PessoaStatus;
+use App\Models\Auth\Login;
+use App\Models\Auth\UserPermission;
+use App\Models\Rh\Funcionario;
+use App\Models\Rh\HistoricoNivel;
+use App\Models\Rh\Pessoa;
 use Tests\TestCase;
 
 class PessoasTest extends TestCase

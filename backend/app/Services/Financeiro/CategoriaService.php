@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Services\Financeiro;
+
+use App\Enums\Financeiro\TipoCategoria;
+use App\Models\Financeiro\CategoriaFinanceira;
+use App\Policies\FinanceiroPolicy;
+use App\Shared\Auth\Caller;
+
+/** Cadastro e listagem de categorias financeiras (receita/despesa). */
+class CategoriaService
+{
+    /** @return list<CategoriaFinanceira> */
+    public function listar(?TipoCategoria $tipo, Caller $principal): array
+    {
+        FinanceiroPolicy::exigeAdmin($principal);
+
+        return CategoriaFinanceira::query()
+            ->when($tipo !== null, fn ($q) => $q->where('tipo', $tipo))
+            ->orderBy('id_categoria')
+            ->get()->all();
+    }
+
+    public function criar(array $dados, Caller $principal): CategoriaFinanceira
+    {
+        FinanceiroPolicy::exigeAdmin($principal);
+
+        return CategoriaFinanceira::create([
+            'nome' => trim((string) $dados['nome']),
+            'tipo' => TipoCategoria::from($dados['tipo']),
+            'descricao' => $dados['descricao'] ?? null,
+        ]);
+    }
+}

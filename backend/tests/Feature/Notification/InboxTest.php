@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Notification;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Notification\Models\Notificacao;
+use App\Enums\Auth\Role;
+use App\Models\Notification\Notificacao;
 use Illuminate\Support\Facades\Event;
 
 /** Inbox: lista escopada, contagem do sino, ler/ler-todas, aliases, shapes EN. */

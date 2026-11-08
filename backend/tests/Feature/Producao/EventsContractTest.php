@@ -2,13 +2,16 @@
 
 namespace Tests\Feature\Producao;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Producao\Contracts\ProducaoContract;
-use App\Modules\Producao\Enums\TarefaStatus;
-use App\Modules\Producao\Models\Tarefa;
-use App\Modules\Rh\Enums\NivelAcesso;
-use App\Modules\Rh\Events\NivelAlteradoEvent;
-use App\Modules\Vendas\Events\EncomendaCriadaEvent;
+use App\Contracts\ProducaoContract;
+use App\Enums\Auth\Role;
+use App\Enums\Producao\TarefaStatus;
+use App\Enums\Rh\NivelAcesso;
+use App\Events\EncomendaCriadaEvent;
+use App\Events\NivelAlteradoEvent;
+use App\Listeners\Producao\EncomendaCriadaListener;
+use App\Listeners\Producao\NivelAlteradoListener;
+use App\Models\Producao\EncomendaKanban;
+use App\Models\Producao\Tarefa;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 
@@ -21,19 +24,19 @@ class EventsContractTest extends ProducaoTestCase
         $admin = $this->headersAdmin();
         $idEncomenda = $this->criarEncomendaVendas($admin);
 
-        $listener = app(\App\Modules\Producao\Listeners\EncomendaCriadaListener::class);
+        $listener = app(EncomendaCriadaListener::class);
         $evento = new EncomendaCriadaEvent($idEncomenda, 1, '100.00', today()->toDateString());
 
         $listener->handle($evento);
         $listener->handle($evento);
 
-        $this->assertSame(1, \App\Modules\Producao\Models\EncomendaKanban::where('id_encomenda', $idEncomenda)->count());
-        $this->assertSame('FILA', \App\Modules\Producao\Models\EncomendaKanban::where('id_encomenda', $idEncomenda)->first()->status->value);
+        $this->assertSame(1, EncomendaKanban::where('id_encomenda', $idEncomenda)->count());
+        $this->assertSame('FILA', EncomendaKanban::where('id_encomenda', $idEncomenda)->first()->status->value);
     }
 
     public function test_nivel_alterado_so_registra_trilha(): void
     {
-        $listener = app(\App\Modules\Producao\Listeners\NivelAlteradoListener::class);
+        $listener = app(NivelAlteradoListener::class);
         $listener->handle(new NivelAlteradoEvent(71, NivelAcesso::BOLSISTA, NivelAcesso::ADMIN, CarbonImmutable::now()));
 
         $this->assertTrue(true);

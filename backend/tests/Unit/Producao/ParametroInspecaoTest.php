@@ -2,10 +2,10 @@
 
 namespace Tests\Unit\Producao;
 
-use App\Modules\Producao\Enums\StatusInspecao;
-use App\Modules\Producao\Models\Inspecao5S;
-use App\Modules\Producao\Models\ItemInspecao5S;
-use App\Modules\Producao\Models\Parametro5S;
+use App\Enums\Producao\StatusInspecao;
+use App\Models\Producao\Inspecao5S;
+use App\Models\Producao\ItemInspecao5S;
+use App\Models\Producao\Parametro5S;
 use Tests\TestCase;
 
 /** Parâmetro (flag experimental/inteiro) + `recalcularStatus` (com banco limpo). */

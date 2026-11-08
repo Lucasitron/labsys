@@ -2,14 +2,14 @@
 
 namespace Tests\Feature\Rh;
 
-use App\Modules\Auth\Enums\AccessLogType;
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Events\RfidAccessEvent;
-use App\Modules\Rh\Enums\StatusApontamento;
-use App\Modules\Rh\Enums\TipoApontamento;
-use App\Modules\Rh\Events\ExtratoMensalHorasEvent;
-use App\Modules\Rh\Models\ApontamentoHoras;
-use App\Modules\Rh\Models\RegistroPontoDiario;
+use App\Enums\Auth\AccessLogType;
+use App\Enums\Auth\Role;
+use App\Enums\Rh\StatusApontamento;
+use App\Enums\Rh\TipoApontamento;
+use App\Events\ExtratoMensalHorasEvent;
+use App\Events\RfidAccessEvent;
+use App\Models\Rh\ApontamentoHoras;
+use App\Models\Rh\RegistroPontoDiario;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;

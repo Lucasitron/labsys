@@ -2,8 +2,9 @@
 
 namespace Tests\Feature\Producao;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Vendas\Events\EncomendaCriadaEvent;
+use App\Enums\Auth\Role;
+use App\Events\EncomendaCriadaEvent;
+use App\Models\Producao\ConsumoEncomenda;
 use Illuminate\Support\Facades\Event;
 
 /** Consumo (BOM final): upsert soma, item estranho 422, lista. */
@@ -50,7 +51,7 @@ class ConsumoTest extends ProducaoTestCase
             ],
         ], $admin)->assertStatus(422);
 
-        $this->assertSame(0, \App\Modules\Producao\Models\ConsumoEncomenda::where('id_encomenda', $idEncomenda)->count());
+        $this->assertSame(0, ConsumoEncomenda::where('id_encomenda', $idEncomenda)->count());
         $this->postJson("/api/producao/kanban/encomenda/{$idEncomenda}/consumo", ['itens' => []], $admin)
             ->assertStatus(422);
     }

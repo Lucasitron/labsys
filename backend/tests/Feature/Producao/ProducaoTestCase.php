@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Producao;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Models\Login;
-use App\Modules\Estoque\Enums\Categoria;
-use App\Modules\Estoque\Models\Item;
-use App\Modules\Producao\Enums\KanbanStatus;
-use App\Modules\Producao\Models\EncomendaKanban;
-use App\Modules\Producao\Models\Projeto;
+use App\Enums\Auth\Role;
+use App\Enums\Estoque\Categoria;
+use App\Enums\Producao\KanbanStatus;
+use App\Models\Auth\Login;
+use App\Models\Estoque\Item;
+use App\Models\Producao\EncomendaKanban;
+use App\Models\Producao\Projeto;
 use Tests\TestCase;
 
 /** Base dos testes do Producao: papéis, CPF válido, fábricas mínimas e fluxo Vendas. */

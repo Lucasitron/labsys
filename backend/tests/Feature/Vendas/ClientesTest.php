@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Vendas;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Vendas\Models\Cliente;
+use App\Enums\Auth\Role;
+use App\Models\Vendas\Cliente;
 
 /** Clientes/tags: CRUD, filtros, vínculo, bulk-tag, guarda de exclusão, LGPD. */
 class ClientesTest extends VendasTestCase

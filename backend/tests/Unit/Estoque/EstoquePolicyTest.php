@@ -2,10 +2,10 @@
 
 namespace Tests\Unit\Estoque;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Estoque\EstoquePrincipal;
-use App\Modules\Estoque\Policies\EstoquePolicy;
-use App\Shared\Exceptions\ForbiddenException;
+use App\Enums\Auth\Role;
+use App\Exceptions\ForbiddenException;
+use App\Policies\EstoquePolicy;
+use App\Services\Estoque\EstoquePrincipal;
 use PHPUnit\Framework\TestCase;
 
 class EstoquePolicyTest extends TestCase

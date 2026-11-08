@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Financeiro;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Models\Login;
-use App\Modules\Financeiro\Models\CategoriaFinanceira;
+use App\Enums\Auth\Role;
+use App\Models\Auth\Login;
+use App\Models\Financeiro\CategoriaFinanceira;
 use Tests\TestCase;
 
 /** Base dos testes do Financeiro: Admin + fábricas mínimas do módulo. */

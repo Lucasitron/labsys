@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Http\Requests\Producao;
+
+use App\Models\Auth\Login;
+use App\Policies\ProducaoPolicy;
+use App\Shared\Auth\Caller;
+use Illuminate\Foundation\Http\FormRequest;
+
+/**
+ * Registro de inspeção 5S (F6). O `status` é recalculado no backend — nunca
+ * entra pelo payload.
+ */
+class InspecaoRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        $login = $this->user();
+
+        if (! $login instanceof Login) {
+            return false;
+        }
+
+        // RBAC antes da validação: Recrutando → 403 em tudo (convenção
+        // "FormRequest valida+autoriza"; vínculos finos ficam no service).
+        ProducaoPolicy::exigeLeitura(Caller::from($login));
+
+        return true;
+    }
+
+    /** @return array<string, mixed> */
+    public function rules(): array
+    {
+        return [
+            'idSetor' => ['required', 'integer'],
+            'idInspetor' => ['required', 'integer'],
+            'dataInspecao' => ['required', 'date'],
+            'turno' => ['required', 'string', 'in:MANHA,TARDE'],
+            'observacoes' => ['nullable', 'string', 'max:1000'],
+            'itens' => ['required', 'array', 'min:1'],
+            'itens.*.idChecklist' => ['required', 'integer'],
+            'itens.*.conforme' => ['required', 'boolean'],
+            'itens.*.observacao' => ['nullable', 'string', 'max:500'],
+        ];
+    }
+}

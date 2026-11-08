@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Auth;
 
-use App\Modules\Auth\Models\TokenBlacklist;
-use App\Modules\Auth\Services\TokenBlacklistService;
+use App\Models\Auth\TokenBlacklist;
+use App\Services\Auth\TokenBlacklistService;
 use Tests\TestCase;
 
 class TokenBlacklistServiceTest extends TestCase

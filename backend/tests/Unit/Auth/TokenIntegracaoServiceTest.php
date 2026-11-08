@@ -2,10 +2,10 @@
 
 namespace Tests\Unit\Auth;
 
-use App\Modules\Auth\Models\TokenIntegracao;
-use App\Modules\Auth\Services\TokenIntegracaoService;
-use App\Shared\Exceptions\ConfiguracaoInvalidaException;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ConfiguracaoInvalidaException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Models\Auth\TokenIntegracao;
+use App\Services\Auth\TokenIntegracaoService;
 use Tests\TestCase;
 
 class TokenIntegracaoServiceTest extends TestCase

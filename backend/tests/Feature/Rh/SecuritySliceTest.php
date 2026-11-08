@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Rh;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use Tests\TestCase;
 
 /** Slice de segurança RH: 401 sem token e 403 com papel ≠ ADMIN por rota Admin-only. */

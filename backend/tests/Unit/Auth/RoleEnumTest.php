@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Auth;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use Tests\TestCase;
 
 class RoleEnumTest extends TestCase

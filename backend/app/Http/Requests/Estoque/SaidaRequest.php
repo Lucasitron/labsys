@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Http\Requests\Estoque;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+/** Saída manual (consumo, perda, ajuste). */
+class SaidaRequest extends FormRequest
+{
+    /** @return array<string, mixed> */
+    public function rules(): array
+    {
+        return [
+            'idItem' => ['required', 'integer'],
+            'quantidade' => ['required', 'numeric', 'min:0.01'],
+            'tipoSaida' => ['required', 'string', 'in:CONSUMO,PERDA,AJUSTE,EMPRESTIMO'],
+            'idReferencia' => ['nullable', 'integer'],
+            'observacao' => ['nullable', 'string', 'max:255'],
+            'responsavel' => ['nullable', 'string', 'max:255'],
+        ];
+    }
+}

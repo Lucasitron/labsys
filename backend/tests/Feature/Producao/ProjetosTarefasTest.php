@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Producao;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Producao\Models\Projeto;
+use App\Enums\Auth\Role;
+use App\Models\Producao\Projeto;
 
 /** Projetos/tarefas: vínculo do responsável, carimbos, `PATCH` próprio. */
 class ProjetosTarefasTest extends ProducaoTestCase

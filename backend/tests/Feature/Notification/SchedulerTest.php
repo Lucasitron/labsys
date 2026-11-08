@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Notification;
 
-use App\Modules\Notification\Enums\StatusEntrega;
-use App\Modules\Notification\Models\Notificacao;
-use App\Modules\Notification\Models\NotificacaoHistorico;
-use App\Modules\Notification\Services\NotificationDispatchService;
+use App\Enums\Notification\StatusEntrega;
+use App\Models\Notification\Notificacao;
+use App\Models\Notification\NotificacaoHistorico;
+use App\Services\Notification\NotificationDispatchService;
 use Illuminate\Support\Facades\Mail;
 
 /** Schedulers manuais: reenvio PENDENTE→ENVIADA e expurgo só >90d. */

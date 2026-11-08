@@ -2,8 +2,10 @@
 
 namespace Tests\Feature\Notification;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Models\Login;
+use App\Enums\Auth\Role;
+use App\Models\Auth\Login;
+use App\Models\Rh\Funcionario;
+use App\Models\Rh\Pessoa;
 use Tests\TestCase;
 
 /** Base dos testes do Notification: papéis + fábricas de destinatários. */
@@ -27,7 +29,7 @@ abstract class NotificationTestCase extends TestCase
     /**
      * Funcionário com pessoa vinculada ao login (`contato` = e-mail por padrão).
      *
-     * @return array{login:Login,pessoa:\App\Modules\Rh\Models\Pessoa,funcionario:\App\Modules\Rh\Models\Funcionario}
+     * @return array{login:Login,pessoa:Pessoa,funcionario:Funcionario}
      */
     protected function funcionarioComEmail(Role $role = Role::BOLSISTA, ?string $contato = null): array
     {

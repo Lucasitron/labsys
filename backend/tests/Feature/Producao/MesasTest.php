@@ -2,10 +2,11 @@
 
 namespace Tests\Feature\Producao;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Producao\Events\ProjetoMesaAbandonadoEvent;
-use App\Modules\Producao\Models\Parametro5S;
-use App\Modules\Producao\Services\ProjetoMesaService;
+use App\Enums\Auth\Role;
+use App\Events\ProjetoMesaAbandonadoEvent;
+use App\Models\Producao\Parametro5S;
+use App\Models\Producao\ProjetoMesa;
+use App\Services\Producao\ProjetoMesaService;
 use Illuminate\Support\Facades\Event;
 
 /** Mesas: dono, evolução, QR string, auditoria, scheduler manual e parâmetros. */
@@ -85,7 +86,7 @@ class MesasTest extends ProducaoTestCase
             'idFuncionario' => $dono->id_user, 'idMesa' => 8, 'nomeProjeto' => 'Nova',
         ], $headers)->assertCreated()->json('id');
 
-        \App\Modules\Producao\Models\ProjetoMesa::whereKey($velha)->update([
+        ProjetoMesa::whereKey($velha)->update([
             'data_ultima_evolucao' => today()->subDays(20)->toDateString(),
         ]);
 

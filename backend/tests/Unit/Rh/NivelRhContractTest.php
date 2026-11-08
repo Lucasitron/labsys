@@ -2,13 +2,13 @@
 
 namespace Tests\Unit\Rh;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Rh\Contracts\RhContract;
-use App\Modules\Rh\Enums\StatusApontamento;
-use App\Modules\Rh\Enums\TipoApontamento;
-use App\Modules\Rh\Models\ApontamentoHoras;
-use App\Modules\Rh\Models\RegistroPontoDiario;
-use App\Modules\Rh\Services\NivelService;
+use App\Contracts\RhContract;
+use App\Enums\Auth\Role;
+use App\Enums\Rh\StatusApontamento;
+use App\Enums\Rh\TipoApontamento;
+use App\Models\Rh\ApontamentoHoras;
+use App\Models\Rh\RegistroPontoDiario;
+use App\Services\Rh\NivelService;
 use Tests\TestCase;
 
 class NivelRhContractTest extends TestCase

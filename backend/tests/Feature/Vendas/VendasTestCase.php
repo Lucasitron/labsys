@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Vendas;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Models\Login;
-use App\Modules\Estoque\Enums\Categoria;
-use App\Modules\Estoque\Models\Item;
-use App\Modules\Vendas\Models\Cliente;
-use App\Modules\Vendas\Models\TagCliente;
+use App\Enums\Auth\Role;
+use App\Enums\Estoque\Categoria;
+use App\Models\Auth\Login;
+use App\Models\Estoque\Item;
+use App\Models\Vendas\Cliente;
+use App\Models\Vendas\TagCliente;
 use Tests\TestCase;
 
 /** Base dos testes do Vendas: papéis + fábricas mínimas + documentos válidos. */

@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Auth;
 
-use App\Modules\Auth\Contracts\AuthContract;
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Services\TokenBlacklistService;
+use App\Contracts\AuthContract;
+use App\Enums\Auth\Role;
+use App\Services\Auth\TokenBlacklistService;
 use Tests\TestCase;
 
 class AuthContractTest extends TestCase

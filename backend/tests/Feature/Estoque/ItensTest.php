@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Estoque;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Estoque\Models\Item;
+use App\Enums\Auth\Role;
+use App\Models\Estoque\Item;
 use Illuminate\Http\UploadedFile;
 
 class ItensTest extends EstoqueTestCase

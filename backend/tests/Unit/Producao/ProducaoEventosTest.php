@@ -2,13 +2,13 @@
 
 namespace Tests\Unit\Producao;
 
-use App\Modules\Producao\Enums\KanbanStatus;
-use App\Modules\Producao\Events\AdvertenciaLimiteAtingidoEvent;
-use App\Modules\Producao\Events\AdvertenciaRegistradaEvent;
-use App\Modules\Producao\Events\KanbanStatusAlteradoEvent;
-use App\Modules\Producao\Events\ProducaoConcluidaEvent;
-use App\Modules\Producao\Events\ProducaoStatusAlteradoEvent;
-use App\Modules\Producao\Events\ProjetoMesaAbandonadoEvent;
+use App\Enums\Producao\KanbanStatus;
+use App\Events\AdvertenciaLimiteAtingidoEvent;
+use App\Events\AdvertenciaRegistradaEvent;
+use App\Events\KanbanStatusAlteradoEvent;
+use App\Events\ProducaoConcluidaEvent;
+use App\Events\ProducaoStatusAlteradoEvent;
+use App\Events\ProjetoMesaAbandonadoEvent;
 use PHPUnit\Framework\TestCase;
 
 /** Nomes preservados + payloads dos 6 eventos emitidos. */
@@ -24,7 +24,7 @@ class ProducaoEventosTest extends TestCase
         $this->assertSame('projeto.mesa.abandonado.event', ProjetoMesaAbandonadoEvent::NAME);
 
         $this->assertSame(
-            ['idEncomenda' => 5, 'statusNovo' => 'PRODUCAO', 'idUsuario' => 7, 'observacao' => 'ok'],
+            ['idEncomenda' => 5, 'statusNovo' => 'PRODUCAO', 'statusVendas' => 'PRODUCAO', 'idUsuario' => 7, 'observacao' => 'ok'],
             (new ProducaoStatusAlteradoEvent(5, 'PRODUCAO', 7, 'ok'))->payload(),
         );
         $this->assertSame(
