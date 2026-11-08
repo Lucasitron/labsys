@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Notification;
 
-use App\Modules\Notification\Exceptions\LinkInvalidoException;
-use App\Modules\Notification\Support\LinkValidator;
+use App\Exceptions\LinkInvalidoException;
+use App\Support\Notification\LinkValidator;
 use PHPUnit\Framework\TestCase;
 
 /** Allowlist de links (D-6, reuse 1:1 do Java). */

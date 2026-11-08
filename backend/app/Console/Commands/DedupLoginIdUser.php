@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Modules\Auth\Services\LoginIdUserDedupService;
+use App\Services\Auth\LoginIdUserDedupService;
 use Illuminate\Console\Command;
 
 /**

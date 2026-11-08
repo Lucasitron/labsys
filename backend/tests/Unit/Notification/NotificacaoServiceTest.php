@@ -2,12 +2,14 @@
 
 namespace Tests\Unit\Notification;
 
-use App\Modules\Notification\Enums\StatusEntrega;
-use App\Modules\Notification\Exceptions\LinkInvalidoException;
-use App\Modules\Notification\Models\ConfiguracaoCanal;
-use App\Modules\Notification\Models\Notificacao;
-use App\Modules\Notification\Models\PreferenciaNotificacao;
-use App\Modules\Notification\Services\NotificacaoService;
+use App\Enums\Notification\StatusEntrega;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\LinkInvalidoException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Models\Notification\ConfiguracaoCanal;
+use App\Models\Notification\Notificacao;
+use App\Models\Notification\PreferenciaNotificacao;
+use App\Services\Notification\NotificacaoService;
 use Tests\TestCase;
 
 /** Regras do inbox (validações 422/422/404/403, matriz default, revisão). */
@@ -127,14 +129,14 @@ class NotificacaoServiceTest extends TestCase
         try {
             $this->inbox->marcarComoLida((int) $n->getKey(), 22, false);
             $this->fail('leitura alheia deveria lançar');
-        } catch (\App\Shared\Exceptions\ForbiddenException) {
+        } catch (ForbiddenException) {
             $this->assertTrue(true);
         }
 
         try {
             $this->inbox->marcarComoLida(999999, 11, false);
             $this->fail('ausente deveria lançar');
-        } catch (\App\Shared\Exceptions\ResourceNotFoundException) {
+        } catch (ResourceNotFoundException) {
             $this->assertTrue(true);
         }
 

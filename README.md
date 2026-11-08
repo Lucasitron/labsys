@@ -36,7 +36,7 @@ não versionadas) ficam em `.opencode/specs/` no ambiente de desenvolvimento.
 
 ## Módulos (bounded contexts)
 
-Namespace `App\Modules\<Modulo>` · schema próprio · rotas `/api/<modulo>/**` (contrato com o front).
+Namespaces layer-first: `App\Models\<Modulo>`, `App\Http\Controllers\<Modulo>`, `App\Services\<Modulo>` etc. · schema próprio · rotas `/api/<modulo>/**` (contrato com o front).
 
 | Módulo | Schema | Responsabilidade |
 | :--- | :--- | :--- |
@@ -53,7 +53,7 @@ Namespace `App\Modules\<Modulo>` · schema próprio · rotas `/api/<modulo>/**` 
 
 ```
 labSys/
-├── backend/                    # Monólito Laravel (app/Modules/<Modulo>, MVC)
+├── backend/                    # Monólito Laravel (app/{Models,Http,Services,...}/<Modulo>, MVC)
 ├── frontend/                   # SPA SvelteKit + TS + Tailwind
 ├── infra/                      # Docker Compose, Nginx, PostgreSQL
 │   └── docs/                   # ARCHITECTURE, DEPLOY, RUNBOOK

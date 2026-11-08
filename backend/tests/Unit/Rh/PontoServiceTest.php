@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Rh;
 
-use App\Modules\Rh\Models\RegistroPontoDiario;
-use App\Modules\Rh\Services\PontoService;
+use App\Models\Rh\RegistroPontoDiario;
+use App\Services\Rh\PontoService;
 use Carbon\Carbon;
 use Tests\TestCase;
 

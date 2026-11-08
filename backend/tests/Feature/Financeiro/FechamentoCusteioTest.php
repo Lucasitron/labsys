@@ -2,18 +2,20 @@
 
 namespace Tests\Feature\Financeiro;
 
-use App\Modules\Estoque\Enums\Categoria as CategoriaEstoque;
-use App\Modules\Estoque\Events\ProducaoConcluidaEvent as EstoqueProducaoConcluidaEvent;
-use App\Modules\Estoque\Models\EntradaEstoque;
-use App\Modules\Estoque\Models\Fornecedor;
-use App\Modules\Estoque\Models\Item;
-use App\Modules\Financeiro\Events\CustoCalculadoEvent;
-use App\Modules\Financeiro\Models\CustoEncomenda;
-use App\Modules\Financeiro\Models\FechamentoEncomenda;
-use App\Modules\Financeiro\Models\HorasEncomenda;
-use App\Modules\Financeiro\Models\LancamentoFinanceiro;
-use App\Modules\Financeiro\Services\CusteioService;
-use App\Modules\Financeiro\Services\FechamentoService;
+use App\Enums\Estoque\Categoria as CategoriaEstoque;
+use App\Enums\Financeiro\StatusLancamento;
+use App\Events\CustoCalculadoEvent;
+use App\Events\ProducaoConcluidaEvent;
+use App\Exceptions\ConfiguracaoInvalidaException;
+use App\Models\Estoque\EntradaEstoque;
+use App\Models\Estoque\Fornecedor;
+use App\Models\Estoque\Item;
+use App\Models\Financeiro\CustoEncomenda;
+use App\Models\Financeiro\FechamentoEncomenda;
+use App\Models\Financeiro\HorasEncomenda;
+use App\Models\Financeiro\LancamentoFinanceiro;
+use App\Services\Financeiro\CusteioService;
+use App\Services\Financeiro\FechamentoService;
 use Illuminate\Support\Facades\Event;
 
 /** Fechamento imutável + custeio por ordem (fórmula em centavos). */
@@ -49,8 +51,8 @@ class FechamentoCusteioTest extends FinanceiroTestCase
         $outro = $this->postJson('/api/financeiro/lancamentos', $this->lancamentoPayload($catId, [
             'valor' => '999.00', 'idReferenciaExterna' => 'outra',
         ]), $headers)->assertCreated()->json('id');
-        $cancel = \App\Modules\Financeiro\Models\LancamentoFinanceiro::find($outro);
-        $cancel->status = \App\Modules\Financeiro\Enums\StatusLancamento::CANCELADO;
+        $cancel = LancamentoFinanceiro::find($outro);
+        $cancel->status = StatusLancamento::CANCELADO;
         $cancel->save();
 
         // Mão de obra: 5h nível 0 (20) + 3h sem nível (default 2 → 12.50).
@@ -134,9 +136,7 @@ class FechamentoCusteioTest extends FinanceiroTestCase
         $headers = $this->headersAdmin();
         $this->cenarioCusteio($headers);
 
-        $custo = app(CusteioService::class)->calcular(
-            7, \App\Modules\Financeiro\FinanceiroPrincipal::from($this->criarAdmin()),
-        );
+        $custo = app(CusteioService::class)->calcularDoEvento(7);
 
         // Materiais 150.00 + mão de obra (5×20 + 3×12.50 = 137.50) + overhead (8×2 = 16.00).
         $this->assertSame('150.00', (string) $custo->custo_materiais);
@@ -158,38 +158,33 @@ class FechamentoCusteioTest extends FinanceiroTestCase
     public function test_custeio_sem_precondicao_falha_orientativo_sem_persistir(): void
     {
         $headers = $this->headersAdmin();
-        $principal = function () {
-            $admin = $this->criarAdmin();
-
-            return \App\Modules\Financeiro\FinanceiroPrincipal::from($admin);
-        };
 
         // Sem valor/hora vigente → 422 orientativo, sem persistir parcial.
         $this->postJson('/api/financeiro/fechamento-encomenda', $this->fechamentoPayload(8), $headers)
             ->assertCreated();
-        \App\Modules\Financeiro\Models\HorasEncomenda::create([
+        HorasEncomenda::create([
             'id_encomenda' => 8, 'id_funcionario' => 30, 'nivel_acesso' => 2,
             'horas' => '2.00', 'data_registro' => '2026-09-01',
         ]);
         try {
-            app(CusteioService::class)->calcular(8, $principal());
+            app(CusteioService::class)->calcularDoEvento(8);
             $this->fail('Deveria falhar sem valor/hora');
-        } catch (\App\Shared\Exceptions\ConfiguracaoInvalidaException $e) {
+        } catch (ConfiguracaoInvalidaException $e) {
             $this->assertStringContainsString('nível', $e->getMessage());
         }
-        $this->assertSame(0, \App\Modules\Financeiro\Models\CustoEncomenda::where('id_encomenda', 8)->count());
+        $this->assertSame(0, CustoEncomenda::where('id_encomenda', 8)->count());
 
         // Com valor/hora mas sem overhead → 422 orientativo.
         $this->postJson('/api/financeiro/valores-hora', [
             'nivelAcesso' => 2, 'valorHora' => '10.00', 'dataVigencia' => today()->toDateString(),
         ], $headers)->assertCreated();
         try {
-            app(CusteioService::class)->calcular(8, $principal());
+            app(CusteioService::class)->calcularDoEvento(8);
             $this->fail('Deveria falhar sem overhead');
-        } catch (\App\Shared\Exceptions\ConfiguracaoInvalidaException $e) {
+        } catch (ConfiguracaoInvalidaException $e) {
             $this->assertStringContainsString('overhead', $e->getMessage());
         }
-        $this->assertSame(0, \App\Modules\Financeiro\Models\CustoEncomenda::where('id_encomenda', 8)->count());
+        $this->assertSame(0, CustoEncomenda::where('id_encomenda', 8)->count());
     }
 
     private function criarItemComPreco(string $preco): Item
@@ -225,9 +220,9 @@ class FechamentoCusteioTest extends FinanceiroTestCase
         $item = $this->criarItemComPreco('7.50');
 
         // Produção concluída (fila sync): consome 4 × 7.50 = 30.00 de material.
-        event(new EstoqueProducaoConcluidaEvent(10, null, [
+        event(new ProducaoConcluidaEvent(10, null, [
             ['idItem' => $item->getKey(), 'quantidadeConsumida' => '4.00'],
-        ]));
+        ], today()->toDateString()));
 
         // Lançamento automático de SAIDA, referenciado pela encomenda.
         $this->assertDatabaseHas('financeiro.lancamento_financeiro', [

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Financeiro;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 
 /** Slice 401/403 do Financeiro: tudo Admin (401 sem token, 403 com role ≠ 0). */
 class SecuritySliceTest extends FinanceiroTestCase

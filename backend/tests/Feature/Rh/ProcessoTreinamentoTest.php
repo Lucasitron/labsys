@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Rh;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Rh\Enums\NivelAcesso;
-use App\Modules\Rh\Enums\PessoaStatus;
-use App\Modules\Rh\Models\Pessoa;
+use App\Enums\Auth\Role;
+use App\Enums\Rh\NivelAcesso;
+use App\Enums\Rh\PessoaStatus;
+use App\Models\Rh\Pessoa;
 use Tests\TestCase;
 
 class ProcessoTreinamentoTest extends TestCase

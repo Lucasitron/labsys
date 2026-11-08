@@ -2,22 +2,22 @@
 
 namespace Tests\Feature\Dashboard;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Models\Login;
-use App\Modules\Estoque\Enums\Categoria;
-use App\Modules\Estoque\Enums\StatusEmprestimo;
-use App\Modules\Estoque\Models\Emprestimo;
-use App\Modules\Estoque\Models\Item;
-use App\Modules\Notification\Models\Notificacao;
-use App\Modules\Producao\Enums\KanbanStatus;
-use App\Modules\Producao\Enums\MaquinaStatus;
-use App\Modules\Producao\Models\EncomendaKanban;
-use App\Modules\Producao\Models\Maquina;
-use App\Modules\Producao\Models\Projeto;
-use App\Modules\Producao\Models\Tarefa;
-use App\Modules\Rh\Models\CertificadoEmitido;
-use App\Modules\Rh\Models\Funcionario;
-use App\Modules\Rh\Models\SolicitacaoCertificado;
+use App\Enums\Auth\Role;
+use App\Enums\Estoque\Categoria;
+use App\Enums\Estoque\StatusEmprestimo;
+use App\Enums\Producao\KanbanStatus;
+use App\Enums\Producao\MaquinaStatus;
+use App\Models\Auth\Login;
+use App\Models\Estoque\Emprestimo;
+use App\Models\Estoque\Item;
+use App\Models\Notification\Notificacao;
+use App\Models\Producao\EncomendaKanban;
+use App\Models\Producao\Maquina;
+use App\Models\Producao\Projeto;
+use App\Models\Producao\Tarefa;
+use App\Models\Rh\CertificadoEmitido;
+use App\Models\Rh\Funcionario;
+use App\Models\Rh\SolicitacaoCertificado;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 

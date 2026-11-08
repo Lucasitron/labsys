@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Vendas;
 
-use App\Modules\Vendas\Rules\DocumentoRule;
+use App\Rules\DocumentoRule;
 use PHPUnit\Framework\TestCase;
 
 class DocumentoRuleTest extends TestCase

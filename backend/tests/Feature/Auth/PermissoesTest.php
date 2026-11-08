@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 use Tests\TestCase;
 
 class PermissoesTest extends TestCase

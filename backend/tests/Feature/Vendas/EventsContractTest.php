@@ -2,13 +2,14 @@
 
 namespace Tests\Feature\Vendas;
 
-use App\Modules\Vendas\Contracts\VendasContract;
-use App\Modules\Vendas\Events\EncomendaCriadaEvent;
-use App\Modules\Vendas\Events\EncomendaStatusAlteradoEvent;
-use App\Modules\Vendas\Events\OrcamentoAprovadoEvent;
-use App\Modules\Vendas\Events\ProducaoStatusAlteradoEvent;
-use App\Modules\Vendas\Models\Encomenda;
-use App\Modules\Vendas\Models\HistoricoStatusEncomenda;
+use App\Contracts\VendasContract;
+use App\Events\EncomendaCriadaEvent;
+use App\Events\EncomendaStatusAlteradoEvent;
+use App\Events\OrcamentoAprovadoEvent;
+use App\Events\ProducaoStatusAlteradoEvent;
+use App\Models\Vendas\Encomenda;
+use App\Models\Vendas\HistoricoStatusEncomenda;
+use Illuminate\Support\Facades\Event;
 
 /** Eventos (3 emitidos + consumo da produção) e VendasContract (2 métodos). */
 class EventsContractTest extends VendasTestCase
@@ -28,7 +29,7 @@ class EventsContractTest extends VendasTestCase
 
     public function test_fluxo_completo_emite_3_eventos(): void
     {
-        \Illuminate\Support\Facades\Event::fake();
+        Event::fake();
         $headers = $this->headersAdmin();
 
         $clienteId = $this->postJson('/api/vendas/clientes', $this->clientePayload(), $headers)
@@ -37,20 +38,20 @@ class EventsContractTest extends VendasTestCase
             ->assertCreated()->json('id');
         $this->putJson("/api/vendas/orcamentos/{$orcId}", ['status' => 'Aprovado'], $headers)->assertOk();
 
-        \Illuminate\Support\Facades\Event::assertDispatched(OrcamentoAprovadoEvent::class);
+        Event::assertDispatched(OrcamentoAprovadoEvent::class);
         $this->assertSame('orcamento.aprovado.event', OrcamentoAprovadoEvent::NAME);
 
         $encId = $this->postJson('/api/vendas/encomendas', ['idOrcamento' => $orcId], $headers)
             ->assertCreated()->json('id');
 
-        \Illuminate\Support\Facades\Event::assertDispatched(EncomendaCriadaEvent::class);
+        Event::assertDispatched(EncomendaCriadaEvent::class);
         $this->assertSame('encomenda.criada.event', EncomendaCriadaEvent::NAME);
 
         $this->putJson("/api/vendas/encomendas/{$encId}/kanban", [
             'statusKanban' => 'Produção', 'versao' => 0,
         ], $headers)->assertOk();
 
-        \Illuminate\Support\Facades\Event::assertDispatched(EncomendaStatusAlteradoEvent::class);
+        Event::assertDispatched(EncomendaStatusAlteradoEvent::class);
         $this->assertSame('encomenda.status.alterado.event', EncomendaStatusAlteradoEvent::NAME);
     }
 
@@ -60,7 +61,7 @@ class EventsContractTest extends VendasTestCase
         $id = $this->encomendaPronta($headers);
 
         // Dispatch manual (produtor M6 ainda não existe).
-        event(new ProducaoStatusAlteradoEvent($id, 'Produção', 'Setup concluído'));
+        event(new ProducaoStatusAlteradoEvent($id, 'PRODUCAO', null, 'Setup concluído', 'Produção'));
 
         $this->assertSame('Produção', Encomenda::find($id)->status_kanban->value);
         $historico = HistoricoStatusEncomenda::where('id_encomenda', $id)->orderBy('id_historico')->get();
@@ -69,11 +70,11 @@ class EventsContractTest extends VendasTestCase
         $this->assertSame('Setup concluído', $historico->last()->observacao);
 
         // Status igual = no-op (sem nova linha de histórico).
-        event(new ProducaoStatusAlteradoEvent($id, 'Produção'));
+        event(new ProducaoStatusAlteradoEvent($id, 'PRODUCAO', null, null, 'Produção'));
         $this->assertCount(2, HistoricoStatusEncomenda::where('id_encomenda', $id)->get());
 
         // Desconhecido = ignore, sem 500.
-        event(new ProducaoStatusAlteradoEvent($id, 'HIPERESPAÇO'));
+        event(new ProducaoStatusAlteradoEvent($id, 'HIPERESPAÇO', null, null, 'HIPERESPAÇO'));
         $this->assertSame('Produção', Encomenda::find($id)->status_kanban->value);
     }
 

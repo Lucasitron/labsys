@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Auth;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Services\TokenService;
-use App\Shared\Exceptions\TokenInvalidException;
+use App\Enums\Auth\Role;
+use App\Exceptions\TokenInvalidException;
+use App\Services\Auth\TokenService;
 use Tests\TestCase;
 
 class TokenServiceTest extends TestCase

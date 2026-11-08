@@ -1,0 +1,93 @@
+<?php
+
+namespace App\Services\Vendas;
+
+use App\Enums\Vendas\StatusSolicitacao;
+use App\Enums\Vendas\TipoAlvoSolicitacao;
+use App\Enums\Vendas\TipoSolicitacao;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Models\Vendas\SolicitacaoEdicao;
+use App\Policies\VendasPolicy;
+use App\Shared\Auth\Caller;
+
+/**
+ * Solicitações de edição (contrato mínimo D-4): qualquer autenticado (exceto
+ * Recrutando) solicita; só Admin decide; decidir só flipa status (+decidido
+ * por/motivo/data) — sem aplicação automática no alvo.
+ */
+class SolicitacaoService
+{
+    public function solicitar(array $dados, Caller $principal): SolicitacaoEdicao
+    {
+        VendasPolicy::exigeLeitura($principal);
+
+        $tipo = TipoSolicitacao::tryFrom($dados['tipo'] ?? '')
+            ?? throw new \InvalidArgumentException('Tipo inválido (ALTERACAO_DADOS, MUDANCA_STATUS, MOVER_ENCOMENDA ou OUTRA)');
+        $alvoTipo = TipoAlvoSolicitacao::tryFrom($dados['alvoTipo'] ?? '')
+            ?? throw new \InvalidArgumentException('Alvo inválido (CLIENTE, ORCAMENTO ou ENCOMENDA)');
+
+        return SolicitacaoEdicao::create([
+            'tipo' => $tipo,
+            'alvo_tipo' => $alvoTipo,
+            'alvo_id' => $dados['alvoId'],
+            'campo' => $dados['campo'],
+            'valor_atual' => $dados['valorAtual'] ?? null,
+            'valor_proposto' => $dados['valorProposto'],
+            'justificativa' => $dados['justificativa'],
+            'status' => StatusSolicitacao::PENDENTE,
+            'solicitante_id' => $principal->idPessoa,
+            'data_criacao' => now()->toDateTimeString(),
+        ]);
+    }
+
+    /** @return array{solicitacoes:list<SolicitacaoEdicao>,counts:array<string,int>} */
+    public function listar(?StatusSolicitacao $status, Caller $principal): array
+    {
+        VendasPolicy::exigeLeitura($principal);
+
+        $solicitacoes = SolicitacaoEdicao::query()
+            ->when($status !== null, fn ($q) => $q->where('status', $status))
+            ->orderByDesc('id_solicitacao')
+            ->get();
+
+        $counts = [];
+        foreach (StatusSolicitacao::cases() as $caso) {
+            $counts[$caso->value] = SolicitacaoEdicao::where('status', $caso)->count();
+        }
+
+        return ['solicitacoes' => $solicitacoes->all(), 'counts' => $counts];
+    }
+
+    /** Decidir (Admin-only): só flipa status — D-4, sem tocar no alvo. */
+    public function decidir(int $id, string $decisao, ?string $motivo, Caller $principal): SolicitacaoEdicao
+    {
+        VendasPolicy::exigeEscrita($principal);
+
+        $solicitacao = SolicitacaoEdicao::find($id)
+            ?? throw new ResourceNotFoundException("Solicitação não encontrada: {$id}");
+
+        if ($solicitacao->status !== StatusSolicitacao::PENDENTE) {
+            throw new ConflitoException('Solicitação já decidida');
+        }
+
+        $decisao = mb_strtoupper(trim($decisao));
+        if ($decisao === 'APROVAR') {
+            $solicitacao->status = StatusSolicitacao::APROVADA;
+        } elseif ($decisao === 'REJEITAR') {
+            if ($motivo === null || trim($motivo) === '') {
+                throw new \InvalidArgumentException('O motivo é obrigatório ao rejeitar');
+            }
+            $solicitacao->status = StatusSolicitacao::REJEITADA;
+        } else {
+            throw new \InvalidArgumentException('Decisão inválida (APROVAR ou REJEITAR)');
+        }
+
+        $solicitacao->decidido_por = $principal->idPessoa;
+        $solicitacao->motivo_decisao = $motivo;
+        $solicitacao->data_decisao = now()->toDateTimeString();
+        $solicitacao->save();
+
+        return $solicitacao->refresh();
+    }
+}

@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Auth;
 
-use App\Modules\Auth\Enums\AccessLogType;
-use App\Modules\Auth\Services\AccessLogService;
+use App\Enums\Auth\AccessLogType;
+use App\Services\Auth\AccessLogService;
 use Tests\TestCase;
 
 class AccessLogServiceTest extends TestCase

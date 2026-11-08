@@ -1,17 +1,8 @@
 <?php
 
-use App\Modules\Auth\Http\Middleware\CheckBlacklist;
-use App\Modules\Notification\Exceptions\LinkInvalidoException;
-use App\Shared\Exceptions\ConfiguracaoInvalidaException;
-use App\Shared\Exceptions\ConflitoException;
-use App\Shared\Exceptions\ErrorResponse;
-use App\Shared\Exceptions\ForbiddenException;
-use App\Shared\Exceptions\InvalidCredentialsException;
-use App\Shared\Exceptions\PermissaoInvalidaException;
-use App\Shared\Exceptions\ResourceNotFoundException;
-use App\Shared\Exceptions\SaldoInsuficienteException;
-use App\Shared\Exceptions\TokenBlacklistedException;
-use App\Shared\Exceptions\TokenInvalidException;
+use App\Exceptions\ApiException;
+use App\Exceptions\ErrorResponse;
+use App\Http\Middleware\CheckBlacklist;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -22,6 +13,9 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
+    // Listeners são registrados explicitamente em AppServiceProvider (28 binds).
+    // A descoberta automática os duplicaria (56 binds); por isso desativada.
+    ->withEvents(false)
     ->withRouting(
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
@@ -33,33 +27,29 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $map = [
-            InvalidCredentialsException::class => 401,
-            TokenInvalidException::class => 401,
-            TokenBlacklistedException::class => 401,
-            AuthenticationException::class => 401,
-            ForbiddenException::class => 403,
-            AuthorizationException::class => 403,
-            AccessDeniedHttpException::class => 403,
-            ResourceNotFoundException::class => 404,
-            NotFoundHttpException::class => 404,
-            InvalidArgumentException::class => 422,
-            SaldoInsuficienteException::class => 409,
-            ConflitoException::class => 409,
-            ConfiguracaoInvalidaException::class => 422,
-            PermissaoInvalidaException::class => 422,
-            LinkInvalidoException::class => 422,
-        ];
+        $exceptions->render(function (ApiException $e, $request) {
+            return ErrorResponse::make($e->status, $e->getMessage(), $request->path());
+        });
 
-        foreach ($map as $class => $status) {
-            $exceptions->render(function (Throwable $e, $request) use ($class, $status) {
-                if (! $e instanceof $class) {
-                    return null;
-                }
+        $exceptions->render(function (AuthenticationException $e, $request) {
+            return ErrorResponse::make(401, $e->getMessage(), $request->path());
+        });
 
-                return ErrorResponse::make($status, $e->getMessage(), $request->path());
-            });
-        }
+        $exceptions->render(function (AuthorizationException $e, $request) {
+            return ErrorResponse::make(403, $e->getMessage(), $request->path());
+        });
+
+        $exceptions->render(function (AccessDeniedHttpException $e, $request) {
+            return ErrorResponse::make(403, $e->getMessage(), $request->path());
+        });
+
+        $exceptions->render(function (NotFoundHttpException $e, $request) {
+            return ErrorResponse::make(404, $e->getMessage(), $request->path());
+        });
+
+        $exceptions->render(function (InvalidArgumentException $e, $request) {
+            return ErrorResponse::make(422, $e->getMessage(), $request->path());
+        });
 
         $exceptions->render(function (ValidationException $e, $request) {
             return ErrorResponse::make(422, 'Dados inválidos', $request->path(), $e->errors());

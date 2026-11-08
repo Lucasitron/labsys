@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Rh;
 
-use App\Modules\Rh\Rules\CpfRule;
+use App\Rules\CpfRule;
 use PHPUnit\Framework\TestCase;
 
 class CpfRuleTest extends TestCase

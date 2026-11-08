@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Modules\Auth\Events\RfidAccessEvent;
-use App\Modules\Auth\Models\AccessLog;
+use App\Events\RfidAccessEvent;
+use App\Models\Auth\AccessLog;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 

@@ -2,13 +2,14 @@
 
 namespace Tests\Feature\Estoque;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Estoque\Enums\StatusEmprestimo;
-use App\Modules\Estoque\Events\EmprestimoAtrasadoEvent;
-use App\Modules\Estoque\Models\Emprestimo;
-use App\Modules\Estoque\Models\Item;
-use App\Modules\Estoque\Models\SaidaEstoque;
-use App\Modules\Estoque\Services\EmprestimoService;
+use App\Contracts\RhContract;
+use App\Enums\Auth\Role;
+use App\Enums\Estoque\StatusEmprestimo;
+use App\Events\EmprestimoAtrasadoEvent;
+use App\Models\Estoque\Emprestimo;
+use App\Models\Estoque\Item;
+use App\Models\Estoque\SaidaEstoque;
+use App\Services\Estoque\EmprestimoService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Event;
 
@@ -202,15 +203,15 @@ class EmprestimosTest extends EstoqueTestCase
             'status' => StatusEmprestimo::ATIVO,
         ])->getKey();
 
-        $quebrado = \Mockery::mock(\App\Modules\Rh\Contracts\RhContract::class);
+        $quebrado = \Mockery::mock(RhContract::class);
         $quebrado->shouldReceive('nomePessoa')->andThrow(new \RuntimeException('RH fora'));
-        app()->instance(\App\Modules\Rh\Contracts\RhContract::class, $quebrado);
+        app()->instance(RhContract::class, $quebrado);
 
         try {
             $this->getJson("/api/estoque/emprestimos/{$id}", $admin)
                 ->assertOk()->assertJsonPath('tomador', 'Pessoa #555');
         } finally {
-            app()->forgetInstance(\App\Modules\Rh\Contracts\RhContract::class);
+            app()->forgetInstance(RhContract::class);
         }
     }
 }

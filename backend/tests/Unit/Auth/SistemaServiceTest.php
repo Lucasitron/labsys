@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Auth;
 
-use App\Modules\Auth\Models\ParametroSistema;
-use App\Modules\Auth\Services\SistemaService;
-use App\Shared\Exceptions\ConfiguracaoInvalidaException;
+use App\Exceptions\ConfiguracaoInvalidaException;
+use App\Models\Auth\ParametroSistema;
+use App\Services\Auth\SistemaService;
 use Tests\TestCase;
 
 class SistemaServiceTest extends TestCase

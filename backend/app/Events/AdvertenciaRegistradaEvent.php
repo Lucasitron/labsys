@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Events;
+
+use Illuminate\Foundation\Events\Dispatchable;
+
+/** Advertência registrada → Notification. Nome preservado. */
+class AdvertenciaRegistradaEvent
+{
+    use Dispatchable;
+
+    public const NAME = 'advertencia.registrada.event';
+
+    public function __construct(
+        public readonly int $idFuncionario,
+        public readonly int $contador,
+        public readonly string $motivo,
+    ) {}
+
+    /** @return array{idFuncionario:int,contador:int,motivo:string} */
+    public function payload(): array
+    {
+        return [
+            'idFuncionario' => $this->idFuncionario,
+            'contador' => $this->contador,
+            'motivo' => $this->motivo,
+        ];
+    }
+}

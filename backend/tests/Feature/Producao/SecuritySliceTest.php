@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Producao;
 
-use App\Modules\Auth\Enums\Role;
+use App\Enums\Auth\Role;
 
 /** Slice 401/403 do Producao (tudo autenticado; Recrutando fora; Admin-only e vínculos). */
 class SecuritySliceTest extends ProducaoTestCase

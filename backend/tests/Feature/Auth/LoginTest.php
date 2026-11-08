@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Modules\Auth\Enums\Role;
-use App\Modules\Auth\Enums\SituacaoUsuario;
+use App\Enums\Auth\Role;
+use App\Enums\Auth\SituacaoUsuario;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 

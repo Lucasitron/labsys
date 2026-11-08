@@ -73,7 +73,7 @@ Rede `fablab-net` (bridge); volume nomeado `postgres-data`.
 - **Nginx** (`infra/nginx/nginx.conf`) termina TLS (Tailscale ou Let's Encrypt) e faz `proxy_pass`
   para `app:8080`. Produção redireciona 80→443.
 - Externo **apenas** via Tailscale + Nginx.
-- Auth de API via **Laravel Sanctum** (Bearer) + `Policy`/`Gate` + middleware RBAC
+- Auth de API via **jwt-auth** (guard `jwt`, Bearer) + `Policy`/`Gate` + middleware RBAC
   (`system/rbac-matrix.md`). A antiga fronteira do Gateway é agora middleware + Policy.
 - Segredos **nunca** versionados: `infra/.env` (chmod 600) ou ambiente do orquestrador
   (`APP_KEY`, `JWT_SECRET`, `POSTGRES_*`, `APP_URL`). Ver `infra/.env.example`.
@@ -82,9 +82,3 @@ Rede `fablab-net` (bridge); volume nomeado `postgres-data`.
 
 - Healthcheck do `app`: `GET /up` (usado pelo compose). Logs em `storage/logs` (por container).
 - (Futuro) Prometheus/Grafana + centralização de logs (Loki/ELK).
-
-## Legado no repositório
-
-Os diretórios `*-service/` (Java/Spring), `discovery-service/`, `gateway-service/` e `web/` ainda
-existem **apenas como referência AS-IS**; o alvo é consolidá-los em `backend/` e removê-los. Nada
-de runtime aponta para eles.
