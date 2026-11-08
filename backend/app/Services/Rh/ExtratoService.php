@@ -7,13 +7,12 @@ use App\Enums\Rh\PessoaStatus;
 use App\Enums\Rh\StatusApontamento;
 use App\Enums\Rh\TipoApontamento;
 use App\Events\ExtratoMensalHorasEvent;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Rh\ApontamentoHoras;
 use App\Models\Rh\Funcionario;
 use App\Models\Rh\RegistroPontoDiario;
 use App\Policies\RhPolicy;
-use App\Services\Rh\RhPrincipal;
-use App\Exceptions\ForbiddenException;
-use App\Exceptions\ResourceNotFoundException;
 use Carbon\Carbon;
 
 /**

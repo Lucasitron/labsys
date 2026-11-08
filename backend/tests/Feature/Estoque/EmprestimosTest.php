@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Estoque;
 
+use App\Contracts\RhContract;
 use App\Enums\Auth\Role;
 use App\Enums\Estoque\StatusEmprestimo;
 use App\Events\EmprestimoAtrasadoEvent;
@@ -202,15 +203,15 @@ class EmprestimosTest extends EstoqueTestCase
             'status' => StatusEmprestimo::ATIVO,
         ])->getKey();
 
-        $quebrado = \Mockery::mock(\App\Contracts\RhContract::class);
+        $quebrado = \Mockery::mock(RhContract::class);
         $quebrado->shouldReceive('nomePessoa')->andThrow(new \RuntimeException('RH fora'));
-        app()->instance(\App\Contracts\RhContract::class, $quebrado);
+        app()->instance(RhContract::class, $quebrado);
 
         try {
             $this->getJson("/api/estoque/emprestimos/{$id}", $admin)
                 ->assertOk()->assertJsonPath('tomador', 'Pessoa #555');
         } finally {
-            app()->forgetInstance(\App\Contracts\RhContract::class);
+            app()->forgetInstance(RhContract::class);
         }
     }
 }

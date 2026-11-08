@@ -27,5 +27,4 @@ class HistoricoUsoMaquina extends Model
         'data_fim' => 'datetime',
         'horas_uso' => 'decimal:2',
     ];
-
 }

@@ -6,13 +6,13 @@ use App\Enums\Auth\AccessLogType;
 use App\Enums\Auth\Role;
 use App\Enums\Auth\SituacaoUsuario;
 use App\Events\RfidAccessEvent;
-use App\Models\Auth\Login;
-use App\Models\Auth\UserPermission;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Exceptions\TokenBlacklistedException;
 use App\Exceptions\TokenInvalidException;
+use App\Models\Auth\Login;
+use App\Models\Auth\UserPermission;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 

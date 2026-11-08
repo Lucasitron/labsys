@@ -2,13 +2,13 @@
 
 namespace App\Listeners\Notification;
 
-use App\Services\Notification\NotificationDispatchService;
 use App\Events\CertificadoAprovadoEvent;
 use App\Events\CertificadoRejeitadoEvent;
 use App\Events\CertificadoSolicitadoEvent;
 use App\Events\ExtratoMensalHorasEvent;
 use App\Events\HorasValidadasEvent;
 use App\Events\NivelAlteradoEvent;
+use App\Services\Notification\NotificationDispatchService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

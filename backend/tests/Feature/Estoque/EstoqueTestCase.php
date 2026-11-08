@@ -3,8 +3,8 @@
 namespace Tests\Feature\Estoque;
 
 use App\Enums\Auth\Role;
-use App\Models\Auth\Login;
 use App\Enums\Estoque\Categoria;
+use App\Models\Auth\Login;
 use App\Models\Estoque\Fornecedor;
 use App\Models\Estoque\Item;
 use Tests\TestCase;

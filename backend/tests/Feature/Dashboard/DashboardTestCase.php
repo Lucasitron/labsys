@@ -3,14 +3,14 @@
 namespace Tests\Feature\Dashboard;
 
 use App\Enums\Auth\Role;
-use App\Models\Auth\Login;
 use App\Enums\Estoque\Categoria;
 use App\Enums\Estoque\StatusEmprestimo;
+use App\Enums\Producao\KanbanStatus;
+use App\Enums\Producao\MaquinaStatus;
+use App\Models\Auth\Login;
 use App\Models\Estoque\Emprestimo;
 use App\Models\Estoque\Item;
 use App\Models\Notification\Notificacao;
-use App\Enums\Producao\KanbanStatus;
-use App\Enums\Producao\MaquinaStatus;
 use App\Models\Producao\EncomendaKanban;
 use App\Models\Producao\Maquina;
 use App\Models\Producao\Projeto;

@@ -3,13 +3,10 @@
 namespace App\Http\Controllers\Vendas;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Http\Requests\Vendas\TarefaAtualizacaoRequest;
 use App\Http\Requests\Vendas\TarefaRequest;
 use App\Http\Resources\Vendas\TarefaResource;
 use App\Services\Vendas\CrmService;
-use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -53,5 +50,4 @@ class TarefaMarketingController extends Controller
 
         return response()->json((new TarefaResource($tarefa))->toArray($request));
     }
-
 }

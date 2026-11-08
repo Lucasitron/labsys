@@ -7,15 +7,14 @@ use App\Enums\Rh\StatusSolicitacao;
 use App\Events\CertificadoAprovadoEvent;
 use App\Events\CertificadoRejeitadoEvent;
 use App\Events\CertificadoSolicitadoEvent;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Rh\ApontamentoHoras;
 use App\Models\Rh\CertificadoEmitido;
 use App\Models\Rh\Funcionario;
 use App\Models\Rh\HoraConsolidada;
 use App\Models\Rh\SolicitacaoCertificado;
 use App\Policies\RhPolicy;
-use App\Services\Rh\RhPrincipal;
-use App\Exceptions\ForbiddenException;
-use App\Exceptions\ResourceNotFoundException;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 

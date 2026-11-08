@@ -2,6 +2,7 @@
 
 namespace App\Services\Producao;
 
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Producao\Setor;
 use App\Models\Producao\SetorChecklist;
 use App\Models\Producao\SetorMaterial;
@@ -9,7 +10,6 @@ use App\Models\Producao\SetorResponsavel;
 use App\Models\Producao\SetorSinalizacao;
 use App\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -235,5 +235,4 @@ class SetorService
             ]);
         }
     }
-
 }

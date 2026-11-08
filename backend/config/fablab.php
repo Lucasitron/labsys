@@ -1,4 +1,5 @@
 <?php
+
 // Configuração transversal do FabLab (kill-switches de scheduler).
 return [
     'schedulers' => [

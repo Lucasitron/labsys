@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Estoque;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Estoque\ResolvesEstoquePrincipal;
-
 use App\Http\Requests\Estoque\EmprestimoRequest;
 use App\Http\Resources\Estoque\EmprestimoResource;
 use App\Services\Estoque\EmprestimoService;
@@ -16,6 +14,7 @@ use Illuminate\Validation\Rule;
 class EmprestimoController extends Controller
 {
     use ResolvesEstoquePrincipal;
+
     public function __construct(private EmprestimoService $emprestimos) {}
 
     public function store(EmprestimoRequest $request): JsonResponse

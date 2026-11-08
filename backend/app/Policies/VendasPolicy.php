@@ -3,8 +3,8 @@
 namespace App\Policies;
 
 use App\Enums\Auth\Role;
-use App\Shared\Auth\Caller;
 use App\Exceptions\ForbiddenException;
+use App\Shared\Auth\Caller;
 
 /**
  * Autorização do Vendas (rbac-matrix.md prevalece sobre o Java — plan §M4.1.4).

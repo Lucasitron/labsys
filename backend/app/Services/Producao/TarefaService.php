@@ -4,10 +4,10 @@ namespace App\Services\Producao;
 
 use App\Enums\Producao\PrioridadeTarefa;
 use App\Enums\Producao\TarefaStatus;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Producao\Tarefa;
 use App\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 /**

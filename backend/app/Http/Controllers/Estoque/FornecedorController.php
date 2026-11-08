@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Estoque;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Estoque\ResolvesEstoquePrincipal;
-
 use App\Http\Requests\Estoque\FornecedorRequest;
 use App\Http\Resources\Estoque\FornecedorResource;
 use App\Models\Estoque\Fornecedor;
@@ -19,6 +17,7 @@ use Illuminate\Http\Request;
 class FornecedorController extends Controller
 {
     use ResolvesEstoquePrincipal;
+
     public function store(FornecedorRequest $request): JsonResponse
     {
         $fornecedor = Fornecedor::create($request->validated());

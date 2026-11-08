@@ -2,12 +2,12 @@
 
 namespace App\Services\Producao;
 
-use App\Events\ProducaoConcluidaEvent;
-use App\Events\ProducaoStatusAlteradoEvent;
 use App\Enums\Producao\KanbanStatus;
 use App\Events\AdvertenciaLimiteAtingidoEvent;
 use App\Events\AdvertenciaRegistradaEvent;
 use App\Events\KanbanStatusAlteradoEvent;
+use App\Events\ProducaoConcluidaEvent;
+use App\Events\ProducaoStatusAlteradoEvent;
 use App\Events\ProjetoMesaAbandonadoEvent;
 use Illuminate\Support\Facades\Log;
 
@@ -43,7 +43,7 @@ final class ProducaoEventPublisher
     }
 
     /**
-     * @param list<array{idItem:int,quantidadeConsumida:string}> $itens BOM final
+     * @param  list<array{idItem:int,quantidadeConsumida:string}>  $itens  BOM final
      */
     public function producaoConcluida(int $idEncomenda, array $itens): void
     {

@@ -13,7 +13,7 @@ class PeriodoResolverTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->relatorios = new RelatorioService();
+        $this->relatorios = new RelatorioService;
     }
 
     public function test_datas_tem_precedencia_sobre_periodo(): void

@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers\Vendas;
 
-use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Enums\Vendas\StatusKanban;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Vendas\EncomendaRequest;
 use App\Http\Requests\Vendas\KanbanRequest;
 use App\Http\Requests\Vendas\NovaOrdemRequest;
 use App\Http\Resources\Vendas\EncomendaResource;
 use App\Services\Vendas\EncomendaService;
-use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -100,5 +97,4 @@ class EncomendaController extends Controller
 
         return $resource->toArray($request);
     }
-
 }

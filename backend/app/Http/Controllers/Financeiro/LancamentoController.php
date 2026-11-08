@@ -3,9 +3,6 @@
 namespace App\Http\Controllers\Financeiro;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
-use App\Shared\Auth\Caller;
 use App\Http\Requests\Financeiro\LancamentoRequest;
 use App\Http\Requests\Financeiro\PagamentoRequest;
 use App\Http\Resources\Financeiro\LancamentoResource;
@@ -58,5 +55,4 @@ class LancamentoController extends Controller
 
         return response()->json((new LancamentoResource($lancamento))->toArray($request));
     }
-
 }

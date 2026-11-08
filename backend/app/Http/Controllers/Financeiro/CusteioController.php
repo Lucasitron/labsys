@@ -3,9 +3,6 @@
 namespace App\Http\Controllers\Financeiro;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
-use App\Shared\Auth\Caller;
 use App\Http\Requests\Financeiro\FechamentoRequest;
 use App\Http\Resources\Financeiro\CustoResource;
 use App\Http\Resources\Financeiro\FechamentoResource;
@@ -60,5 +57,4 @@ class CusteioController extends Controller
 
         return response()->json((new CustoResource($custo))->toArray($request));
     }
-
 }

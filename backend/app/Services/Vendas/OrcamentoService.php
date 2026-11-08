@@ -5,14 +5,14 @@ namespace App\Services\Vendas;
 use App\Contracts\EstoqueContract;
 use App\Enums\Vendas\StatusOrcamento;
 use App\Events\OrcamentoAprovadoEvent;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Vendas\Cliente;
 use App\Models\Vendas\Encomenda;
 use App\Models\Vendas\ItemOrcamento;
 use App\Models\Vendas\Orcamento;
 use App\Policies\VendasPolicy;
 use App\Shared\Auth\Caller;
-use App\Exceptions\ConflitoException;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -191,7 +191,7 @@ class OrcamentoService
     /**
      * `idItemEstoque` é transitório (sem coluna): só valida existência (422).
      *
-     * @param list<array<string,mixed>> $itens
+     * @param  list<array<string,mixed>>  $itens
      */
     private function validarItens(array $itens): void
     {

@@ -23,5 +23,4 @@ class ItemInspecao5S extends Model
     protected $casts = [
         'conforme' => 'boolean',
     ];
-
 }

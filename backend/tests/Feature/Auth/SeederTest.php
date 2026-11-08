@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\Auth\Login;
 use App\Enums\Rh\NivelAcesso;
 use App\Enums\Rh\PessoaStatus;
+use App\Models\Auth\Login;
 use App\Models\Rh\Pessoa;
 use App\Services\Rh\PessoaService;
 use Database\Seeders\AuthSeeder;

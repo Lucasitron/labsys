@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Estoque;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Estoque\ResolvesEstoquePrincipal;
-
 use App\Http\Requests\Estoque\BomConsumoRequest;
 use App\Http\Requests\Estoque\BomRequest;
 use App\Http\Resources\Estoque\BomResource;
@@ -16,6 +14,7 @@ use Illuminate\Http\Request;
 class BomController extends Controller
 {
     use ResolvesEstoquePrincipal;
+
     public function __construct(private BomService $boms) {}
 
     public function store(BomRequest $request): JsonResponse

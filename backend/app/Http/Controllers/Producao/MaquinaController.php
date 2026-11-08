@@ -2,17 +2,14 @@
 
 namespace App\Http\Controllers\Producao;
 
-use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Enums\Producao\MaquinaStatus;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Producao\MaquinaRequest;
 use App\Http\Requests\Producao\MaquinaStatusRequest;
 use App\Http\Requests\Producao\UsoEncerrarRequest;
 use App\Http\Requests\Producao\UsoIniciarRequest;
 use App\Http\Resources\Producao\HistoricoUsoResource;
 use App\Http\Resources\Producao\MaquinaResource;
-use App\Shared\Auth\Caller;
 use App\Services\Producao\MaquinaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -91,5 +88,4 @@ class MaquinaController extends Controller
 
         return response()->json(null, 204);
     }
-
 }

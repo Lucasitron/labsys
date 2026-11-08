@@ -3,11 +3,11 @@
 namespace App\Services\Producao;
 
 use App\Enums\Producao\StatusProjetoMesa;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Producao\AuditoriaProjetoMesa;
 use App\Models\Producao\ProjetoMesa;
 use App\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
-use App\Exceptions\ResourceNotFoundException;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 

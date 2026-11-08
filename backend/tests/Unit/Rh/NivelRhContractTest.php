@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Rh;
 
-use App\Enums\Auth\Role;
 use App\Contracts\RhContract;
+use App\Enums\Auth\Role;
 use App\Enums\Rh\StatusApontamento;
 use App\Enums\Rh\TipoApontamento;
 use App\Models\Rh\ApontamentoHoras;

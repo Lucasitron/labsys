@@ -2,7 +2,6 @@
 
 namespace App\Rules;
 
-use App\Rules\CpfCnpjRule;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 

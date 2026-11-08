@@ -2,13 +2,12 @@
 
 namespace App\Services\Estoque;
 
-use App\Services\Estoque\EstoquePrincipal;
 use App\Events\CompraSolicitadaEvent;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Estoque\EntradaEstoque;
 use App\Models\Estoque\Fornecedor;
 use App\Models\Estoque\Item;
 use App\Policies\EstoquePolicy;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -21,7 +20,7 @@ class EntradaService
     {
         EstoquePolicy::exigeEdicaoMovimentacao($principal);
 
-        return DB::transaction(function () use ($dados, $principal) {
+        return DB::transaction(function () use ($dados) {
             $item = Item::whereKey((int) $dados['idItem'])->lockForUpdate()->first()
                 ?? throw new ResourceNotFoundException("Item não encontrado: {$dados['idItem']}");
 

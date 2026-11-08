@@ -3,9 +3,9 @@
 namespace App\Services\Financeiro;
 
 use App\Enums\Financeiro\TipoCategoria;
-use App\Shared\Auth\Caller;
 use App\Models\Financeiro\CategoriaFinanceira;
 use App\Policies\FinanceiroPolicy;
+use App\Shared\Auth\Caller;
 
 /** Cadastro e listagem de categorias financeiras (receita/despesa). */
 class CategoriaService

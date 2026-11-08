@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers\Producao;
 
-use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Enums\Producao\TarefaStatus;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Producao\TarefaRequest;
 use App\Http\Requests\Producao\TarefaStatusRequest;
 use App\Http\Resources\Producao\TarefaResource;
-use App\Shared\Auth\Caller;
 use App\Services\Producao\ProjetoService;
 use App\Services\Producao\TarefaService;
 use Illuminate\Http\JsonResponse;
@@ -81,5 +78,4 @@ class TarefaController extends Controller
 
         return response()->json(null, 204);
     }
-
 }

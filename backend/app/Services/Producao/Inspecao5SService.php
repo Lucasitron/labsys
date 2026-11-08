@@ -3,13 +3,13 @@
 namespace App\Services\Producao;
 
 use App\Enums\Producao\StatusInspecao;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Producao\Inspecao5S;
 use App\Models\Producao\ItemInspecao5S;
 use App\Models\Producao\SetorChecklist;
 use App\Models\Producao\SetorResponsavel;
 use App\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

@@ -3,9 +3,9 @@
 namespace App\Services\Financeiro;
 
 use App\Enums\Financeiro\TipoDoacao;
-use App\Shared\Auth\Caller;
 use App\Models\Financeiro\DoacaoRecurso;
 use App\Policies\FinanceiroPolicy;
+use App\Shared\Auth\Caller;
 
 /** Registro e listagem de doações e recursos de projetos. */
 class DoacaoService

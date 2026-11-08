@@ -2,8 +2,8 @@
 
 namespace App\Services\Auth;
 
-use App\Models\Auth\ParametroSistema;
 use App\Exceptions\ConfiguracaoInvalidaException;
+use App\Models\Auth\ParametroSistema;
 
 /**
  * Parâmetros globais do sistema (KV auth.parametro_sistema). Só persiste

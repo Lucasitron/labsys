@@ -3,9 +3,9 @@
 namespace App\Policies;
 
 use App\Enums\Auth\Role;
+use App\Exceptions\ForbiddenException;
 use App\Models\Producao\SetorResponsavel;
 use App\Shared\Auth\Caller;
-use App\Exceptions\ForbiddenException;
 
 /**
  * Autorização do Producao (rbac-matrix.md ∩ requirements §7 prevalecem sobre o

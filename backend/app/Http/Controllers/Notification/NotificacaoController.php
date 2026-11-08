@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Notification;
 
 use App\Http\Controllers\Controller;
-
 use App\Http\Requests\Notification\ListarNotificacoesRequest;
 use App\Http\Resources\Notification\NotificationResource;
-use App\Shared\Auth\Caller;
 use App\Services\Notification\NotificacaoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -58,5 +56,4 @@ class NotificacaoController extends Controller
             'lidas' => $this->inbox->marcarTodasComoLidas($this->principal($request)->idUser),
         ]);
     }
-
 }

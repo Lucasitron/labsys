@@ -3,9 +3,6 @@
 namespace App\Http\Controllers\Financeiro;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
-use App\Shared\Auth\Caller;
 use App\Services\Financeiro\RelatorioService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -79,5 +76,4 @@ class RelatorioController extends Controller
             'periodo' => $filtros['periodo'] ?? null,
         ];
     }
-
 }

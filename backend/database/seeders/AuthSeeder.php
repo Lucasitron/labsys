@@ -4,10 +4,10 @@ namespace Database\Seeders;
 
 use App\Enums\Auth\Role;
 use App\Enums\Auth\SituacaoUsuario;
-use App\Models\Auth\Login;
-use App\Models\Auth\UserPermission;
 use App\Enums\Rh\NivelAcesso;
 use App\Enums\Rh\PessoaStatus;
+use App\Models\Auth\Login;
+use App\Models\Auth\UserPermission;
 use App\Models\Rh\Funcionario;
 use App\Models\Rh\Pessoa;
 use Illuminate\Database\Seeder;

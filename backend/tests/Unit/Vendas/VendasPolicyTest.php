@@ -3,9 +3,9 @@
 namespace Tests\Unit\Vendas;
 
 use App\Enums\Auth\Role;
+use App\Exceptions\ForbiddenException;
 use App\Policies\VendasPolicy;
 use App\Shared\Auth\Caller;
-use App\Exceptions\ForbiddenException;
 use PHPUnit\Framework\TestCase;
 
 class VendasPolicyTest extends TestCase

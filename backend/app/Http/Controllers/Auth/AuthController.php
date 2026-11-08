@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-
 use App\Enums\Auth\Role;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\AlterarSenhaRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RefreshRequest;
@@ -76,5 +75,4 @@ class AuthController extends Controller
 
         return response()->json(['mensagem' => 'Senha alterada com sucesso']);
     }
-
 }

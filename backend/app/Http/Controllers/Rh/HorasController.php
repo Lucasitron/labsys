@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers\Rh;
 
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\Rh\ResolvesRhPrincipal;
-
 use App\Enums\Rh\StatusApontamento;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Rh\RegistrarApontamentoRequest;
 use App\Http\Requests\Rh\RejeitarApontamentoRequest;
 use App\Http\Resources\Rh\ApontamentoResource;
@@ -21,6 +19,7 @@ use Illuminate\Http\Request;
 class HorasController extends Controller
 {
     use ResolvesRhPrincipal;
+
     public function __construct(
         private ApontamentoService $apontamentos,
         private CertificadoService $certificados,
@@ -38,7 +37,6 @@ class HorasController extends Controller
             'status' => ['nullable', 'in:PENDENTE,VALIDADO,REJEITADO'],
             'periodo' => ['nullable', 'date_format:Y-m'],
         ]);
-
 
         $lista = $this->apontamentos->listar(
             isset($filtros['status']) ? StatusApontamento::from($filtros['status']) : null,

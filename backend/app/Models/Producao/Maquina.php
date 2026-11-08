@@ -24,5 +24,4 @@ class Maquina extends Model
     protected $casts = [
         'status' => MaquinaStatus::class,
     ];
-
 }

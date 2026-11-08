@@ -4,12 +4,12 @@ namespace App\Services\Financeiro;
 
 use App\Enums\Financeiro\StatusLancamento;
 use App\Enums\Financeiro\TipoLancamento;
-use App\Shared\Auth\Caller;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Financeiro\CategoriaFinanceira;
 use App\Models\Financeiro\LancamentoFinanceiro;
 use App\Policies\FinanceiroPolicy;
-use App\Exceptions\ConflitoException;
-use App\Exceptions\ResourceNotFoundException;
+use App\Shared\Auth\Caller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

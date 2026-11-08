@@ -2,7 +2,6 @@
 
 namespace App\Services\Estoque;
 
-use App\Contracts\AuthContract;
 use App\Enums\Auth\Role;
 use App\Models\Auth\Login;
 use App\Shared\Auth\Caller;

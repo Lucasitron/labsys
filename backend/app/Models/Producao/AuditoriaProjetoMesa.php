@@ -26,5 +26,4 @@ class AuditoriaProjetoMesa extends Model
         'data_auditoria' => 'date',
         'resultado' => StatusProjetoMesa::class,
     ];
-
 }

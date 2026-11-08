@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Producao;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Http\Requests\Producao\AdvertenciaRequest;
 use App\Http\Resources\Producao\AdvertenciaResource;
-use App\Shared\Auth\Caller;
 use App\Services\Producao\AdvertenciaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,5 +34,4 @@ class AdvertenciaController extends Controller
 
         return response()->json(AdvertenciaResource::collection($lista));
     }
-
 }

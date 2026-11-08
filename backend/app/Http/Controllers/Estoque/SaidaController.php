@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Estoque;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Estoque\ResolvesEstoquePrincipal;
-
 use App\Http\Requests\Estoque\SaidaRequest;
 use App\Http\Resources\Estoque\SaidaResource;
 use App\Services\Estoque\SaidaService;
@@ -15,6 +13,7 @@ use Illuminate\Http\Request;
 class SaidaController extends Controller
 {
     use ResolvesEstoquePrincipal;
+
     public function __construct(private SaidaService $saidas) {}
 
     public function store(SaidaRequest $request): JsonResponse

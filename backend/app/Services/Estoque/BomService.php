@@ -2,12 +2,11 @@
 
 namespace App\Services\Estoque;
 
-use App\Services\Estoque\EstoquePrincipal;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Estoque\Item;
 use App\Models\Estoque\ItemBom;
 use App\Models\Estoque\ListaMateriais;
 use App\Policies\EstoquePolicy;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 /** Listas de Materiais — BOM (regras só aqui). Sem tabela de reserva. */

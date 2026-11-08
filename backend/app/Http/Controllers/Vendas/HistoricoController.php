@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Vendas;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Http\Resources\Vendas\HistoricoResource;
 use App\Services\Vendas\EncomendaService;
-use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,5 +22,4 @@ class HistoricoController extends Controller
             $historico,
         ));
     }
-
 }

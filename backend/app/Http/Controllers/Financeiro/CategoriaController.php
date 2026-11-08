@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers\Financeiro;
 
+use App\Enums\Financeiro\TipoCategoria;
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
-use App\Shared\Auth\Caller;
 use App\Http\Requests\Financeiro\CategoriaRequest;
 use App\Http\Resources\Financeiro\CategoriaResource;
 use App\Services\Financeiro\CategoriaService;
@@ -31,7 +29,7 @@ class CategoriaController extends Controller
         // O service espera enum; a validação acima já garante o allowlist.
         $categorias = $this->categorias->listar(
             isset($filtros['tipo'])
-                ? \App\Enums\Financeiro\TipoCategoria::from($filtros['tipo']) : null,
+                ? TipoCategoria::from($filtros['tipo']) : null,
             $this->principal($request),
         );
 
@@ -40,5 +38,4 @@ class CategoriaController extends Controller
             $categorias,
         ));
     }
-
 }

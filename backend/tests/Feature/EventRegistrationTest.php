@@ -24,7 +24,7 @@ class EventRegistrationTest extends TestCase
                 }
 
                 if ($listener instanceof \Closure) {
-                    return 'Closure#' . spl_object_id($listener);
+                    return 'Closure#'.spl_object_id($listener);
                 }
 
                 return (string) $listener;

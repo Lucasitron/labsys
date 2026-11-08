@@ -4,15 +4,14 @@ namespace App\Services\Estoque;
 
 use App\Enums\Estoque\StatusEmprestimo;
 use App\Enums\Estoque\TipoSaida;
-use App\Services\Estoque\EstoquePrincipal;
 use App\Events\EmprestimoAtrasadoEvent;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\SaldoInsuficienteException;
 use App\Models\Estoque\Emprestimo;
 use App\Models\Estoque\Item;
 use App\Models\Estoque\SaidaEstoque;
 use App\Policies\EstoquePolicy;
-use App\Exceptions\ForbiddenException;
-use App\Exceptions\ResourceNotFoundException;
-use App\Exceptions\SaldoInsuficienteException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -113,8 +112,8 @@ class EmprestimoService
 
     /**
      * @return list<Emprestimo>
-     * nulo/vazio = todos; `ativos` = ATIVO+ATRASADO; `atrasados` = vencidos;
-     * `historico` = DEVOLVIDO. Escopo E-7 server-side.
+     *                          nulo/vazio = todos; `ativos` = ATIVO+ATRASADO; `atrasados` = vencidos;
+     *                          `historico` = DEVOLVIDO. Escopo E-7 server-side.
      */
     public function listar(?string $status, EstoquePrincipal $principal): array
     {

@@ -1,10 +1,10 @@
 <?php
 
+use App\Models\Producao\Parametro5S;
 use App\Services\Auth\TokenBlacklistService;
 use App\Services\Estoque\EmprestimoService;
 use App\Services\Financeiro\LancamentoService;
 use App\Services\Notification\NotificationDispatchService;
-use App\Models\Producao\Parametro5S;
 use App\Services\Producao\ProjetoMesaService;
 use App\Services\Rh\ExtratoService;
 use Illuminate\Support\Facades\Log;

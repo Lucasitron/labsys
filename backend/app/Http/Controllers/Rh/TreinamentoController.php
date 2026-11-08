@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Rh;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Rh\ResolvesRhPrincipal;
-
 use App\Http\Requests\Rh\AvaliarTreinamentoRequest;
 use App\Http\Requests\Rh\CriarTreinamentoRequest;
 use App\Http\Resources\Rh\AvaliacaoResource;
@@ -17,6 +15,7 @@ use Illuminate\Http\Request;
 class TreinamentoController extends Controller
 {
     use ResolvesRhPrincipal;
+
     public function __construct(private TreinamentoService $treinamentos) {}
 
     public function store(CriarTreinamentoRequest $request): JsonResponse

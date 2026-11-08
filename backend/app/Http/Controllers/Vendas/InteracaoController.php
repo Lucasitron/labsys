@@ -3,12 +3,9 @@
 namespace App\Http\Controllers\Vendas;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Http\Requests\Vendas\InteracaoRequest;
 use App\Http\Resources\Vendas\InteracaoResource;
 use App\Services\Vendas\CrmService;
-use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -33,5 +30,4 @@ class InteracaoController extends Controller
             $interacoes,
         ));
     }
-
 }

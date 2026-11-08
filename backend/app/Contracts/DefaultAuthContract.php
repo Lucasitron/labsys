@@ -4,12 +4,12 @@ namespace App\Contracts;
 
 use App\Enums\Auth\Role;
 use App\Enums\Auth\SituacaoUsuario;
+use App\Exceptions\TokenInvalidException;
 use App\Models\Auth\Login;
 use App\Models\Auth\UserPermission;
 use App\Services\Auth\TokenBlacklistService;
 use App\Services\Auth\TokenService;
 use App\Services\Auth\UsuarioService;
-use App\Exceptions\TokenInvalidException;
 use Illuminate\Support\Str;
 
 class DefaultAuthContract implements AuthContract

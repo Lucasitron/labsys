@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Notification;
 
+use App\Exceptions\ResourceNotFoundException;
 use App\Http\Controllers\Controller;
-
 use App\Http\Requests\Notification\CanalRequest;
 use App\Models\Notification\ConfiguracaoCanal;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Http\JsonResponse;
 
 /** Configuração de canais — só HTTP (Admin; D9/docs/07 §6). CRUD trivial no Model. */

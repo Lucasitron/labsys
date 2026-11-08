@@ -4,10 +4,10 @@ namespace Tests\Feature\Rh;
 
 use App\Enums\Auth\AccessLogType;
 use App\Enums\Auth\Role;
-use App\Events\RfidAccessEvent;
 use App\Enums\Rh\StatusApontamento;
 use App\Enums\Rh\TipoApontamento;
 use App\Events\ExtratoMensalHorasEvent;
+use App\Events\RfidAccessEvent;
 use App\Models\Rh\ApontamentoHoras;
 use App\Models\Rh\RegistroPontoDiario;
 use Carbon\Carbon;

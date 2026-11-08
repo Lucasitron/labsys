@@ -5,7 +5,6 @@ namespace App\Services\Rh;
 use App\Enums\Rh\NivelAcesso;
 use App\Enums\Rh\PessoaStatus;
 use App\Models\Rh\Funcionario;
-use App\Services\Rh\RhPrincipal;
 
 /**
  * Níveis (F7): matriz de capacidades (espelho do enforcement) + convites.

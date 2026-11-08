@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Estoque;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Estoque\ResolvesEstoquePrincipal;
-
 use App\Http\Requests\Estoque\LocalizacaoRequest;
 use App\Http\Resources\Estoque\LocalizacaoResource;
 use App\Models\Estoque\Localizacao;
@@ -19,6 +17,7 @@ use Illuminate\Http\Request;
 class LocalizacaoController extends Controller
 {
     use ResolvesEstoquePrincipal;
+
     public function index(Request $request): JsonResponse
     {
         EstoquePolicy::exigeLeitura($this->principal($request));

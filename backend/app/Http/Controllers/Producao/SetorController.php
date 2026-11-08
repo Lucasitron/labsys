@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Producao;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Http\Requests\Producao\ChecklistRequest;
 use App\Http\Requests\Producao\MaterialRequest;
 use App\Http\Requests\Producao\ResponsavelRequest;
@@ -15,7 +13,6 @@ use App\Http\Resources\Producao\MaterialResource;
 use App\Http\Resources\Producao\ResponsavelResource;
 use App\Http\Resources\Producao\SetorResource;
 use App\Http\Resources\Producao\SinalizacaoResource;
-use App\Shared\Auth\Caller;
 use App\Services\Producao\SetorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -134,5 +131,4 @@ class SetorController extends Controller
 
         return response()->json(null, 204);
     }
-
 }

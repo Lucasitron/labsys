@@ -3,8 +3,8 @@
 namespace App\Policies;
 
 use App\Enums\Auth\Role;
-use App\Services\Estoque\EstoquePrincipal;
 use App\Exceptions\ForbiddenException;
+use App\Services\Estoque\EstoquePrincipal;
 
 /**
  * Autorização do Estoque (port de EDICAO/VISUALIZACAO/OPERACAO + rbac-matrix.md,

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Notification;
 
 use App\Http\Controllers\Controller;
-
 use App\Http\Requests\Notification\HistoricoRequest;
 use App\Http\Resources\Notification\NotificationResource;
 use App\Services\Notification\NotificacaoService;

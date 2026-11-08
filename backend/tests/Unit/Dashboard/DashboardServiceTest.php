@@ -2,13 +2,13 @@
 
 namespace Tests\Unit\Dashboard;
 
-use App\Enums\Auth\Role;
-use App\Services\Dashboard\DashboardService;
 use App\Contracts\EstoqueContract;
 use App\Contracts\NotificationContract;
 use App\Contracts\ProducaoContract;
 use App\Contracts\RhContract;
+use App\Enums\Auth\Role;
 use App\Exceptions\ForbiddenException;
+use App\Services\Dashboard\DashboardService;
 use Tests\TestCase;
 
 class FakeRhContract implements RhContract

@@ -6,6 +6,8 @@ use App\Enums\Vendas\StatusKanban;
 use App\Enums\Vendas\StatusOrcamento;
 use App\Events\EncomendaCriadaEvent;
 use App\Events\EncomendaStatusAlteradoEvent;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Vendas\Cliente;
 use App\Models\Vendas\Encomenda;
 use App\Models\Vendas\HistoricoStatusEncomenda;
@@ -13,8 +15,6 @@ use App\Models\Vendas\ItemOrcamento;
 use App\Models\Vendas\Orcamento;
 use App\Policies\VendasPolicy;
 use App\Shared\Auth\Caller;
-use App\Exceptions\ConflitoException;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 /**

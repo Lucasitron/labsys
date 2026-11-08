@@ -4,9 +4,9 @@ namespace App\Services\Auth;
 
 use App\Enums\Auth\Role;
 use App\Enums\Auth\SituacaoUsuario;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Auth\Login;
 use App\Models\Auth\UserPermission;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;

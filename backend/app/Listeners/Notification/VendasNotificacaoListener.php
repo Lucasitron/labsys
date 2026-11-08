@@ -2,10 +2,10 @@
 
 namespace App\Listeners\Notification;
 
-use App\Services\Notification\NotificationDispatchService;
 use App\Events\EncomendaCriadaEvent;
 use App\Events\EncomendaStatusAlteradoEvent;
 use App\Events\OrcamentoAprovadoEvent;
+use App\Services\Notification\NotificationDispatchService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

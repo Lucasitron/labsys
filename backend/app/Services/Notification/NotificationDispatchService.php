@@ -3,10 +3,10 @@
 namespace App\Services\Notification;
 
 use App\Contracts\AuthContract;
+use App\Contracts\RhContract;
 use App\Enums\Notification\StatusEntrega;
 use App\Models\Notification\Notificacao;
 use App\Models\Notification\NotificacaoHistorico;
-use App\Contracts\RhContract;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 

@@ -3,7 +3,7 @@
 namespace App\Exceptions;
 
 /** Link de notificação fora do formato/allowlist (D-6 → HTTP 422). */
-class LinkInvalidoException extends \App\Exceptions\ApiException
+class LinkInvalidoException extends ApiException
 {
     public function __construct(string $message = 'Link da notificação inválido')
     {

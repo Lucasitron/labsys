@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Producao;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Http\Requests\Producao\InspecaoRequest;
 use App\Http\Resources\Producao\InspecaoResource;
-use App\Shared\Auth\Caller;
 use App\Services\Producao\Inspecao5SService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -49,5 +46,4 @@ class Inspecao5SController extends Controller
 
         return response()->json(null, 204);
     }
-
 }

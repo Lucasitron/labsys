@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers\Producao;
 
-use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Enums\Producao\KanbanStatus;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Producao\KanbanIncluirRequest;
 use App\Http\Requests\Producao\KanbanMoverRequest;
 use App\Http\Resources\Producao\HistoricoKanbanResource;
 use App\Http\Resources\Producao\KanbanResource;
-use App\Shared\Auth\Caller;
 use App\Services\Producao\KanbanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -73,5 +70,4 @@ class KanbanController extends Controller
 
         return response()->json(null, 204);
     }
-
 }

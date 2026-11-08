@@ -3,13 +3,15 @@
 namespace App\Services\Notification;
 
 use App\Enums\Notification\StatusEntrega;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Notification\ConfiguracaoCanal;
 use App\Models\Notification\Notificacao;
 use App\Models\Notification\NotificacaoHistorico;
 use App\Models\Notification\PreferenciaNotificacao;
 use App\Policies\NotificationPolicy;
 use App\Support\Notification\LinkValidator;
-use App\Exceptions\ResourceNotFoundException;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -35,7 +37,7 @@ class NotificacaoService
     /**
      * Lista paginada canônica do usuário (página 1-based, `size` 1..100).
      *
-     * @return array{items:\Illuminate\Database\Eloquent\Collection<int,Notificacao>,total:int,page:int,size:int,pageSize:int,totalPages:int}
+     * @return array{items:Collection<int,Notificacao>,total:int,page:int,size:int,pageSize:int,totalPages:int}
      */
     public function listar(int $idUsuario, int $page, int $size, ?string $tipo = null, ?bool $lida = null): array
     {
@@ -107,7 +109,7 @@ class NotificacaoService
     }
 
     /**
-     * @param array<string,array<string,bool|null>> $novas
+     * @param  array<string,array<string,bool|null>>  $novas
      * @return array<string,array<string,bool>>
      */
     public function salvarPreferencias(array $novas): array
@@ -154,7 +156,7 @@ class NotificacaoService
      * Histórico do Admin: lê `notificacao_historico` (pós-revisão, volume baixo)
      * e retorna a lista integral (front pagina client-side — D-4/Java 1:1).
      *
-     * @return array{items:\Illuminate\Database\Eloquent\Collection<int,NotificacaoHistorico>,total:int}
+     * @return array{items:Collection<int,NotificacaoHistorico>,total:int}
      */
     public function historico(?string $busca, ?string $tipo, ?bool $lida, ?string $canal, ?string $periodo): array
     {
@@ -272,7 +274,7 @@ class NotificacaoService
         return ! ($tipo === 'sistema' && $canal === 'push');
     }
 
-    private function resolverPeriodo(?string $periodo): ?\Carbon\CarbonImmutable
+    private function resolverPeriodo(?string $periodo): ?CarbonImmutable
     {
         if ($periodo === null || trim($periodo) === '') {
             return null;

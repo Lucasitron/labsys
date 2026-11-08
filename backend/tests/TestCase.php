@@ -4,14 +4,14 @@ namespace Tests;
 
 use App\Enums\Auth\Role;
 use App\Enums\Auth\SituacaoUsuario;
-use App\Models\Auth\Login;
-use App\Models\Auth\UserPermission;
-use App\Services\Auth\TokenService;
 use App\Enums\Rh\NivelAcesso;
 use App\Enums\Rh\PessoaStatus;
+use App\Models\Auth\Login;
+use App\Models\Auth\UserPermission;
 use App\Models\Rh\Funcionario;
 use App\Models\Rh\Pessoa;
 use App\Models\Rh\Tutor;
+use App\Services\Auth\TokenService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Hash;

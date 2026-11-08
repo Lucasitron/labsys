@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers\Producao;
 
+use App\Exceptions\ResourceNotFoundException;
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Http\Requests\Producao\ParametroRequest;
 use App\Http\Resources\Producao\ParametroResource;
 use App\Models\Producao\Parametro5S;
 use App\Policies\ProducaoPolicy;
-use App\Shared\Auth\Caller;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -47,5 +44,4 @@ class Parametro5SController extends Controller
         return Parametro5S::find($id)
             ?? throw new ResourceNotFoundException("Parâmetro 5S não encontrado: {$id}");
     }
-
 }

@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers\Vendas;
 
-use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Enums\Vendas\StatusSolicitacao;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Vendas\DecisaoRequest;
 use App\Http\Requests\Vendas\SolicitacaoRequest;
 use App\Http\Resources\Vendas\SolicitacaoResource;
 use App\Services\Vendas\SolicitacaoService;
-use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -59,5 +56,4 @@ class SolicitacaoController extends Controller
 
         return response()->json((new SolicitacaoResource($solicitacao))->toArray($request));
     }
-
 }

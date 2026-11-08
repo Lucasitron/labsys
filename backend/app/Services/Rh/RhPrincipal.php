@@ -2,9 +2,9 @@
 
 namespace App\Services\Rh;
 
-use App\Models\Auth\Login;
-use App\Enums\Rh\NivelAcesso;
 use App\Enums\Auth\Role;
+use App\Enums\Rh\NivelAcesso;
+use App\Models\Auth\Login;
 use App\Models\Rh\Funcionario;
 use App\Shared\Auth\Caller;
 

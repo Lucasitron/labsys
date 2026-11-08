@@ -3,15 +3,15 @@
 namespace App\Services\Producao;
 
 use App\Contracts\EstoqueContract;
+use App\Contracts\VendasContract;
 use App\Enums\Producao\KanbanStatus;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Producao\ConsumoEncomenda;
 use App\Models\Producao\EncomendaKanban;
 use App\Models\Producao\HistoricoKanban;
 use App\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
-use App\Contracts\VendasContract;
-use App\Exceptions\ConflitoException;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

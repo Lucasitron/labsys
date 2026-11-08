@@ -3,8 +3,8 @@
 namespace Tests\Feature\Vendas;
 
 use App\Enums\Auth\Role;
-use App\Models\Auth\Login;
 use App\Enums\Estoque\Categoria;
+use App\Models\Auth\Login;
 use App\Models\Estoque\Item;
 use App\Models\Vendas\Cliente;
 use App\Models\Vendas\TagCliente;

@@ -3,10 +3,11 @@
 namespace Tests\Feature\Producao;
 
 use App\Enums\Auth\Role;
+use App\Events\EncomendaCriadaEvent;
+use App\Events\KanbanStatusAlteradoEvent;
 use App\Events\ProducaoConcluidaEvent;
 use App\Events\ProducaoStatusAlteradoEvent;
 use App\Models\Estoque\Item;
-use App\Events\KanbanStatusAlteradoEvent;
 use App\Models\Producao\EncomendaKanban;
 use Illuminate\Support\Facades\Event;
 
@@ -15,7 +16,7 @@ class KanbanTest extends ProducaoTestCase
 {
     public function test_incluir_linka_vendas_e_bloqueios(): void
     {
-        Event::fake([\App\Events\EncomendaCriadaEvent::class]);
+        Event::fake([EncomendaCriadaEvent::class]);
         $admin = $this->headersAdmin();
         $idEncomenda = $this->criarEncomendaVendas($admin);
 
@@ -28,7 +29,7 @@ class KanbanTest extends ProducaoTestCase
 
         // Voluntário não inclui (delta §7); Bolsista inclui.
         $voluntario = $this->headersPapel(Role::VOLUNTARIO);
-        Event::fake([\App\Events\EncomendaCriadaEvent::class]);
+        Event::fake([EncomendaCriadaEvent::class]);
         $outra = $this->criarEncomendaVendas($admin);
         $this->postJson('/api/producao/kanban', ['idEncomenda' => $outra], $voluntario)->assertForbidden();
 
@@ -38,7 +39,7 @@ class KanbanTest extends ProducaoTestCase
 
     public function test_mover_historico_eventos_e_lock(): void
     {
-        Event::fake([\App\Events\EncomendaCriadaEvent::class]);
+        Event::fake([EncomendaCriadaEvent::class]);
         $admin = $this->headersAdmin();
         $idEncomenda = $this->criarEncomendaVendas($admin);
         $id = $this->postJson('/api/producao/kanban', ['idEncomenda' => $idEncomenda, 'idResponsavel' => 21], $admin)
@@ -70,7 +71,7 @@ class KanbanTest extends ProducaoTestCase
 
     public function test_mover_exige_responsavel_do_cartao(): void
     {
-        Event::fake([\App\Events\EncomendaCriadaEvent::class]);
+        Event::fake([EncomendaCriadaEvent::class]);
         $admin = $this->headersAdmin();
         $idEncomenda = $this->criarEncomendaVendas($admin);
         $id = $this->criarCartao($idEncomenda, 31)->getKey();
@@ -82,7 +83,7 @@ class KanbanTest extends ProducaoTestCase
 
     public function test_entregue_baixa_1x_e_publica_conclusao(): void
     {
-        Event::fake([\App\Events\EncomendaCriadaEvent::class]);
+        Event::fake([EncomendaCriadaEvent::class]);
         $responsavel = $this->loginPapel(Role::BOLSISTA);
         $headers = $this->authHeader($responsavel, Role::BOLSISTA);
         $admin = $this->headersAdmin();
@@ -109,7 +110,7 @@ class KanbanTest extends ProducaoTestCase
             fn ($e) => $e->idEncomenda === $idEncomenda && count($e->itens) === 1);
 
         // Baixa real (dispatch real, sem fake) — precisa zerar o fake antes.
-        Event::fake([\App\Events\EncomendaCriadaEvent::class]);
+        Event::fake([EncomendaCriadaEvent::class]);
         $idEnc2 = $this->criarEncomendaVendas($admin);
         $item2 = $this->criarItemEstoque('50.00');
         $id2 = $this->postJson('/api/producao/kanban',

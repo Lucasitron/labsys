@@ -2,9 +2,9 @@
 
 namespace App\Services\Auth;
 
-use App\Models\Auth\TokenIntegracao;
 use App\Exceptions\ConfiguracaoInvalidaException;
 use App\Exceptions\ResourceNotFoundException;
+use App\Models\Auth\TokenIntegracao;
 use Illuminate\Support\Str;
 
 /**

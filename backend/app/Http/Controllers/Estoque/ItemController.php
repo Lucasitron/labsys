@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers\Estoque;
 
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\Estoque\ResolvesEstoquePrincipal;
-
 use App\Enums\Estoque\Categoria;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Estoque\ItemRequest;
 use App\Http\Resources\Estoque\ItemResource;
 use App\Services\Estoque\ItemService;
@@ -17,6 +15,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ItemController extends Controller
 {
     use ResolvesEstoquePrincipal;
+
     public function __construct(private ItemService $itens) {}
 
     public function store(ItemRequest $request): JsonResponse

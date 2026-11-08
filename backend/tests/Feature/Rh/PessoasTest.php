@@ -3,9 +3,9 @@
 namespace Tests\Feature\Rh;
 
 use App\Enums\Auth\Role;
+use App\Enums\Rh\PessoaStatus;
 use App\Models\Auth\Login;
 use App\Models\Auth\UserPermission;
-use App\Enums\Rh\PessoaStatus;
 use App\Models\Rh\Funcionario;
 use App\Models\Rh\HistoricoNivel;
 use App\Models\Rh\Pessoa;

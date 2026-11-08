@@ -3,13 +3,31 @@
 namespace Tests\Feature\Notification;
 
 use App\Contracts\AuthContract;
+use App\Contracts\NotificationContract;
+use App\Contracts\RhContract;
+use App\Enums\Auth\Role;
+use App\Enums\Rh\NivelAcesso;
+use App\Enums\Rh\TipoApontamento;
+use App\Enums\Rh\TipoCertificado;
+use App\Events\AdvertenciaLimiteAtingidoEvent;
+use App\Events\AdvertenciaRegistradaEvent;
+use App\Events\CertificadoAprovadoEvent;
+use App\Events\CertificadoRejeitadoEvent;
+use App\Events\CertificadoSolicitadoEvent;
 use App\Events\CompraSolicitadaEvent;
+use App\Events\EmprestimoAtrasadoEvent;
+use App\Events\EncomendaCriadaEvent;
+use App\Events\EncomendaStatusAlteradoEvent;
+use App\Events\EstoqueBaixoEvent;
+use App\Events\ExtratoMensalHorasEvent;
+use App\Events\HorasValidadasEvent;
+use App\Events\KanbanStatusAlteradoEvent;
+use App\Events\LancamentoVencidoEvent;
+use App\Events\NivelAlteradoEvent;
+use App\Events\OrcamentoAprovadoEvent;
 use App\Events\ProducaoConcluidaEvent;
 use App\Events\ProducaoStatusAlteradoEvent;
-use App\Events\EmprestimoAtrasadoEvent;
-use App\Events\EstoqueBaixoEvent;
-use App\Events\LancamentoVencidoEvent;
-use App\Contracts\NotificationContract;
+use App\Events\ProjetoMesaAbandonadoEvent;
 use App\Listeners\Notification\EstoqueNotificacaoListener;
 use App\Listeners\Notification\FinanceiroNotificacaoListener;
 use App\Listeners\Notification\ProducaoNotificacaoListener;
@@ -18,23 +36,6 @@ use App\Listeners\Notification\VendasNotificacaoListener;
 use App\Models\Notification\ConfiguracaoCanal;
 use App\Models\Notification\Notificacao;
 use App\Models\Notification\PreferenciaNotificacao;
-use App\Events\AdvertenciaLimiteAtingidoEvent;
-use App\Events\AdvertenciaRegistradaEvent;
-use App\Events\KanbanStatusAlteradoEvent;
-use App\Events\ProjetoMesaAbandonadoEvent;
-use App\Contracts\RhContract;
-use App\Enums\Rh\NivelAcesso;
-use App\Enums\Rh\TipoApontamento;
-use App\Enums\Rh\TipoCertificado;
-use App\Events\CertificadoAprovadoEvent;
-use App\Events\CertificadoRejeitadoEvent;
-use App\Events\CertificadoSolicitadoEvent;
-use App\Events\ExtratoMensalHorasEvent;
-use App\Events\HorasValidadasEvent;
-use App\Events\NivelAlteradoEvent;
-use App\Events\EncomendaCriadaEvent;
-use App\Events\EncomendaStatusAlteradoEvent;
-use App\Events\OrcamentoAprovadoEvent;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
@@ -191,7 +192,7 @@ class DispatchTest extends NotificationTestCase
         $this->assertSame(1, Notificacao::where('id_usuario', $func['login']->id_user)->where('canal', 'email')->count());
 
         // Sem e-mail do destinatário → sem row email, sem 500.
-        $semEmail = $this->funcionarioComEmail(\App\Enums\Auth\Role::BOLSISTA, 'sem-email');
+        $semEmail = $this->funcionarioComEmail(Role::BOLSISTA, 'sem-email');
         app(RhNotificacaoListener::class)->handleHorasValidadas(
             new HorasValidadasEvent((int) $semEmail['funcionario']->getKey(), TipoApontamento::PROJETO, 6, '2.00', '2026-10-02')
         );

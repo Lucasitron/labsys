@@ -3,10 +3,10 @@
 namespace Tests\Feature\Rh;
 
 use App\Enums\Auth\Role;
-use App\Models\Auth\UserPermission;
 use App\Enums\Rh\StatusApontamento;
 use App\Enums\Rh\TipoApontamento;
 use App\Events\NivelAlteradoEvent;
+use App\Models\Auth\UserPermission;
 use App\Models\Rh\ApontamentoHoras;
 use App\Models\Rh\Funcionario;
 use App\Models\Rh\HistoricoNivel;

@@ -29,5 +29,4 @@ class AdvertenciaMembro extends Model
         'tipo' => TipoAdvertencia::class,
         'contador' => 'integer',
     ];
-
 }

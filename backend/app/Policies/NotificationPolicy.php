@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Notification\Notificacao;
 use App\Exceptions\ForbiddenException;
+use App\Models\Notification\Notificacao;
 
 /**
  * Autorização do Notification (rbac-matrix.md linha Notification).

@@ -3,8 +3,8 @@
 namespace App\Listeners\Producao;
 
 use App\Enums\Producao\KanbanStatus;
-use App\Models\Producao\EncomendaKanban;
 use App\Events\EncomendaCriadaEvent;
+use App\Models\Producao\EncomendaKanban;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

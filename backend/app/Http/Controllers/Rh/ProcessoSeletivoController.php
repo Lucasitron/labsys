@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers\Rh;
 
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\Rh\ResolvesRhPrincipal;
-
 use App\Enums\Rh\StatusProcesso;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Rh\AtualizarStatusProcessoRequest;
 use App\Http\Requests\Rh\AvaliarCandidatoRequest;
 use App\Http\Requests\Rh\CriarGrupoRequest;
@@ -20,6 +18,7 @@ use Illuminate\Http\Request;
 class ProcessoSeletivoController extends Controller
 {
     use ResolvesRhPrincipal;
+
     public function __construct(private ProcessoSeletivoService $processos) {}
 
     public function store(IniciarProcessoRequest $request): JsonResponse
@@ -53,7 +52,6 @@ class ProcessoSeletivoController extends Controller
         $filtros = $request->validate([
             'estagio' => ['nullable', 'in:INSCRITO,EM_TRIAGEM,ENTREVISTA,APROVADO,REPROVADO'],
         ]);
-
 
         return response()->json($this->processos->listar(
             isset($filtros['estagio']) ? StatusProcesso::from($filtros['estagio']) : null,

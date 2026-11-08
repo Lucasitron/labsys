@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers\Financeiro;
 
-use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Enums\Financeiro\StatusCompra;
-use App\Shared\Auth\Caller;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Financeiro\CompraRequest;
 use App\Http\Resources\Financeiro\CompraResource;
 use App\Services\Financeiro\CompraService;
@@ -55,5 +52,4 @@ class CompraController extends Controller
 
         return response()->json((new CompraResource($compra))->toArray($request));
     }
-
 }

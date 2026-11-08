@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers\Producao;
 
-use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Enums\Producao\StatusProjetoMesa;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Producao\ProjetoMesaRequest;
 use App\Http\Resources\Producao\AuditoriaResource;
 use App\Http\Resources\Producao\ProjetoMesaResource;
-use App\Shared\Auth\Caller;
 use App\Services\Producao\ProjetoMesaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -81,5 +78,4 @@ class ProjetoMesaController extends Controller
 
         return response()->json(null, 204);
     }
-
 }

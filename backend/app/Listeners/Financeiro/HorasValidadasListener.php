@@ -2,9 +2,9 @@
 
 namespace App\Listeners\Financeiro;
 
-use App\Services\Financeiro\FechamentoService;
 use App\Enums\Rh\TipoApontamento;
 use App\Events\HorasValidadasEvent;
+use App\Services\Financeiro\FechamentoService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

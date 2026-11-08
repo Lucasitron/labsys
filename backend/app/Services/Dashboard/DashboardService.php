@@ -2,14 +2,14 @@
 
 namespace App\Services\Dashboard;
 
-use App\Enums\Auth\Role;
-use App\Policies\DashboardPolicy;
 use App\Contracts\EstoqueContract;
 use App\Contracts\NotificationContract;
 use App\Contracts\ProducaoContract;
+use App\Contracts\RhContract;
+use App\Enums\Auth\Role;
 use App\Enums\Producao\KanbanStatus;
 use App\Enums\Producao\MaquinaStatus;
-use App\Contracts\RhContract;
+use App\Policies\DashboardPolicy;
 use Illuminate\Support\Carbon;
 
 /**

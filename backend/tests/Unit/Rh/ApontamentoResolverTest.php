@@ -5,8 +5,8 @@ namespace Tests\Unit\Rh;
 use App\Enums\Rh\NivelAcesso;
 use App\Enums\Rh\StatusApontamento;
 use App\Models\Rh\ApontamentoHoras;
-use App\Services\Rh\RhPrincipal;
 use App\Services\Rh\ApontamentoService;
+use App\Services\Rh\RhPrincipal;
 use Tests\TestCase;
 
 class ApontamentoResolverTest extends TestCase

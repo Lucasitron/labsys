@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers\Rh;
 
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\Rh\ResolvesRhPrincipal;
-
 use App\Enums\Rh\NivelAcesso;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Rh\AlterarNivelRequest;
 use App\Http\Requests\Rh\VincularFuncionarioRequest;
 use App\Http\Resources\Rh\FuncionarioResource;
@@ -17,6 +15,7 @@ use Illuminate\Http\Request;
 class FuncionarioController extends Controller
 {
     use ResolvesRhPrincipal;
+
     public function __construct(private FuncionarioService $funcionarios) {}
 
     public function index(Request $request): JsonResponse

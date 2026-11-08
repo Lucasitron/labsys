@@ -5,15 +5,14 @@ namespace App\Services\Rh;
 use App\Enums\Rh\NivelAcesso;
 use App\Enums\Rh\PessoaStatus;
 use App\Enums\Rh\StatusProcesso;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Rh\Funcionario;
 use App\Models\Rh\GrupoProcessoSeletivo;
 use App\Models\Rh\Pessoa;
 use App\Models\Rh\ProcessoSeletivo;
 use App\Models\Rh\Tutor;
 use App\Policies\RhPolicy;
-use App\Services\Rh\RhPrincipal;
-use App\Exceptions\ForbiddenException;
-use App\Exceptions\ResourceNotFoundException;
 
 /**
  * Processo seletivo (F5): candidato = pessoa + funcionário nível 4/Recrutando.

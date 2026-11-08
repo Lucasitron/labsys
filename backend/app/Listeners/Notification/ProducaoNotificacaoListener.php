@@ -2,13 +2,13 @@
 
 namespace App\Listeners\Notification;
 
-use App\Services\Notification\NotificationDispatchService;
 use App\Events\AdvertenciaLimiteAtingidoEvent;
 use App\Events\AdvertenciaRegistradaEvent;
 use App\Events\KanbanStatusAlteradoEvent;
 use App\Events\ProducaoConcluidaEvent;
 use App\Events\ProducaoStatusAlteradoEvent;
 use App\Events\ProjetoMesaAbandonadoEvent;
+use App\Services\Notification\NotificationDispatchService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

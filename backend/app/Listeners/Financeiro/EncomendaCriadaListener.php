@@ -2,8 +2,8 @@
 
 namespace App\Listeners\Financeiro;
 
-use App\Services\Financeiro\FechamentoService;
 use App\Events\EncomendaCriadaEvent;
+use App\Services\Financeiro\FechamentoService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 

@@ -3,12 +3,12 @@
 namespace App\Services\Producao;
 
 use App\Enums\Producao\TipoAdvertencia;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Producao\AdvertenciaMembro;
 use App\Models\Producao\Inspecao5S;
 use App\Models\Producao\Parametro5S;
 use App\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 /**

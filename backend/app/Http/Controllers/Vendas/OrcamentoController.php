@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers\Vendas;
 
-use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Enums\Vendas\StatusOrcamento;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Vendas\OrcamentoAtualizacaoRequest;
 use App\Http\Requests\Vendas\OrcamentoRequest;
 use App\Http\Resources\Vendas\OrcamentoResource;
 use App\Services\Vendas\OrcamentoService;
-use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -66,5 +63,4 @@ class OrcamentoController extends Controller
 
         return response()->json((new OrcamentoResource($copia))->toArray($request), 201);
     }
-
 }

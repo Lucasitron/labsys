@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Rh;
 
-use App\Events\RfidAccessEvent;
 use App\Enums\Rh\NivelAcesso;
 use App\Enums\Rh\PessoaStatus;
 use App\Enums\Rh\StatusApontamento;
@@ -14,6 +13,7 @@ use App\Events\CertificadoSolicitadoEvent;
 use App\Events\ExtratoMensalHorasEvent;
 use App\Events\HorasValidadasEvent;
 use App\Events\NivelAlteradoEvent;
+use App\Events\RfidAccessEvent;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
 

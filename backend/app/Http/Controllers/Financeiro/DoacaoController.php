@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers\Financeiro;
 
-use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Enums\Financeiro\TipoDoacao;
-use App\Shared\Auth\Caller;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Financeiro\DoacaoRequest;
 use App\Http\Resources\Financeiro\DoacaoResource;
 use App\Services\Financeiro\DoacaoService;
@@ -45,5 +42,4 @@ class DoacaoController extends Controller
             $doacoes,
         ));
     }
-
 }

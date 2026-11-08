@@ -3,12 +3,12 @@
 namespace App\Services\Financeiro;
 
 use App\Enums\Financeiro\StatusFechamento;
-use App\Shared\Auth\Caller;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Financeiro\FechamentoEncomenda;
 use App\Models\Financeiro\HorasEncomenda;
 use App\Policies\FinanceiroPolicy;
-use App\Exceptions\ConflitoException;
-use App\Exceptions\ResourceNotFoundException;
+use App\Shared\Auth\Caller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

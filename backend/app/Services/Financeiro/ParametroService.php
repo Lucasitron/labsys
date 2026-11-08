@@ -2,11 +2,11 @@
 
 namespace App\Services\Financeiro;
 
-use App\Shared\Auth\Caller;
+use App\Exceptions\ConfiguracaoInvalidaException;
 use App\Models\Financeiro\ParametroOverhead;
 use App\Models\Financeiro\ValorHoraNivel;
 use App\Policies\FinanceiroPolicy;
-use App\Exceptions\ConfiguracaoInvalidaException;
+use App\Shared\Auth\Caller;
 use Illuminate\Support\Facades\Log;
 
 /**

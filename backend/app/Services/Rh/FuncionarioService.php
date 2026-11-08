@@ -8,14 +8,13 @@ use App\Enums\Rh\NivelAcesso;
 use App\Enums\Rh\StatusApontamento;
 use App\Enums\Rh\TipoApontamento;
 use App\Events\NivelAlteradoEvent;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Rh\ApontamentoHoras;
 use App\Models\Rh\Funcionario;
 use App\Models\Rh\HistoricoNivel;
 use App\Models\Rh\RegistroPontoDiario;
 use App\Policies\RhPolicy;
-use App\Services\Rh\RhPrincipal;
-use App\Exceptions\ForbiddenException;
-use App\Exceptions\ResourceNotFoundException;
 use Carbon\CarbonImmutable;
 
 /**

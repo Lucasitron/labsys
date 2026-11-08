@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Dashboard;
 
-use App\Http\Controllers\Controller;
-
 use App\Contracts\AuthContract;
-use App\Models\Auth\Login;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\Dashboard\DashboardSummaryResource;
+use App\Models\Auth\Login;
 use App\Services\Dashboard\DashboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

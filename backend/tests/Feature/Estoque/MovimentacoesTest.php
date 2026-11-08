@@ -2,11 +2,13 @@
 
 namespace Tests\Feature\Estoque;
 
-use App\Events\CompraSolicitadaEvent;
 use App\Enums\Auth\Role;
+use App\Enums\Estoque\TipoSaida;
+use App\Events\CompraSolicitadaEvent;
 use App\Events\EstoqueBaixoEvent;
 use App\Models\Estoque\EntradaEstoque;
 use App\Models\Estoque\Item;
+use App\Models\Estoque\SaidaEstoque;
 use Illuminate\Support\Facades\Event;
 
 class MovimentacoesTest extends EstoqueTestCase
@@ -123,9 +125,9 @@ class MovimentacoesTest extends EstoqueTestCase
         $headers = $this->headersAdmin();
         $item = $this->criarItem();
 
-        $saida = \App\Models\Estoque\SaidaEstoque::create([
+        $saida = SaidaEstoque::create([
             'id_item' => $item->getKey(), 'quantidade' => '2.00',
-            'tipo_saida' => \App\Enums\Estoque\TipoSaida::AJUSTE,
+            'tipo_saida' => TipoSaida::AJUSTE,
             'data_saida' => now(),
         ]);
 

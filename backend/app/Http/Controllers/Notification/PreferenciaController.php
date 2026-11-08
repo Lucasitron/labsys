@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Notification;
 
 use App\Http\Controllers\Controller;
-
 use App\Http\Requests\Notification\AtualizarPreferenciasRequest;
 use App\Services\Notification\NotificacaoService;
 use Illuminate\Http\JsonResponse;

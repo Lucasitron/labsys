@@ -4,15 +4,14 @@ namespace App\Services\Estoque;
 
 use App\Enums\Estoque\Categoria;
 use App\Enums\Estoque\TipoSaida;
-use App\Services\Estoque\EstoquePrincipal;
 use App\Events\EstoqueBaixoEvent;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\SaldoInsuficienteException;
 use App\Models\Estoque\EntradaEstoque;
 use App\Models\Estoque\Item;
 use App\Models\Estoque\Localizacao;
 use App\Models\Estoque\SaidaEstoque;
 use App\Policies\EstoquePolicy;
-use App\Exceptions\ResourceNotFoundException;
-use App\Exceptions\SaldoInsuficienteException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -88,7 +87,7 @@ class ItemService
      * Baixa pelos itens consumidos (BOM/produção). Idempotente por
      * `idReferencia` (retry/duplo dispatch = 1 baixa).
      *
-     * @param list<array{idItem:int,quantidadeConsumida:string|float|int}> $itens
+     * @param  list<array{idItem:int,quantidadeConsumida:string|float|int}>  $itens
      * @return list<SaidaEstoque>
      */
     public function baixarPorConsumo(array $itens, ?int $idReferencia): array

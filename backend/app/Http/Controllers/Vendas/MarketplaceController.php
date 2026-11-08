@@ -3,12 +3,9 @@
 namespace App\Http\Controllers\Vendas;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Http\Requests\Vendas\MarketplaceRequest;
 use App\Http\Resources\Vendas\MarketplaceResource;
 use App\Services\Vendas\MarketplaceService;
-use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -52,5 +49,4 @@ class MarketplaceController extends Controller
             'totais' => $dados['totais'],
         ]);
     }
-
 }

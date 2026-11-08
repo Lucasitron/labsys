@@ -3,6 +3,8 @@
 namespace App\Services\Vendas;
 
 use App\Enums\Vendas\TipoPessoa;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Vendas\Cliente;
 use App\Models\Vendas\Encomenda;
 use App\Models\Vendas\InteracaoCliente;
@@ -11,8 +13,6 @@ use App\Models\Vendas\TagCliente;
 use App\Policies\VendasPolicy;
 use App\Rules\DocumentoRule;
 use App\Shared\Auth\Caller;
-use App\Exceptions\ConflitoException;
-use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 /** Gestão de clientes PF/PJ (regras só aqui). Escrita = Admin (matriz prevalece). */

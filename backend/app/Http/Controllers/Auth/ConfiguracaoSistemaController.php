@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-
 use App\Http\Requests\Auth\AtualizarSistemaRequest;
 use App\Services\Auth\SistemaService;
 use Illuminate\Http\JsonResponse;

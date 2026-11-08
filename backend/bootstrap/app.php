@@ -2,6 +2,7 @@
 
 use App\Exceptions\ApiException;
 use App\Exceptions\ErrorResponse;
+use App\Http\Middleware\CheckBlacklist;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -22,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'blacklist' => \App\Http\Middleware\CheckBlacklist::class,
+            'blacklist' => CheckBlacklist::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -46,7 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
             return ErrorResponse::make(404, $e->getMessage(), $request->path());
         });
 
-        $exceptions->render(function (\InvalidArgumentException $e, $request) {
+        $exceptions->render(function (InvalidArgumentException $e, $request) {
             return ErrorResponse::make(422, $e->getMessage(), $request->path());
         });
 

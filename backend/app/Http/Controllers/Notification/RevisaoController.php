@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Notification;
 
 use App\Http\Controllers\Controller;
-
 use App\Http\Requests\Notification\RevisarRequest;
-use App\Shared\Auth\Caller;
 use App\Services\Notification\NotificacaoService;
+use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 
 /** Revisão do Admin — só HTTP (move ativas p/ o histórico; D9/docs/07 §6). */

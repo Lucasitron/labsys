@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Financeiro;
 
+use App\Enums\Financeiro\StatusLancamento;
 use App\Events\LancamentoVencidoEvent;
 use App\Models\Financeiro\LancamentoFinanceiro;
 use App\Services\Financeiro\LancamentoService;
@@ -177,7 +178,7 @@ class LancamentosTest extends FinanceiroTestCase
         ]), $headers)->assertCreated()->json('id');
 
         $lancamento = LancamentoFinanceiro::find($id);
-        $lancamento->status = \App\Enums\Financeiro\StatusLancamento::CANCELADO;
+        $lancamento->status = StatusLancamento::CANCELADO;
         $lancamento->save();
 
         $this->getJson('/api/financeiro/lancamentos', $headers)->assertOk()

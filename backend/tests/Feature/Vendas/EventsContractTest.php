@@ -2,13 +2,14 @@
 
 namespace Tests\Feature\Vendas;
 
-use App\Events\ProducaoStatusAlteradoEvent;
 use App\Contracts\VendasContract;
 use App\Events\EncomendaCriadaEvent;
 use App\Events\EncomendaStatusAlteradoEvent;
 use App\Events\OrcamentoAprovadoEvent;
+use App\Events\ProducaoStatusAlteradoEvent;
 use App\Models\Vendas\Encomenda;
 use App\Models\Vendas\HistoricoStatusEncomenda;
+use Illuminate\Support\Facades\Event;
 
 /** Eventos (3 emitidos + consumo da produção) e VendasContract (2 métodos). */
 class EventsContractTest extends VendasTestCase
@@ -28,7 +29,7 @@ class EventsContractTest extends VendasTestCase
 
     public function test_fluxo_completo_emite_3_eventos(): void
     {
-        \Illuminate\Support\Facades\Event::fake();
+        Event::fake();
         $headers = $this->headersAdmin();
 
         $clienteId = $this->postJson('/api/vendas/clientes', $this->clientePayload(), $headers)
@@ -37,20 +38,20 @@ class EventsContractTest extends VendasTestCase
             ->assertCreated()->json('id');
         $this->putJson("/api/vendas/orcamentos/{$orcId}", ['status' => 'Aprovado'], $headers)->assertOk();
 
-        \Illuminate\Support\Facades\Event::assertDispatched(OrcamentoAprovadoEvent::class);
+        Event::assertDispatched(OrcamentoAprovadoEvent::class);
         $this->assertSame('orcamento.aprovado.event', OrcamentoAprovadoEvent::NAME);
 
         $encId = $this->postJson('/api/vendas/encomendas', ['idOrcamento' => $orcId], $headers)
             ->assertCreated()->json('id');
 
-        \Illuminate\Support\Facades\Event::assertDispatched(EncomendaCriadaEvent::class);
+        Event::assertDispatched(EncomendaCriadaEvent::class);
         $this->assertSame('encomenda.criada.event', EncomendaCriadaEvent::NAME);
 
         $this->putJson("/api/vendas/encomendas/{$encId}/kanban", [
             'statusKanban' => 'Produção', 'versao' => 0,
         ], $headers)->assertOk();
 
-        \Illuminate\Support\Facades\Event::assertDispatched(EncomendaStatusAlteradoEvent::class);
+        Event::assertDispatched(EncomendaStatusAlteradoEvent::class);
         $this->assertSame('encomenda.status.alterado.event', EncomendaStatusAlteradoEvent::NAME);
     }
 

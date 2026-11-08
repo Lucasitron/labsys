@@ -4,11 +4,11 @@ namespace Tests\Unit\Rh;
 
 use App\Enums\Auth\Role;
 use App\Enums\Rh\NivelAcesso;
+use App\Exceptions\ForbiddenException;
 use App\Models\Rh\Funcionario;
 use App\Policies\RhPolicy;
-use App\Services\Rh\RhPrincipal;
 use App\Rules\CpfRule;
-use App\Exceptions\ForbiddenException;
+use App\Services\Rh\RhPrincipal;
 use Tests\TestCase;
 
 class RhPolicyTest extends TestCase

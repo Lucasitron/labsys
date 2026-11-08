@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Estoque;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Estoque\ResolvesEstoquePrincipal;
-
 use App\Http\Requests\Estoque\EntradaRequest;
 use App\Http\Resources\Estoque\EntradaResource;
 use App\Services\Estoque\EntradaService;
@@ -15,6 +13,7 @@ use Illuminate\Http\Request;
 class EntradaController extends Controller
 {
     use ResolvesEstoquePrincipal;
+
     public function __construct(private EntradaService $entradas) {}
 
     public function store(EntradaRequest $request): JsonResponse

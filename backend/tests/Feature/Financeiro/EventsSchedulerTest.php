@@ -2,17 +2,17 @@
 
 namespace Tests\Feature\Financeiro;
 
-use App\Events\ProducaoConcluidaEvent;
+use App\Enums\Rh\TipoApontamento;
 use App\Events\CompraSolicitadaEvent;
 use App\Events\CustoCalculadoEvent;
+use App\Events\EncomendaCriadaEvent;
+use App\Events\HorasValidadasEvent;
 use App\Events\LancamentoVencidoEvent;
+use App\Events\ProducaoConcluidaEvent;
 use App\Models\Financeiro\CustoEncomenda;
 use App\Models\Financeiro\FechamentoEncomenda;
 use App\Models\Financeiro\HorasEncomenda;
 use App\Services\Financeiro\LancamentoService;
-use App\Enums\Rh\TipoApontamento;
-use App\Events\HorasValidadasEvent;
-use App\Events\EncomendaCriadaEvent;
 use Illuminate\Support\Facades\Event;
 
 /** Listeners (3 consumidos), emissões (3) e scheduler manual. */

@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Producao;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Http\Requests\Producao\AuditoriaRequest;
 use App\Http\Resources\Producao\AuditoriaResource;
-use App\Shared\Auth\Caller;
 use App\Services\Producao\ProjetoMesaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,5 +27,4 @@ class AuditoriaProjetoMesaController extends Controller
 
         return response()->json(AuditoriaResource::collection($lista));
     }
-
 }

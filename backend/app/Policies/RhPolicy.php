@@ -3,11 +3,11 @@
 namespace App\Policies;
 
 use App\Enums\Rh\NivelAcesso;
+use App\Exceptions\ForbiddenException;
 use App\Models\Rh\Funcionario;
 use App\Models\Rh\ProcessoSeletivo;
 use App\Models\Rh\Tutor;
 use App\Services\Rh\RhPrincipal;
-use App\Exceptions\ForbiddenException;
 
 /**
  * Autorização do RH (port de AutorizacaoHelper + @PreAuthorize).

@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers\Rh;
 
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\Rh\ResolvesRhPrincipal;
-
 use App\Enums\Rh\StatusSolicitacao;
 use App\Enums\Rh\TipoCertificado;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Rh\DecisaoSolicitacaoRequest;
 use App\Http\Requests\Rh\SolicitarCertificadoRequest;
 use App\Http\Resources\Rh\CertificadoResource;
@@ -19,6 +17,7 @@ use Illuminate\Http\Request;
 class CertificadoController extends Controller
 {
     use ResolvesRhPrincipal;
+
     public function __construct(private CertificadoService $certificados) {}
 
     public function solicitar(SolicitarCertificadoRequest $request): JsonResponse
@@ -40,7 +39,6 @@ class CertificadoController extends Controller
         $filtros = $request->validate([
             'status' => ['nullable', 'in:PENDENTE,APROVADO,REJEITADO'],
         ]);
-
 
         $lista = $this->certificados->listarSolicitacoes(
             isset($filtros['status']) ? StatusSolicitacao::from($filtros['status']) : null,

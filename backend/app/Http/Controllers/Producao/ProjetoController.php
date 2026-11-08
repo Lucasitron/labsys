@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers\Producao;
 
-use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Enums\Producao\ProjetoStatus;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Producao\ProjetoRequest;
 use App\Http\Requests\Producao\ProjetoStatusRequest;
 use App\Http\Resources\Producao\ProjetoResource;
-use App\Shared\Auth\Caller;
 use App\Services\Producao\ProjetoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -71,5 +68,4 @@ class ProjetoController extends Controller
 
         return response()->json(null, 204);
     }
-
 }

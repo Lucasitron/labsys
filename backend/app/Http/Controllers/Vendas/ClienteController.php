@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers\Vendas;
 
-use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Enums\Vendas\TipoPessoa;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Vendas\BulkTagRequest;
 use App\Http\Requests\Vendas\ClienteRequest;
 use App\Http\Requests\Vendas\VinculoTagRequest;
 use App\Http\Resources\Vendas\ClienteResource;
 use App\Services\Vendas\ClienteService;
-use App\Shared\Auth\Caller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -122,5 +119,4 @@ class ClienteController extends Controller
             (array) $tags,
         ), fn ($t) => $t !== null));
     }
-
 }

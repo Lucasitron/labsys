@@ -3,12 +3,11 @@
 namespace App\Services\Estoque;
 
 use App\Enums\Estoque\TipoSaida;
-use App\Services\Estoque\EstoquePrincipal;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\SaldoInsuficienteException;
 use App\Models\Estoque\Item;
 use App\Models\Estoque\SaidaEstoque;
 use App\Policies\EstoquePolicy;
-use App\Exceptions\ResourceNotFoundException;
-use App\Exceptions\SaldoInsuficienteException;
 use Illuminate\Support\Facades\DB;
 
 /** Saídas manuais — consumo, perda, ajuste (regras só aqui). */

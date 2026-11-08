@@ -3,12 +3,13 @@
 namespace App\Services\Producao;
 
 use App\Enums\Producao\MaquinaStatus;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Producao\HistoricoUsoMaquina;
 use App\Models\Producao\Maquina;
 use App\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
-use App\Exceptions\ConflitoException;
-use App\Exceptions\ResourceNotFoundException;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -126,7 +127,7 @@ class MaquinaService
             }
 
             $fim = isset($dados['dataFim'])
-                ? \Carbon\Carbon::parse($dados['dataFim'])
+                ? Carbon::parse($dados['dataFim'])
                 : now();
 
             if ($fim->lt($uso->data_inicio)) {

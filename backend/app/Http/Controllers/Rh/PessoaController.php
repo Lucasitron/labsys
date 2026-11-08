@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers\Rh;
 
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\Rh\ResolvesRhPrincipal;
-
 use App\Enums\Rh\NivelAcesso;
 use App\Enums\Rh\PessoaStatus;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Rh\PessoaRequest;
 use App\Http\Resources\Rh\AvaliacaoResource;
 use App\Http\Resources\Rh\PessoaResource;
@@ -18,6 +16,7 @@ use Illuminate\Http\Request;
 class PessoaController extends Controller
 {
     use ResolvesRhPrincipal;
+
     public function __construct(private PessoaService $pessoas) {}
 
     public function store(PessoaRequest $request): JsonResponse

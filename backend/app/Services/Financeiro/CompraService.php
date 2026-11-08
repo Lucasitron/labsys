@@ -3,11 +3,11 @@
 namespace App\Services\Financeiro;
 
 use App\Enums\Financeiro\StatusCompra;
-use App\Shared\Auth\Caller;
-use App\Models\Financeiro\SolicitacaoCompra;
-use App\Policies\FinanceiroPolicy;
 use App\Exceptions\ConflitoException;
 use App\Exceptions\ResourceNotFoundException;
+use App\Models\Financeiro\SolicitacaoCompra;
+use App\Policies\FinanceiroPolicy;
+use App\Shared\Auth\Caller;
 
 /**
  * Fluxo informativo de compras: registra com `REGISTRADA`, publica

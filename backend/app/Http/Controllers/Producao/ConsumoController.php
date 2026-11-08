@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Producao;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Http\Requests\Producao\ConsumoRequest;
 use App\Http\Resources\Producao\ConsumoResource;
-use App\Shared\Auth\Caller;
 use App\Services\Producao\KanbanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,5 +29,4 @@ class ConsumoController extends Controller
 
         return response()->json(ConsumoResource::collection($itens));
     }
-
 }

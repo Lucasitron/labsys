@@ -3,10 +3,10 @@
 namespace Tests\Feature\Producao;
 
 use App\Enums\Auth\Role;
-use App\Models\Auth\Login;
 use App\Enums\Estoque\Categoria;
-use App\Models\Estoque\Item;
 use App\Enums\Producao\KanbanStatus;
+use App\Models\Auth\Login;
+use App\Models\Estoque\Item;
 use App\Models\Producao\EncomendaKanban;
 use App\Models\Producao\Projeto;
 use Tests\TestCase;

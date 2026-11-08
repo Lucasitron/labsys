@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers\Vendas;
 
+use App\Exceptions\ConflitoException;
 use App\Http\Controllers\Controller;
-
-use App\Models\Auth\Login;
 use App\Http\Requests\Vendas\TagRequest;
 use App\Http\Resources\Vendas\TagResource;
 use App\Models\Vendas\TagCliente;
 use App\Policies\VendasPolicy;
-use App\Shared\Auth\Caller;
-use App\Exceptions\ConflitoException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -43,5 +40,4 @@ class TagController extends Controller
             $tags->all(),
         ));
     }
-
 }
