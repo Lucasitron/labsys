@@ -1,21 +1,33 @@
-import type { BomOrderResult, BomReport, ProjectOption } from '$lib/types/stock';
-import { buildQuery, stockFetch } from './request';
+import type { BomResponse, RegistrarConsumoPayload } from '$lib/types/stock';
+import { apiFetch } from '$lib/api/client';
 
-export async function fetchBom(fetchFn: typeof fetch, projectId: string): Promise<BomReport> {
-	const qs = buildQuery({ projectId });
-	return stockFetch<BomReport>(`/stock/bom${qs}`, {}, fetchFn);
+function mapBom(raw: BomResponse): BomResponse {
+	return {
+		...raw,
+		versao: Number(raw.versao),
+		itens: raw.itens.map((i) => ({
+			...i,
+			quantidadePrevista: Number(i.quantidadePrevista),
+			quantidadeReal: Number(i.quantidadeReal)
+		}))
+	};
 }
 
-export function generateOrder(bomId: string): Promise<BomOrderResult> {
-	return stockFetch<BomOrderResult>(`/stock/bom/${bomId}/pedido`, {
-		method: 'POST'
+export async function buscarBom(id: string, fetchFn: typeof fetch = fetch): Promise<BomResponse> {
+	return mapBom(await apiFetch<BomResponse>(`/estoque/boms/${id}`, {}, fetchFn));
+}
+
+export async function registrarConsumo(
+	id: string,
+	payload: RegistrarConsumoPayload
+): Promise<void> {
+	await apiFetch<unknown>(`/estoque/boms/${id}/consumo`, {
+		method: 'POST',
+		body: JSON.stringify({
+			itens: payload.itens.map((i) => ({
+				idItem: Number(i.idItem),
+				quantidadeConsumida: Number(i.quantidade)
+			}))
+		})
 	});
-}
-
-export async function fetchProjects(
-	fetchFn: typeof fetch,
-	search = ''
-): Promise<ProjectOption[]> {
-	const qs = buildQuery({ search });
-	return stockFetch<ProjectOption[]>(`/projects${qs}`, {}, fetchFn);
 }

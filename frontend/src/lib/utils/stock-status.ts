@@ -1,9 +1,13 @@
 import type {
+	CategoriaEnum,
 	EntryKind,
-	ExitReason,
 	ItemStatus,
+	Emprestimo,
+	LocalizacaoResp,
 	LoanComputed,
 	LoanCondition,
+	LoanStatus,
+	TipoSaida,
 	Tone
 } from '$lib/types/stock';
 
@@ -27,6 +31,17 @@ export function statusMeta(status: ItemStatus): Meta {
 	}
 }
 
+export function categoriaMeta(categoria: CategoriaEnum): Meta {
+	switch (categoria) {
+		case 'INSUMO':
+			return { label: 'Insumo', color: 'brand' };
+		case 'FERRAMENTA':
+			return { label: 'Ferramenta', color: 'success' };
+		case 'PECA':
+			return { label: 'Peça', color: 'warn' };
+	}
+}
+
 export function entryKindMeta(kind: EntryKind): Meta {
 	switch (kind) {
 		case 'compra':
@@ -40,16 +55,16 @@ export function entryKindMeta(kind: EntryKind): Meta {
 	}
 }
 
-export function exitReasonMeta(reason: ExitReason): Meta {
+export function exitReasonMeta(reason: TipoSaida): Meta {
 	switch (reason) {
-		case 'projeto':
-			return { label: 'Uso em projeto', color: 'brand' };
-		case 'consumo_interno':
+		case 'CONSUMO':
 			return { label: 'Consumo interno', color: 'muted' };
-		case 'perda':
+		case 'PERDA':
 			return { label: 'Perda', color: 'danger' };
-		case 'descarte':
-			return { label: 'Descarte', color: 'warn' };
+		case 'AJUSTE':
+			return { label: 'Ajuste', color: 'warn' };
+		case 'EMPRESTIMO':
+			return { label: 'Empréstimo', color: 'brand' };
 	}
 }
 
@@ -62,6 +77,41 @@ export function loanComputedMeta(computed: LoanComputed): Meta {
 		case 'atrasado':
 			return { label: 'Atrasado', color: 'danger' };
 	}
+}
+
+export function loanStatusMeta(status: LoanStatus): Meta {
+	switch (status) {
+		case 'ATIVO':
+			return { label: 'Ativo', color: 'brand' };
+		case 'DEVOLVIDO':
+			return { label: 'Devolvido', color: 'muted' };
+		case 'ATRASADO':
+			return { label: 'Atrasado', color: 'danger' };
+	}
+}
+
+export function loanComputed(emprestimo: Emprestimo): LoanComputed {
+	if (emprestimo.status === 'DEVOLVIDO') return 'no_prazo';
+	const hoje = new Date().toISOString().slice(0, 10);
+	const prevista = emprestimo.dataDevolucaoPrevista.slice(0, 10);
+	if (prevista < hoje) return 'atrasado';
+	if (prevista === hoje) return 'vence_hoje';
+	return 'no_prazo';
+}
+
+export function deriveItemStatus(quantidadeAtual: number, estoqueMinimo: number): ItemStatus {
+	if (quantidadeAtual <= 0) return 'out';
+	if (quantidadeAtual < estoqueMinimo) return 'low';
+	return 'available';
+}
+
+export function localizacaoLabel(localizacao: LocalizacaoResp | null): string {
+	if (!localizacao) return 'Sem local';
+	const parts = [`A: ${localizacao.armario}`];
+	if (localizacao.prateleira) parts.push(`P: ${localizacao.prateleira}`);
+	if (localizacao.caixa) parts.push(`C: ${localizacao.caixa}`);
+	if (localizacao.descricao) parts.push(localizacao.descricao);
+	return parts.join(' · ');
 }
 
 export function loanConditionMeta(condition: LoanCondition): Meta {
@@ -92,7 +142,7 @@ export function availabilityTone(status: 'ok' | 'faltam'): Tone {
 }
 
 export const ENTRY_KINDS: EntryKind[] = ['compra', 'doacao', 'devolucao', 'ajuste'];
-export const EXIT_REASONS: ExitReason[] = ['projeto', 'consumo_interno', 'perda', 'descarte'];
+export const EXIT_REASONS: TipoSaida[] = ['CONSUMO', 'PERDA', 'AJUSTE', 'EMPRESTIMO'];
 export const LOAN_TABS: { key: string; label: string }[] = [
 	{ key: 'ativos', label: 'Ativos' },
 	{ key: 'atrasados', label: 'Atrasados' },

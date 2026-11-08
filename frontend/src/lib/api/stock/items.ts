@@ -1,133 +1,89 @@
 import type {
-	Category,
-	CreateItemPayload,
-	HistoryEntry,
-	ItemDetail,
-	ItemMovementsResult,
-	ItemStatus,
-	ItemsResult,
-	Loan,
+	CategoriaEnum,
 	StockItem,
-	StockParams,
-	Supplier
+	CreateItemPayload,
+	UpdateItemPayload
 } from '$lib/types/stock';
-import { buildQuery, stockFetch, stockFetchBlob } from './request';
+import { deriveItemStatus } from '$lib/utils/stock-status';
+import { apiFetch, apiFetchBlob, buildQuery } from '$lib/api/client';
 
-const BASE = '/stock/items';
+const BASE = '/estoque/itens';
 
-export async function fetchItems(
-	fetchFn: typeof fetch,
-	params: StockParams
-): Promise<ItemsResult> {
+export interface ListarItensParams {
+	categoria?: CategoriaEnum;
+	idLocalizacao?: string;
+	baixo?: boolean;
+}
+
+function withStatus(item: StockItem): StockItem {
+	const coerced: StockItem = {
+		...item,
+		quantidadeAtual: Number(item.quantidadeAtual),
+		estoqueMinimo: Number(item.estoqueMinimo)
+	};
+	return { ...coerced, status: deriveItemStatus(coerced.quantidadeAtual, coerced.estoqueMinimo) };
+}
+
+export async function listarItens(
+	params: ListarItensParams = {},
+	fetchFn: typeof fetch = fetch
+): Promise<StockItem[]> {
 	const qs = buildQuery({
-		page: params.page,
-		pageSize: params.pageSize,
-		search: params.search,
-		category: params.categories,
-		location: params.locations,
-		status: params.statuses,
-		sort: params.sort
+		categoria: params.categoria,
+		idLocalizacao: params.idLocalizacao,
+		baixo: params.baixo === true ? '1' : undefined
 	});
-	return stockFetch<ItemsResult>(`${BASE}${qs}`, {}, fetchFn);
+	const raw = await apiFetch<StockItem[]>(`${BASE}${qs}`, {}, fetchFn);
+	return raw.map(withStatus);
 }
 
-export async function fetchItem(fetchFn: typeof fetch, id: string): Promise<ItemDetail> {
-	return stockFetch<ItemDetail>(`${BASE}/${id}`, {}, fetchFn);
-}
-
-export async function fetchItemMovements(
-	fetchFn: typeof fetch,
+export async function buscarItem(
 	id: string,
-	page = 1
-): Promise<ItemMovementsResult> {
-	return stockFetch<ItemMovementsResult>(
-		`/stock/movements?itemId=${id}&page=${page}&pageSize=8`,
-		{},
-		fetchFn
+	fetchFn: typeof fetch = fetch
+): Promise<StockItem> {
+	return withStatus(await apiFetch<StockItem>(`${BASE}/${id}`, {}, fetchFn));
+}
+
+export async function criarItem(payload: CreateItemPayload): Promise<StockItem> {
+	return withStatus(
+		await apiFetch<StockItem>(BASE, {
+			method: 'POST',
+			body: JSON.stringify(payload)
+		})
 	);
 }
 
-export async function fetchItemLoans(fetchFn: typeof fetch, id: string): Promise<Loan[]> {
-	return stockFetch<Loan[]>(`/stock/loans?itemId=${id}`, {}, fetchFn);
-}
-
-export async function fetchItemSuppliers(fetchFn: typeof fetch, id: string): Promise<Supplier[]> {
-	return stockFetch<Supplier[]>(`${BASE}/${id}/suppliers`, {}, fetchFn);
-}
-
-export async function fetchItemHistory(
-	fetchFn: typeof fetch,
-	id: string
-): Promise<HistoryEntry[]> {
-	const result = await stockFetch<{ history: HistoryEntry[] }>(
-		`${BASE}/${id}/history`,
-		{},
-		fetchFn
+export async function atualizarItem(
+	id: string,
+	payload: UpdateItemPayload
+): Promise<StockItem> {
+	return withStatus(
+		await apiFetch<StockItem>(`${BASE}/${id}`, {
+			method: 'PUT',
+			body: JSON.stringify(payload)
+		})
 	);
-	return result.history;
 }
 
-export async function fetchCategories(fetchFn: typeof fetch): Promise<Category[]> {
-	return stockFetch<Category[]>('/stock/categories', {}, fetchFn);
-}
-
-export function fetchStatuses(): { id: ItemStatus; label: string }[] {
-	return [
-		{ id: 'available', label: 'Disponível' },
-		{ id: 'low', label: 'Baixo' },
-		{ id: 'out', label: 'Esgotado' },
-		{ id: 'loaned', label: 'Emprestado' },
-		{ id: 'maintenance', label: 'Manutenção' }
-	];
-}
-
-export function createItem(payload: CreateItemPayload): Promise<StockItem> {
-	return stockFetch<StockItem>(BASE, {
+export async function importarCsv(
+	file: File,
+	fetchFn: typeof fetch = fetch
+): Promise<StockItem[]> {
+	const form = new FormData();
+	form.append('arquivo', file);
+	const raw = await apiFetch<StockItem[]>('/estoque/itens/import', {
 		method: 'POST',
-		body: JSON.stringify(payload)
-	});
+		body: form
+	}, fetchFn);
+	return raw.map(withStatus);
 }
 
-export function updateItem(id: string, payload: Partial<CreateItemPayload>): Promise<StockItem> {
-	return stockFetch<StockItem>(`${BASE}/${id}`, {
-		method: 'PUT',
-		body: JSON.stringify(payload)
-	});
-}
-
-export function deleteItem(id: string): Promise<void> {
-	return stockFetch<void>(`${BASE}/${id}`, { method: 'DELETE' });
-}
-
-export interface BulkResult {
-	updated: number;
-	failed: string[];
-}
-
-export function bulkAction(
-	ids: string[],
-	action: 'updateCategory' | 'delete',
-	value?: string
-): Promise<BulkResult> {
-	return stockFetch<BulkResult>('/stock/items/bulk', {
-		method: 'PATCH',
-		body: JSON.stringify({ ids, action, value })
-	});
-}
-
-export async function exportItemsCsv(params: StockParams, fetchFn: typeof fetch = fetch): Promise<void> {
-	const qs = buildQuery({
-		search: params.search,
-		category: params.categories,
-		location: params.locations,
-		status: params.statuses,
-		sort: params.sort
-	});
-	const blob = await stockFetchBlob(`${BASE}/export${qs}`, {}, fetchFn);
+export async function exportarCsv(fetchFn: typeof fetch = fetch): Promise<void> {
+	const blob = await apiFetchBlob('/estoque/itens/export', {}, fetchFn);
 	const url = URL.createObjectURL(blob);
 	const link = document.createElement('a');
 	link.href = url;
-	link.download = 'itens-do-estoque.csv';
+	link.download = 'itens.csv';
 	link.click();
 	URL.revokeObjectURL(url);
 }

@@ -81,7 +81,17 @@
 
 {#if open && !collapsed}
 	<div class="ml-5 mt-1 space-y-0.5 border-l border-border pl-3">
-		{#each item.children ?? [] as child (child.path)}
+	{#each item.children ?? [] as child (child.path)}
+		{#if child.disabled}
+			<span
+				data-testid="sidebar-subitem"
+				aria-disabled="true"
+				title="Contrato pendente (🟡) — indisponível até o backend expor o endpoint"
+				class="block cursor-not-allowed rounded border-l-2 border-transparent px-3 py-1.5 text-xs text-muted/50"
+			>
+				{child.label}
+			</span>
+		{:else}
 			<a
 				href={child.path}
 				data-testid="sidebar-subitem"
@@ -92,6 +102,7 @@
 			>
 				{child.label}
 			</a>
-		{/each}
+		{/if}
+	{/each}
 	</div>
 {/if}

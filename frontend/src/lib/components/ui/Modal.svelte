@@ -23,7 +23,14 @@
 	}: Props = $props();
 
 	const widths = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl' };
+
+	function handleKeydown(event: KeyboardEvent): void {
+		if (!open || event.key !== 'Escape') return;
+		onClose?.();
+	}
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 {#if open}
 	<div class="fixed inset-0 z-50 flex items-center justify-center p-4">

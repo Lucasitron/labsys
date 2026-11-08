@@ -3,9 +3,10 @@
 		message: string;
 		hint?: string;
 		onRetry?: () => void;
+		testid?: string;
 	}
 
-	let { message, hint, onRetry }: Props = $props();
+	let { message, hint, onRetry, testid }: Props = $props();
 </script>
 
 <div
@@ -35,6 +36,7 @@
 	{#if onRetry}
 		<button
 			type="button"
+			data-testid={testid}
 			onclick={onRetry}
 			class="flex shrink-0 items-center gap-1.5 rounded-md border border-danger/30 bg-danger/15 px-3 py-1.5 text-xs font-medium text-danger transition hover:bg-danger/25"
 		>

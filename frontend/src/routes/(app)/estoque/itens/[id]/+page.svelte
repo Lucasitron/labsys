@@ -2,39 +2,32 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import type {
-		HistoryEntry,
-		Loan,
+		EntradaResponse,
+		ItemDetail,
 		Movement,
 		MovementSummary,
 		PageInfo,
-		Supplier,
+		SaidaResponse,
 		Tone
 	} from '$lib/types/stock';
 	import {
-		entryKindMeta,
 		exitReasonMeta,
-		loanComputedMeta,
 		quantityTone,
+		categoriaMeta,
+		localizacaoLabel,
 		statusMeta
 	} from '$lib/utils/stock-status';
-	import { fmtMoney, fmtDate, fmtQty } from '$lib/utils/stock-format';
-	import { toasts, toastError } from '$lib/stores/toast';
+	import { fmtDate, fmtQty } from '$lib/utils/stock-format';
 	import {
-		deleteItem,
-		fetchItemHistory,
-		fetchItemLoans,
-		fetchItemMovements,
-		fetchItemSuppliers
-	} from '$lib/api/stock/items';
+		listarEntradasPorItem,
+		listarSaidasPorItem
+	} from '$lib/api/stock/movements';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
 	import Skeleton from '$lib/components/ui/Skeleton.svelte';
 	import TableSkeleton from '$lib/components/ui/TableSkeleton.svelte';
 	import Pagination from '$lib/components/ui/Pagination.svelte';
-	import RowActions from '$lib/components/ui/RowActions.svelte';
-	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	let { data }: PageProps = $props();
@@ -42,7 +35,6 @@
 	const detail = $derived(data.detail);
 	const loadError = $derived(data.error);
 
-	let activeTab = $state('visao');
 	const TABS: { id: string; label: string }[] = [
 		{ id: 'visao', label: 'Visão geral' },
 		{ id: 'movimentacoes', label: 'Movimentações' },
@@ -52,9 +44,15 @@
 	];
 
 	const KEY_MOV = 'movimentacoes';
-	const KEY_LOANS = 'emprestimos';
 	const KEY_SUP = 'fornecedores';
-	const KEY_HIST = 'historico';
+
+	// Abas via URL (?tab=) — URL como fonte de verdade.
+	const VALID_TABS = TABS.map((t) => t.id);
+	const activeTab = $derived(VALID_TABS.includes(data.tab) ? data.tab : 'visao');
+
+	function selectTab(id: string): void {
+		void goto(`/estoque/itens/${detail?.id}?tab=${id}`, { invalidateAll: false });
+	}
 
 	let tabLoaded = $state<Record<string, boolean>>({});
 	let tabLoading = $state<Record<string, boolean>>({});
@@ -62,55 +60,44 @@
 
 	let mov = $state<{
 		summary: MovementSummary | null;
-		movements: Movement[];
+		movements: LinhaMov[];
 		pagination: PageInfo | null;
 	} | null>(null);
 	let movPage = $state(1);
 
-	let loans = $state<Loan[] | null>(null);
-	let suppliers = $state<Supplier[] | null>(null);
-	let history = $state<HistoryEntry[] | null>(null);
+	interface LinhaMov extends Movement {
+		rotaId: string;
+		rotaTipo: 'entrada' | 'saida';
+	}
 
-	async function activate(tab: string): Promise<void> {
-		if (!detail) return;
-		activeTab = tab;
+	function toMovementIn(entrada: EntradaResponse, unidade: string): LinhaMov {
+		return {
+			id: `e-${entrada.id}`,
+			rotaId: entrada.id,
+			rotaTipo: 'entrada',
+			type: 'in',
+			item: { id: entrada.idItem, name: entrada.nomeItem ?? 'Item', unit: unidade },
+			quantity: entrada.quantidade,
+			date: entrada.dataEntrada,
+			origin: entrada.fornecedor?.nome ?? '—',
+			reference: entrada.notaFiscal ?? undefined,
+			unitValue: entrada.valorUnitario
+		};
+	}
 
-		if (tab === KEY_MOV && !tabLoaded[KEY_MOV] && !tabLoading[KEY_MOV]) {
-			await loadMovements(1);
-		} else if (tab === KEY_LOANS && loans === null && !tabLoading[KEY_LOANS]) {
-			tabLoading[KEY_LOANS] = true;
-			tabError[KEY_LOANS] = null;
-			try {
-				loans = await fetchItemLoans(fetch, detail.id);
-				tabLoaded[KEY_LOANS] = true;
-			} catch (err) {
-				tabError[KEY_LOANS] = err instanceof Error ? err.message : 'Erro ao carregar empréstimos';
-			} finally {
-				tabLoading[KEY_LOANS] = false;
-			}
-		} else if (tab === KEY_SUP && suppliers === null && !tabLoading[KEY_SUP]) {
-			tabLoading[KEY_SUP] = true;
-			tabError[KEY_SUP] = null;
-			try {
-				suppliers = await fetchItemSuppliers(fetch, detail.id);
-				tabLoaded[KEY_SUP] = true;
-			} catch (err) {
-				tabError[KEY_SUP] = err instanceof Error ? err.message : 'Erro ao carregar fornecedores';
-			} finally {
-				tabLoading[KEY_SUP] = false;
-			}
-		} else if (tab === KEY_HIST && history === null && !tabLoading[KEY_HIST]) {
-			tabLoading[KEY_HIST] = true;
-			tabError[KEY_HIST] = null;
-			try {
-				history = await fetchItemHistory(fetch, detail.id);
-				tabLoaded[KEY_HIST] = true;
-			} catch (err) {
-				tabError[KEY_HIST] = err instanceof Error ? err.message : 'Erro ao carregar histórico';
-			} finally {
-				tabLoading[KEY_HIST] = false;
-			}
-		}
+	function toMovementOut(saida: SaidaResponse, unidade: string): LinhaMov {
+		return {
+			id: `s-${saida.id}`,
+			rotaId: saida.id,
+			rotaTipo: 'saida',
+			type: 'out',
+			reason: saida.tipoSaida,
+			item: { id: saida.idItem, name: saida.nomeItem ?? 'Item', unit: unidade },
+			quantity: saida.quantidade,
+			date: saida.dataSaida,
+			destination: saida.idReferencia ?? '—',
+			reference: saida.idReferencia ?? undefined
+		};
 	}
 
 	async function loadMovements(page: number): Promise<void> {
@@ -119,8 +106,29 @@
 		tabError[KEY_MOV] = null;
 		movPage = page;
 		try {
-			const res = await fetchItemMovements(fetch, detail.id, page);
-			mov = { summary: res.summary, movements: res.movements, pagination: res.pagination };
+			const [entradas, saidas] = await Promise.all([
+				listarEntradasPorItem(detail.id, fetch),
+				listarSaidasPorItem(detail.id, fetch)
+			]);
+			const all: LinhaMov[] = [
+				...entradas.map((e) => toMovementIn(e, detail.unidadeMedida)),
+				...saidas.map((s) => toMovementOut(s, detail.unidadeMedida))
+			].sort((a, b) => b.date.localeCompare(a.date));
+
+			const pageSize = 10;
+			const totalItems = all.length;
+			const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+			const safePage = Math.min(Math.max(1, page), totalPages);
+			const start = (safePage - 1) * pageSize;
+
+			mov = {
+				summary: {
+					entries: { count: entradas.length, sum: entradas.reduce((a, e) => a + e.quantidade, 0) },
+					exits: { count: saidas.length, sum: saidas.reduce((a, s) => a + s.quantidade, 0) }
+				},
+				movements: all.slice(start, start + pageSize),
+				pagination: { page: safePage, pageSize, totalItems, totalPages }
+			};
 			tabLoaded[KEY_MOV] = true;
 		} catch (err) {
 			tabError[KEY_MOV] = err instanceof Error ? err.message : 'Erro ao carregar movimentações';
@@ -135,13 +143,12 @@
 		if (tab === KEY_MOV) {
 			tabLoaded[KEY_MOV] = false;
 			void loadMovements(movPage);
-		} else {
-			loans = null;
-			suppliers = null;
-			history = null;
-			tabLoaded[tab] = false;
-			void activate(tab);
 		}
+	}
+
+	function abrirMovimentacao(m: LinhaMov): void {
+		const base = m.rotaTipo === 'entrada' ? '/estoque/entradas/' : '/estoque/saidas/';
+		void goto(`${base}${m.rotaId}`);
 	}
 
 	// ---- meta helpers ----
@@ -159,53 +166,31 @@
 		return TONE_TEXT[quantityTone(current, minimum)];
 	}
 
-	function movementMeta(m: Movement): { label: string; color: Tone } {
-		if (m.type === 'in' && m.kind) return entryKindMeta(m.kind);
+	function movementMeta(m: LinhaMov): { label: string; color: Tone } {
 		if (m.type === 'out' && m.reason) return exitReasonMeta(m.reason);
-		return {
-			label: m.type === 'in' ? 'Entrada' : 'Saída',
-			color: m.type === 'in' ? 'success' : 'danger'
-		};
+		return { label: 'Entrada', color: 'success' };
 	}
 
-	const DOT_TONE: Record<Tone, string> = {
-		success: 'bg-success',
-		warn: 'bg-warn',
-		danger: 'bg-danger',
-		brand: 'bg-brand',
-		muted: 'bg-muted',
-		ink: 'bg-ink'
-	};
-
-	// ---- exclusão ----
-
-	let deleteOpen = $state(false);
-	let deleting = $state(false);
-
-	async function handleDelete(): Promise<void> {
-		if (!detail) return;
-		deleting = true;
-		try {
-			await deleteItem(detail.id);
-			toasts.success('Item excluído');
-			await goto('/estoque/itens', { invalidateAll: true });
-		} catch (err) {
-			toastError(err, 'Não foi possível excluir o item');
-			deleteOpen = false;
-			deleting = false;
-		}
+	function categoriaLabel(detail: ItemDetail): string {
+		return categoriaMeta(detail.categoria).label;
 	}
 </script>
 
 <svelte:head>
-	<title>{detail?.name ?? 'Item'} — Estoque — FabLab</title>
+	<title>{detail?.nome ?? 'Item'} — Estoque — FabLab</title>
 </svelte:head>
 
 {#if loadError && !detail}
-	<ErrorBanner message="Não foi possível carregar o item" hint={loadError} onRetry={invalidateAll} />
+	<div data-testid="it-detalhe-error">
+		<ErrorBanner
+			message="Não foi possível carregar o item"
+			hint={loadError}
+			onRetry={invalidateAll}
+		/>
+	</div>
 {:else if !detail}
 	<!-- Loading -->
-	<div class="space-y-4">
+	<div class="space-y-4" data-testid="it-detalhe-loading">
 		<div class="rounded-xl border border-border bg-surface p-6">
 			<Skeleton class="h-5 w-40" />
 			<Skeleton class="mt-3 h-8 w-64" />
@@ -225,403 +210,276 @@
 		</div>
 	</div>
 {:else}
-	<!-- Barra de ações -->
-	<div class="flex items-center justify-between gap-4">
-		<a
-			href="/estoque/itens"
-			class="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-ink"
-		>
-			<Icon name="chevron-left" class="h-3.5 w-3.5" /> Voltar para itens
-		</a>
-		{#if canEdit}
-			<RowActions
-				actions={[{ id: 'delete', label: 'Excluir item', icon: 'trash', tone: 'danger' }]}
-				onSelect={() => (deleteOpen = true)}
-			/>
-		{/if}
-	</div>
-
-	<!-- Hero -->
-	<section class="rounded-xl border border-border bg-surface p-6">
-		<div class="flex flex-wrap gap-5">
-			<div
-				class="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl border border-border bg-elevated"
+	<div data-testid="it-detalhe" class="space-y-4">
+		<!-- Barra de ações -->
+		<div class="flex items-center justify-between gap-4">
+			<a
+				href="/estoque/itens"
+				class="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-ink"
 			>
-				<Icon name="photo" class="h-10 w-10 text-muted/60" />
-			</div>
-			<div class="min-w-0 flex-1">
-				<p class="font-mono text-xs text-muted">{detail.code}</p>
-				<h1 class="mt-0.5 truncate text-2xl font-semibold tracking-tight text-ink">
-					{detail.name}
-				</h1>
-				<p class="mt-1 text-sm text-muted">
-					{detail.category.label} · {detail.location.label} · {detail.unit}
-				</p>
-				<p class="mt-2 text-xs text-muted">
-					Atualizado {detail.updatedRelative ?? 'recentemente'}
-					{#if detail.updatedBy}por <span class="text-ink">{detail.updatedBy}</span>{/if}
-				</p>
-			</div>
-			<StatusBadge {...statusMeta(detail.status)} />
-		</div>
-	</section>
-
-	<!-- KPIs -->
-	<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-		<div class="rounded-xl border border-border bg-surface p-4">
-			<span class="text-xs text-muted">Qtd. atual</span>
-			<div class="mt-1 flex items-baseline gap-1.5">
-				<span class="text-2xl font-semibold tracking-tight {qtyClass(detail.current, detail.minimum)}">
-					{fmtQty(detail.current)}
-				</span>
-			</div>
-			<p class="mt-1 text-[11px] text-muted">
-				{detail.current < detail.minimum ? 'abaixo do mínimo' : 'dentro do esperado'}
-			</p>
-		</div>
-
-		<div class="rounded-xl border border-border bg-surface p-4">
-			<span class="text-xs text-muted">Qtd. mínima</span>
-			<div class="mt-1 flex items-baseline gap-1.5">
-				<span class="text-2xl font-semibold tracking-tight">{fmtQty(detail.minimum)}</span>
-			</div>
-			<p class="mt-1 text-[11px] text-muted">ponto de pedido: {detail.reorderPoint ?? '—'}</p>
-		</div>
-
-		<div class="rounded-xl border border-border bg-surface p-4">
-			<span class="text-xs text-muted">Empréstimos</span>
-			<div class="mt-1 flex items-baseline gap-1.5">
-				<span class="text-2xl font-semibold tracking-tight">{detail.activeLoans}</span>
-				<span class="text-xs text-muted">ativos</span>
-			</div>
-			<p class="mt-1 text-[11px] text-muted">
-				último: {detail.lastLoan ? fmtDate(detail.lastLoan.at) : '—'}
-			</p>
-		</div>
-
-		<div class="rounded-xl border border-border bg-surface p-4">
-			<span class="text-xs text-muted">Última entrada</span>
-			<div class="mt-1 flex items-baseline gap-1.5">
-				<span class="text-2xl font-semibold tracking-tight">
-					{detail.lastEntry ? fmtDate(detail.lastEntry.at) : '—'}
-				</span>
-			</div>
-			<p class="mt-1 text-[11px] text-success">
-				{#if detail.lastEntry}
-					+{fmtQty(detail.lastEntry.quantity, detail.unit)} · {detail.lastEntry.kind}
-				{/if}
-			</p>
-		</div>
-	</div>
-
-	<!-- Abas -->
-	<section class="overflow-hidden rounded-xl border border-border bg-surface">
-		<div class="flex items-center gap-1 overflow-x-auto border-b border-border px-2" role="tablist">
-			{#each TABS as tab (tab.id)}
-				<button
-					role="tab"
-					aria-selected={activeTab === tab.id}
-					onclick={() => activate(tab.id)}
-					class="whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors {activeTab === tab.id
-						? 'border-brand text-brand'
-						: 'border-transparent text-muted hover:text-ink'}"
+				<Icon name="chevron-left" class="h-3.5 w-3.5" /> Voltar para itens
+			</a>
+			{#if canEdit}
+				<a
+					data-testid="it-detalhe-editar"
+					href={`/estoque/itens/${detail.id}/editar`}
+					class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-brand/50 hover:text-brandhi"
 				>
-					{tab.label}
-				</button>
-			{/each}
-		</div>
-
-		<div class="p-6">
-			{#if activeTab === 'visao'}
-				<div class="space-y-8">
-					{#if detail.description}
-						<div>
-							<h2 class="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
-								Descrição
-							</h2>
-							<p class="text-sm leading-relaxed text-ink">{detail.description}</p>
-						</div>
-					{/if}
-
-					<div>
-						<h2 class="mb-3 text-xs font-medium uppercase tracking-wide text-muted">
-							Especificações
-						</h2>
-						<dl
-							class="grid grid-cols-1 divide-y divide-border/50 overflow-hidden rounded-lg border border-border sm:grid-cols-[220px_1fr]"
-						>
-							{@render specRow('Código interno', detail.code, 'font-mono')}
-							{@render specRow('Categoria', detail.category.label)}
-							{@render specRow('Unidade', detail.unit)}
-							{@render specRow('Localização', detail.location.label)}
-							{@render specRow('Estoque mínimo', fmtQty(detail.minimum, detail.unit))}
-							{@render specRow('Estoque máximo', detail.maximum != null ? fmtQty(detail.maximum, detail.unit) : '—')}
-							{@render specRow('Ponto de pedido', detail.reorderPoint != null ? fmtQty(detail.reorderPoint, detail.unit) : '—')}
-							{@render specRow('Lead time (dias)', detail.leadTimeDays != null ? String(detail.leadTimeDays) : '—')}
-							{@render specRow('Valor unitário', fmtMoney(detail.unitValue))}
-						</dl>
-					</div>
-
-					{#if detail.bomUsage && detail.bomUsage.length > 0}
-						<div>
-							<h2 class="mb-3 text-xs font-medium uppercase tracking-wide text-muted">
-								Usado em (BOM)
-							</h2>
-							<div class="divide-y divide-border border border-border rounded-lg">
-								{#each detail.bomUsage as use (use.projectId)}
-									<div class="flex items-center justify-between px-4 py-2.5">
-										<span class="text-sm text-ink">{use.projectName}</span>
-										<span class="font-mono text-sm text-muted">
-											{use.qty} {use.unit}/unidade
-										</span>
-									</div>
-								{/each}
-							</div>
-						</div>
-					{/if}
-				</div>
-
-			{:else if activeTab === 'movimentacoes'}
-				{#if tabLoading[KEY_MOV] && !mov}
-					<TableSkeleton rows={5} />
-				{:else if tabError[KEY_MOV] && !mov}
-					<ErrorBanner
-						message="Movimentações indisponíveis"
-						hint={tabError[KEY_MOV]}
-						onRetry={() => retryTab(KEY_MOV)}
-					/>
-				{:else if mov && mov.movements.length === 0}
-					<EmptyState
-						icon="box"
-						title="Sem movimentações"
-						description="Este item ainda não registrou entradas ou saídas."
-					/>
-				{:else if mov}
-					<div class="space-y-4">
-						<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-							<div class="rounded-lg border border-success/30 bg-success/5 px-4 py-3">
-								<span class="text-xs text-muted">Entradas</span>
-								<p class="mt-0.5 text-lg font-semibold text-success">
-									+{mov.summary?.entries?.count ?? 0} · {fmtQty(
-										mov.summary?.entries?.sum ?? 0,
-										detail.unit
-									)}
-								</p>
-							</div>
-							<div class="rounded-lg border border-danger/30 bg-danger/5 px-4 py-3">
-								<span class="text-xs text-muted">Saídas</span>
-								<p class="mt-0.5 text-lg font-semibold text-danger">
-									−{mov.summary?.exits?.count ?? 0} · {fmtQty(
-										mov.summary?.exits?.sum ?? 0,
-										detail.unit
-									)}
-								</p>
-							</div>
-						</div>
-
-						<div class="overflow-x-auto">
-							<table class="w-full text-sm">
-								<thead>
-									<tr
-										class="border-b border-border text-left text-[11px] uppercase tracking-wide text-muted"
-									>
-										<th class="px-4 py-2.5 font-medium">Data</th>
-										<th class="px-4 py-2.5 font-medium">Tipo</th>
-										<th class="px-4 py-2.5 text-right font-medium">Qtd</th>
-										<th class="px-4 py-2.5 font-medium">Referência</th>
-										<th class="px-4 py-2.5 font-medium">Responsável</th>
-									</tr>
-								</thead>
-								<tbody class="divide-y divide-border">
-									{#each mov.movements as m (m.id)}
-										{@const meta = movementMeta(m)}
-										<tr>
-											<td class="px-4 py-3 text-muted">{fmtDate(m.date)}</td>
-											<td class="px-4 py-3">
-												<StatusBadge label={meta.label} color={meta.color} />
-											</td>
-											<td
-												class="px-4 py-3 text-right font-mono {m.type === 'in' ? 'text-success' : 'text-danger'}"
-											>
-												{m.type === 'in' ? '+' : '−'}{fmtQty(m.quantity, m.item.unit)}
-											</td>
-											<td class="px-4 py-3 text-muted">{m.reference ?? '—'}</td>
-											<td class="px-4 py-3 text-muted">{m.responsible?.name ?? '—'}</td>
-										</tr>
-									{/each}
-								</tbody>
-							</table>
-						</div>
-
-						<div class="border-t border-border pt-3">
-							<Pagination
-								page={movPage}
-								totalPages={mov.pagination?.totalPages ?? 0}
-								totalItems={mov.pagination?.totalItems}
-								onPage={loadMovements}
-								label="movimentações"
-							/>
-						</div>
-					</div>
-				{/if}
-
-			{:else if activeTab === 'emprestimos'}
-				{#if tabLoading[KEY_LOANS] && loans === null}
-					<TableSkeleton rows={5} />
-				{:else if tabError[KEY_LOANS] && loans === null}
-					<ErrorBanner
-						message="Empréstimos indisponíveis"
-						hint={tabError[KEY_LOANS]}
-						onRetry={() => retryTab(KEY_LOANS)}
-					/>
-				{:else if loans && loans.length === 0}
-					<EmptyState
-						icon="arrow-uturn-left"
-						title="Sem empréstimos"
-						description="Nenhum empréstimo registrado para este item."
-					/>
-				{:else if loans}
-					<div class="overflow-x-auto">
-						<table class="w-full text-sm">
-							<thead>
-								<tr
-									class="border-b border-border text-left text-[11px] uppercase tracking-wide text-muted"
-								>
-									<th class="px-4 py-2.5 font-medium">Tomador</th>
-									<th class="px-4 py-2.5 font-medium">Finalidade</th>
-									<th class="px-4 py-2.5 font-medium">Qtd</th>
-									<th class="px-4 py-2.5 font-medium">Retirada</th>
-									<th class="px-4 py-2.5 font-medium">Prazo</th>
-									<th class="px-4 py-2.5 font-medium">Status</th>
-								</tr>
-							</thead>
-							<tbody class="divide-y divide-border">
-								{#each loans as l (l.id)}
-									{@const overdue = loanComputedMeta(l.computed).color === 'danger'}
-									<tr class:border-l-2={overdue} class:border-danger={overdue}>
-										<td class="px-4 py-3">
-											<div class="flex items-center gap-2">
-												<Avatar
-													name={l.borrower.name}
-													initialsOverride={l.borrower.initials}
-													size="xs"
-												/>
-												<span class="text-ink">{l.borrower.name}</span>
-											</div>
-										</td>
-										<td class="px-4 py-3 text-muted">{l.purpose ?? '—'}</td>
-										<td class="px-4 py-3 font-mono">{fmtQty(l.quantity, l.item.unit)}</td>
-										<td class="px-4 py-3 text-muted">{fmtDate(l.borrowDate)}</td>
-										<td class="px-4 py-3 text-muted">
-											{fmtDate(l.dueDate)}
-											{#if l.computed === 'atrasado' && l.overdueDays > 0}
-												<span class="ml-1 text-xs font-semibold text-danger">
-													(atrasado {l.overdueDays}d)
-												</span>
-											{:else if l.computed === 'vence_hoje'}
-												<span class="ml-1 text-xs font-semibold text-warn">(hoje)</span>
-											{/if}
-										</td>
-										<td class="px-4 py-3">
-											<StatusBadge {...loanComputedMeta(l.computed)} />
-										</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
-				{/if}
-
-			{:else if activeTab === 'fornecedores'}
-				{#if tabLoading[KEY_SUP] && suppliers === null}
-					<TableSkeleton rows={5} />
-				{:else if tabError[KEY_SUP] && suppliers === null}
-					<ErrorBanner
-						message="Fornecedores indisponíveis"
-						hint={tabError[KEY_SUP]}
-						onRetry={() => retryTab(KEY_SUP)}
-					/>
-				{:else if suppliers && suppliers.length === 0}
-					<EmptyState
-						icon="truck"
-						title="Sem fornecedores"
-						description="Nenhum fornecedor vinculado a este item."
-					/>
-				{:else if suppliers}
-					<div class="overflow-x-auto">
-						<table class="w-full text-sm">
-							<thead>
-								<tr
-									class="border-b border-border text-left text-[11px] uppercase tracking-wide text-muted"
-								>
-									<th class="px-4 py-2.5 font-medium">Fornecedor</th>
-									<th class="px-4 py-2.5 font-medium">Última compra</th>
-									<th class="px-4 py-2.5 text-right font-medium">Valor</th>
-									<th class="px-4 py-2.5 font-medium">Itens</th>
-								</tr>
-							</thead>
-							<tbody class="divide-y divide-border">
-								{#each suppliers as s (s.id)}
-									<tr>
-										<td class="px-4 py-3">
-											<div class="flex items-center gap-2">
-												<Avatar name={s.name} size="xs" />
-												<div>
-													<p class="text-ink">{s.name}</p>
-													{#if s.lastPurchase?.notaFiscal}
-														<p class="text-xs text-muted">NF {s.lastPurchase.notaFiscal}</p>
-													{/if}
-												</div>
-											</div>
-										</td>
-										<td class="px-4 py-3 text-muted">
-											{s.lastPurchase ? fmtDate(s.lastPurchase.date) : '—'}
-										</td>
-										<td class="px-4 py-3 text-right font-mono">
-											{fmtMoney(s.lastPurchase?.value)}
-										</td>
-										<td class="px-4 py-3 text-muted">{s.itemsCount}</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
-				{/if}
-
-			{:else if activeTab === 'historico'}
-				{#if tabLoading[KEY_HIST] && history === null}
-					<TableSkeleton rows={5} />
-				{:else if tabError[KEY_HIST] && history === null}
-					<ErrorBanner
-						message="Histórico indisponível"
-						hint={tabError[KEY_HIST]}
-						onRetry={() => retryTab(KEY_HIST)}
-					/>
-				{:else if history && history.length === 0}
-					<EmptyState
-						icon="clock"
-						title="Sem histórico"
-						description="Nenhuma alteração registrada para este item."
-					/>
-				{:else if history}
-					<ul role="list" class="mx-2">
-						{#each history as entry (entry.id)}
-							<li class="relative flex gap-3 pb-6 pl-4 last:pb-0">
-								<span
-									class="absolute left-0 top-1.5 h-2 w-2 rounded-full {DOT_TONE[entry.tone]}"
-									aria-hidden="true"></span>
-								<span class="absolute bottom-0 left-[3px] top-5 w-px bg-border" aria-hidden="true"></span>
-								<div>
-									<p class="text-sm font-medium text-ink">{entry.title}</p>
-									<p class="mt-0.5 text-xs text-muted">{entry.by} · {fmtDate(entry.at)}</p>
-								</div>
-							</li>
-						{/each}
-					</ul>
-				{/if}
+					<Icon name="pencil" class="h-4 w-4" /> Editar
+				</a>
 			{/if}
 		</div>
-	</section>
+
+		<!-- Hero -->
+		<section class="rounded-xl border border-border bg-surface p-6">
+			<div class="flex flex-wrap gap-5">
+				<div
+					class="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl border border-border bg-elevated"
+				>
+					<Icon name="photo" class="h-10 w-10 text-muted/60" />
+				</div>
+				<div class="min-w-0 flex-1">
+					<h1 class="mt-0.5 truncate text-2xl font-semibold tracking-tight text-ink">
+						{detail.nome}
+					</h1>
+					<p class="mt-1 text-sm text-muted">
+						{categoriaLabel(detail)} · {detail.unidadeMedida} ·
+						{localizacaoLabel(detail.localizacao)}
+					</p>
+				</div>
+				<StatusBadge {...statusMeta(detail.status)} />
+			</div>
+		</section>
+
+		<!-- KPIs reais (derivados do backend) -->
+		<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+			<div class="rounded-xl border border-border bg-surface p-4">
+				<span class="text-xs text-muted">Qtd. atual</span>
+				<div class="mt-1 flex items-baseline gap-1.5">
+					<span
+						class="text-2xl font-semibold tracking-tight {qtyClass(detail.quantidadeAtual, detail.estoqueMinimo)}"
+					>
+						{fmtQty(detail.quantidadeAtual, detail.unidadeMedida)}
+					</span>
+				</div>
+				<p class="mt-1 text-[11px] text-muted">
+					{detail.quantidadeAtual < detail.estoqueMinimo ? 'abaixo do mínimo' : 'dentro do esperado'}
+				</p>
+			</div>
+
+			<div class="rounded-xl border border-border bg-surface p-4">
+				<span class="text-xs text-muted">Qtd. mínima</span>
+				<div class="mt-1 flex items-baseline gap-1.5">
+					<span class="text-2xl font-semibold tracking-tight">
+						{fmtQty(detail.estoqueMinimo, detail.unidadeMedida)}
+					</span>
+				</div>
+				<p class="mt-1 text-[11px] text-muted">em {detail.unidadeMedida}</p>
+			</div>
+
+			<div class="rounded-xl border border-border bg-surface p-4">
+				<span class="text-xs text-muted">Unidade de medida</span>
+				<div class="mt-1 flex items-baseline gap-1.5">
+					<span class="text-2xl font-semibold tracking-tight">
+						{detail.unidadeMedida || '—'}
+					</span>
+				</div>
+				<p class="mt-1 text-[11px] text-muted">unidade de referência</p>
+			</div>
+
+			<div class="rounded-xl border border-border bg-surface p-4">
+				<span class="text-xs text-muted">Localização</span>
+				<div class="mt-1 flex items-baseline gap-1.5">
+					<span class="text-lg font-semibold tracking-tight">
+						{localizacaoLabel(detail.localizacao)}
+					</span>
+				</div>
+				<p class="mt-1 text-[11px] text-muted">
+					{detail.localizacao ? `A: ${detail.localizacao.armario}` : 'sem localização definida'}
+				</p>
+			</div>
+		</div>
+
+		<!-- Abas -->
+		<section class="overflow-hidden rounded-xl border border-border bg-surface">
+			<div class="flex items-center gap-1 overflow-x-auto border-b border-border px-2" role="tablist">
+				{#each TABS as tab (tab.id)}
+					<button
+						data-testid="it-tab-{tab.id}"
+						role="tab"
+						aria-selected={activeTab === tab.id}
+						onclick={() => selectTab(tab.id)}
+						class="whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors {activeTab === tab.id
+							? 'border-brand text-brand'
+							: 'border-transparent text-muted hover:text-ink'}"
+					>
+						{tab.label}
+					</button>
+				{/each}
+			</div>
+
+			<div class="p-6">
+				{#if activeTab === 'visao'}
+					<div class="space-y-8">
+						{#if detail.descricao}
+							<div>
+								<h2 class="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
+									Descrição
+								</h2>
+								<p class="text-sm leading-relaxed text-ink">{detail.descricao}</p>
+							</div>
+						{/if}
+
+						<div>
+							<h2 class="mb-3 text-xs font-medium uppercase tracking-wide text-muted">
+								Especificações
+							</h2>
+							<dl
+								class="grid grid-cols-1 divide-y divide-border/50 overflow-hidden rounded-lg border border-border sm:grid-cols-[220px_1fr]"
+							>
+								{@render specRow('Categoria', categoriaLabel(detail))}
+								{@render specRow('Unidade', detail.unidadeMedida)}
+								{@render specRow('Localização', localizacaoLabel(detail.localizacao))}
+								{@render specRow(
+									'Estoque mínimo',
+									fmtQty(detail.estoqueMinimo, detail.unidadeMedida)
+								)}
+								{@render specRow(
+									'Estoque atual',
+									fmtQty(detail.quantidadeAtual, detail.unidadeMedida)
+								)}
+							</dl>
+						</div>
+					</div>
+
+				{:else if activeTab === 'movimentacoes'}
+					<div data-testid="it-tab-movimentacoes">
+						{#if tabLoading[KEY_MOV] && !mov}
+							<TableSkeleton rows={5} />
+						{:else if tabError[KEY_MOV] && !mov}
+							<ErrorBanner
+								message="Movimentações indisponíveis"
+								hint={tabError[KEY_MOV]}
+								onRetry={() => retryTab(KEY_MOV)}
+							/>
+						{:else if mov && mov.movements.length === 0}
+							<EmptyState
+								icon="box"
+								title="Sem movimentações"
+								description="Este item ainda não registrou entradas ou saídas."
+							/>
+						{:else if mov}
+							<div class="space-y-4">
+								<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+									<div class="rounded-lg border border-success/30 bg-success/5 px-4 py-3">
+										<span class="text-xs text-muted">Entradas</span>
+										<p class="mt-0.5 text-lg font-semibold text-success">
+											+{mov.summary?.entries?.count ?? 0} · {fmtQty(
+												mov.summary?.entries?.sum ?? 0,
+												detail.unidadeMedida
+											)}
+										</p>
+									</div>
+									<div class="rounded-lg border border-danger/30 bg-danger/5 px-4 py-3">
+										<span class="text-xs text-muted">Saídas</span>
+										<p class="mt-0.5 text-lg font-semibold text-danger">
+											−{mov.summary?.exits?.count ?? 0} · {fmtQty(
+												mov.summary?.exits?.sum ?? 0,
+												detail.unidadeMedida
+											)}
+										</p>
+									</div>
+								</div>
+
+								<div class="overflow-x-auto">
+									<table class="w-full text-sm">
+										<thead>
+											<tr
+												class="border-b border-border text-left text-[11px] uppercase tracking-wide text-muted"
+											>
+												<th class="px-4 py-2.5 font-medium">Data</th>
+												<th class="px-4 py-2.5 font-medium">Tipo</th>
+												<th class="px-4 py-2.5 text-right font-medium">Qtd</th>
+												<th class="px-4 py-2.5 font-medium">Referência</th>
+											</tr>
+										</thead>
+										<tbody class="divide-y divide-border">
+											{#each mov.movements as m (m.id)}
+												{@const meta = movementMeta(m)}
+												<tr
+													data-testid="mv-linha"
+													onclick={() => abrirMovimentacao(m)}
+													class="cursor-pointer transition-colors hover:bg-elevated/40"
+												>
+													<td class="px-4 py-3 text-muted">{fmtDate(m.date)}</td>
+													<td class="px-4 py-3">
+														<StatusBadge label={meta.label} color={meta.color} />
+													</td>
+													<td
+														class="px-4 py-3 text-right font-mono {m.type === 'in' ? 'text-success' : 'text-danger'}"
+													>
+														{m.type === 'in' ? '+' : '−'}{fmtQty(m.quantity, m.item.unit)}
+													</td>
+													<td class="px-4 py-3 text-muted">
+														<a
+															href={m.rotaTipo === 'entrada'
+																? `/estoque/entradas/${m.rotaId}`
+																: `/estoque/saidas/${m.rotaId}`}
+															class="text-brandhi transition-colors hover:text-brand"
+															onclick={(e) => e.stopPropagation()}
+														>
+															{m.reference ?? 'Ver detalhe'}
+														</a>
+													</td>
+												</tr>
+											{/each}
+										</tbody>
+									</table>
+								</div>
+
+								<div class="border-t border-border pt-3">
+									<Pagination
+										page={movPage}
+										totalPages={mov.pagination?.totalPages ?? 0}
+										totalItems={mov.pagination?.totalItems}
+										onPage={loadMovements}
+										label="movimentações"
+									/>
+								</div>
+							</div>
+						{/if}
+					</div>
+
+				{:else if activeTab === 'emprestimos'}
+					<div data-testid="it-tab-emprestimos">
+						<EmptyState
+							icon="arrow-uturn-left"
+							title="Sem empréstimos"
+							description="Nenhum empréstimo registrado para este item. (R-9: histórico por item pendente de contrato) 🟡"
+						/>
+					</div>
+
+				{:else if activeTab === 'fornecedores'}
+					<div data-testid="it-tab-fornecedores">
+						<EmptyState
+							icon="truck"
+							title="Sem fornecedores"
+							description="Nenhum fornecedor vinculado a este item."
+						/>
+					</div>
+
+				{:else if activeTab === 'historico'}
+					<div data-testid="it-tab-historico">
+						<EmptyState
+							icon="clock"
+							title="Sem histórico"
+							description="Nenhuma alteração registrada para este item."
+						/>
+					</div>
+				{/if}
+			</div>
+		</section>
+	</div>
 {/if}
 
 {#snippet specRow(label: string, value: string, extra = '')}
@@ -630,13 +488,3 @@
 		<dd class="px-4 py-2.5 text-sm {extra}">{value}</dd>
 	</div>
 {/snippet}
-
-<ConfirmDialog
-	open={deleteOpen}
-	title="Excluir item"
-	message={`Esta ação apagará "${detail?.code ?? ''}" do estoque. Ela não pode ser desfeita.`}
-	confirmLabel="Excluir"
-	loading={deleting}
-	onCancel={() => (deleteOpen = false)}
-	onConfirm={handleDelete}
-/>

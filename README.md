@@ -1,108 +1,81 @@
 # labSys — Sistema de Gestão FabLab
 
-Sistema gerencial completo para um Fab Lab / Makerspace. **Backend monólito modular em PHP 8.3 +
-Laravel 12 (MVC)**, frontend **SvelteKit + TypeScript + Tailwind CSS** (SPA, adapter-node),
-infraestrutura com **PostgreSQL** (schema por módulo), **Docker Compose** e **Tailscale**.
-Ambiente local (Ubuntu Server + Docker Compose + Tailscale), sem nuvem.
+Sistema gerencial (ERP) para um Fab Lab / Makerspace: **um monólito modular em PHP/Laravel (MVC)**
+no backend e uma **SPA em SvelteKit** no frontend, sobre **PostgreSQL** único com schema por módulo.
+Execução local/servidor (Ubuntu + Docker Compose + Tailscale). Sem nuvem, sem microsserviços.
 
-## Visão Geral da Arquitetura
+## Arquitetura
 
 ```
-                     Internet / Tailscale
-                             │
-                        ┌────▼─────┐
-                        │  Nginx   │ 80/443 (termina TLS)
-                        └────┬─────┘
-                             │  proxy_pass → app:8080
-                        ┌────▼────────────────────────┐
-                        │  app     (Laravel, :8080)   │
-                        │  worker  (queue:work)       │
-                        │  scheduler (schedule:run)   │
-                        └────┬────────────────────────┘
-                             │
-                        ┌────▼────────────────────────┐
-                        │  postgres 16 — banco fablab │
-                        │  schemas: auth, rh, estoque,│
-                        │  vendas, financeiro,        │
-                        │  producao, notification     │
-                        └──────────────────────────────┘
+   Cliente (SPA SvelteKit)
+            │  HTTP  /api  (Bearer token)
+            ▼
+   ┌───────────────────────────────┐
+   │  backend/  — Laravel 12 (:8080)│
+   │  módulos: Auth · Rh · Estoque  │
+   │  Vendas · Financeiro · Producao│
+   │  Notification · Dashboard      │
+   └───────────────┬───────────────┘
+                   ▼
+      PostgreSQL `fablab` (schema por módulo)
 ```
 
-Um único backend Laravel servido em **uma** porta (`8080`) e **um** PostgreSQL (`fablab`) com
-**schema por módulo**. O SPA fala com **um único endpoint HTTP**. **Sem** Eureka, API Gateway,
-banco por serviço ou HTTP entre módulos. Detalhes de infraestrutura em
-[`infra/docs/ARCHITECTURE.md`](infra/docs/ARCHITECTURE.md); as specs de domínio (fonte da verdade,
-não versionadas) ficam em `.opencode/specs/` no ambiente de desenvolvimento.
+- **Comunicação:** dentro do processo — chamada direta ao `Contract` do módulo dono; assíncrono por
+  `Event`/`Listener`/`Job` do Laravel (fila `database`). Sem Eureka, Gateway ou banco por serviço.
+- **Front:** `frontend/` (SvelteKit + TypeScript + Tailwind, `adapter-node`), fala com **um** endpoint
+  `/api`. `VITE_API_BASE_URL` **deve incluir `/api`**.
 
-## Módulos (bounded contexts)
-
-Namespaces layer-first: `App\Models\<Modulo>`, `App\Http\Controllers\<Modulo>`, `App\Services\<Modulo>` etc. · schema próprio · rotas `/api/<modulo>/**` (contrato com o front).
-
-| Módulo | Schema | Responsabilidade |
-| :--- | :--- | :--- |
-| `Auth` | `auth` | Autenticação, JWT, RBAC, acesso RFID |
-| `Rh` | `rh` | Pessoas, processo seletivo, ponto, horas, LMS |
-| `Estoque` | `estoque` | Insumos, ferramentas, fornecedores, BOM, empréstimos |
-| `Vendas` | `vendas` | Clientes, orçamentos, Kanban, marketplace, CRM |
-| `Financeiro` | `financeiro` | Fluxo de caixa, custos (Job Order Costing) |
-| `Producao` | `producao` | Projetos, tarefas, máquinas, 5S, Kanban de encomendas |
-| `Notification` | `notification` | E-mails e notificações transversais |
-| `Dashboard` | — | Agregador (sem persistência); chama `Contracts` in-process |
-
-## Estrutura do Repositório
+## Estrutura do repositório
 
 ```
 labSys/
-├── backend/                    # Monólito Laravel (app/{Models,Http,Services,...}/<Modulo>, MVC)
-├── frontend/                   # SPA SvelteKit + TS + Tailwind
-├── infra/                      # Docker Compose, Nginx, PostgreSQL
-│   └── docs/                   # ARCHITECTURE, DEPLOY, RUNBOOK
-└── *-service/ , web/           # LEGADO (Java/Spring) — referência AS-IS, a remover
+├── backend/            # monólito modular Laravel (PHP 8.3) — porta 8080
+├── frontend/           # SPA SvelteKit
+├── infra/              # Docker Compose, Nginx, entrypoint
+├── docs/               # documentação local (não versionada): contract, mockups, archive
+└── .opencode/          # specs, estado vivo e agentes (pipeline multiagente)
 ```
 
-## Pré-requisitos
+## Como executar
 
-*   Docker + Docker Compose
-*   Node.js 20+ e npm (para o frontend)
-*   (Opcional, ciclo completo) PHP 8.3 + Composer, se rodar o backend fora do Docker
+```sh
+# 1) infraestrutura (Postgres + app + worker + scheduler)
+docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up -d
 
-## Como Executar
+# 2) frontend
+cd frontend && npm ci
+VITE_API_BASE_URL=http://localhost:8080/api npm run dev
+```
 
-1.  Configurar ambiente e subir a stack (backend + Postgres):
-
-    ```sh
-    cp infra/.env.example infra/.env && chmod 600 infra/.env   # preencher APP_KEY/JWT_SECRET/POSTGRES_*
-    docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up -d --build
-    ```
-
-    API em `http://localhost:8080` (health: `GET /up`). Seed dev: `admin@fablab.org` / `admin123`.
-
-2.  Iniciar o frontend:
-
-    ```sh
-    cd frontend && npm install && npm run dev    # http://localhost:5173 (proxy /api → :8080)
-    ```
+- App: `http://localhost:8080/api` · Front: `http://localhost:5173`
+- Admin de desenvolvimento (seed): `admin` / `admin123` — **dev-only**.
 
 ## Testes
 
 ```sh
-cd backend && php artisan test       # ou: composer test
+# backend (PHP 8.3 + PostgreSQL de teste em 127.0.0.1:5433)
+cd backend && php artisan test
+
+# frontend
+cd frontend && npm run check && npm run test
 ```
+
+O CI roda as duas suítes por paths: `.github/workflows/backend-ci.yml` e
+`.github/workflows/frontend-ci.yml`.
 
 ## Git Flow
 
-Branches principais: `main` (produção), `testing` (homologação), `development` (dev ativo).
-
-*   Nunca commitar direto em `main` ou `testing`.
-*   Trabalhar em `development`, `dev/backend`/`dev/frontend` ou `feature/*`/`bugfix/*`/`hotfix/*`.
-*   Ao concluir uma etapa: merge para `development` → `testing` → `main`.
-*   Commits seguem **Conventional Commits** (`feat`, `fix`, `docs`, `chore`, `test`, `security`, ...).
+`main` (produção) · `testing` (homologação) · `development` (merge-only) → `dev/backend` + `dev/frontend`.
+Nunca commitar direto em `main`/`testing`/`development`; commits de back e front são separados.
+Detalhes em [`docs/GITFLOW.md`](docs/GITFLOW.md).
 
 ## Documentação
 
-*   Backend: [`backend/README.md`](backend/README.md)
-*   Frontend: [`frontend/README.md`](frontend/README.md)
-*   Infraestrutura: [`infra/docs/`](infra/docs/) (ARCHITECTURE, DEPLOY, RUNBOOK)
+- **Estado e linha do tempo:** `.opencode/specs/system/STATUS.md`
+- **Arquitetura / convenções / RBAC / agentes:** `.opencode/specs/system/`
+- **Contrato Backend × Frontend:** [`docs/contract.gap.md`](docs/contract.gap.md)
+- **Mockups por módulo:** `docs/mokups/`
+- **Histórico (arquivado):** `docs/_archive/2026-10-19/`
 
 ## Licença
 

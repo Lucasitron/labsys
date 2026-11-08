@@ -1,8 +1,13 @@
-import { buildQuery, stockFetch } from './stock/request';
+import { apiFetch, buildQuery } from './client';
 
 export interface PersonOption {
 	id: string;
 	name: string;
+}
+
+interface RawPessoa {
+	id: number | string;
+	nomeCompleto: string;
 }
 
 export async function searchPeople(
@@ -10,5 +15,6 @@ export async function searchPeople(
 	fetchFn: typeof fetch = fetch
 ): Promise<PersonOption[]> {
 	const qs = buildQuery({ search });
-	return stockFetch<PersonOption[]>(`/rh/people${qs}`, {}, fetchFn);
+	const res = await apiFetch<{ pessoas: RawPessoa[] }>(`/rh/pessoas${qs}`, {}, fetchFn);
+	return (res.pessoas ?? []).map((p) => ({ id: String(p.id), name: p.nomeCompleto }));
 }

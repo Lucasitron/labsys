@@ -3,13 +3,15 @@ import type { ApiError } from '$lib/api/client';
 
 const gotoMock = vi.fn();
 const logoutMock = vi.fn();
+const applyTokensMock = vi.fn();
 
 vi.mock('$app/navigation', () => ({
 	goto: gotoMock
 }));
 
 vi.mock('$lib/stores/auth', () => ({
-	logout: logoutMock
+	logout: logoutMock,
+	applyRefreshedTokens: applyTokensMock
 }));
 
 vi.mock('$app/environment', () => ({
@@ -32,6 +34,7 @@ beforeEach(() => {
 	vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
 	gotoMock.mockReset();
 	logoutMock.mockReset();
+	applyTokensMock.mockReset();
 });
 
 afterEach(() => {
@@ -152,6 +155,43 @@ describe('apiFetch', () => {
 		expect((err as ApiError).code).toBe('INVALID_CREDENTIALS');
 		expect(logoutMock).not.toHaveBeenCalled();
 		expect(gotoMock).not.toHaveBeenCalled();
+	});
+
+	it('401 com refreshToken válido tenta POST /auth/refresh e repete sem logout', async () => {
+		window.history.pushState({}, '', '/estoque');
+		window.localStorage.setItem(
+			'fablab.auth',
+			JSON.stringify({ user: { id: 'u1' }, token: 'old', refreshToken: 'rt-1' })
+		);
+		const fetchMock = vi.fn<typeof fetch>().mockImplementation((url) => {
+			if (String(url).endsWith('/auth/refresh')) {
+				return Promise.resolve(jsonResponse({ accessToken: 'new', refreshToken: 'rt-2' }));
+			}
+			if (fetchMock.mock.calls.length >= 2) {
+				return Promise.resolve(jsonResponse({ ok: true }));
+			}
+			return Promise.resolve(jsonResponse({ error: 'EXPIRED' }, 401));
+		});
+		try {
+			const { apiFetch } = await freshClient();
+
+			const data = await apiFetch<{ ok: boolean }>(
+				'/estoque/itens',
+				{ headers: { Authorization: 'Bearer old' } },
+				fetchMock
+			);
+
+			expect(data).toEqual({ ok: true });
+			expect(fetchMock).toHaveBeenCalledTimes(3);
+			expect(String(fetchMock.mock.calls[1]![0])).toBe('http://api.test/auth/refresh');
+			expect(applyTokensMock).toHaveBeenCalledWith('new', 'rt-2');
+			const [, retryInit] = fetchMock.mock.calls[2]!;
+			expect((retryInit!.headers as Headers).get('Authorization')).toBe('Bearer new');
+			expect(logoutMock).not.toHaveBeenCalled();
+			expect(gotoMock).not.toHaveBeenCalled();
+		} finally {
+			window.localStorage.removeItem('fablab.auth');
+		}
 	});
 
 	it('flag anti-duplicidade evita logout e navegação duplicados em 401 concorrentes', async () => {

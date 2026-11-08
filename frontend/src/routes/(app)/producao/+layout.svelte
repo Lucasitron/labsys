@@ -3,7 +3,6 @@
 	import { page } from '$app/stores';
 	import { menuItems } from '$lib/config/menu';
 	import { auth } from '$lib/stores/auth';
-	import { canSee5S, canSeeAdvertencias } from '$lib/utils/permissions';
 
 	let { children }: { children: import('svelte').Snippet } = $props();
 
@@ -13,15 +12,7 @@
 	const user = $derived(get(auth).user);
 
 	const visibleChildren = $derived(
-		(producao?.children ?? []).filter((child) => {
-			if (child.path.startsWith('/producao/5s/advertencias')) {
-				return canSeeAdvertencias(user);
-			}
-			if (child.path.startsWith('/producao/5s/')) {
-				return canSee5S(user);
-			}
-			return true;
-		})
+		(producao?.children ?? []).filter((child) => child.canSee?.(user) ?? true)
 	);
 
 	const isActive = (path: string) => activePath === path || activePath.startsWith(path + '/');

@@ -1,28 +1,67 @@
-import type { CreateMovementPayload, MovementParams, MovementsResult } from '$lib/types/stock';
-import { buildQuery, stockFetch } from './request';
+import type {
+	CreateEntradaPayload,
+	CreateSaidaPayload,
+	EntradaResponse,
+	SaidaResponse
+} from '$lib/types/stock';
+import { apiFetch, buildQuery } from '$lib/api/client';
 
-const BASE = '/stock/movements';
+// ---- Entradas ----
 
-export async function fetchMovements(
-	fetchFn: typeof fetch,
-	params: MovementParams
-): Promise<MovementsResult> {
-	const qs = buildQuery({
-		type: params.type,
-		page: params.page,
-		pageSize: params.pageSize,
-		search: params.search,
-		kind: params.kinds,
-		reason: params.reasons,
-		period: params.period,
-		itemId: params.itemId
-	});
-	return stockFetch<MovementsResult>(`${BASE}${qs}`, {}, fetchFn);
+function mapEntrada(raw: EntradaResponse): EntradaResponse {
+	return {
+		...raw,
+		quantidade: Number(raw.quantidade),
+		valorUnitario: raw.valorUnitario == null ? raw.valorUnitario : Number(raw.valorUnitario)
+	};
 }
 
-export function createMovement(payload: CreateMovementPayload): Promise<unknown> {
-	return stockFetch<unknown>(BASE, {
+function mapSaida(raw: SaidaResponse): SaidaResponse {
+	return { ...raw, quantidade: Number(raw.quantidade) };
+}
+
+export async function listarEntradasPorItem(
+	idItem: string,
+	fetchFn: typeof fetch = fetch
+): Promise<EntradaResponse[]> {
+	const raw = await apiFetch<EntradaResponse[]>(`/estoque/entradas${buildQuery({ idItem })}`, {}, fetchFn);
+	return raw.map(mapEntrada);
+}
+
+export async function buscarEntrada(
+	id: string,
+	fetchFn: typeof fetch = fetch
+): Promise<EntradaResponse> {
+	return mapEntrada(await apiFetch<EntradaResponse>(`/estoque/entradas/${id}`, {}, fetchFn));
+}
+
+export async function criarEntrada(payload: CreateEntradaPayload): Promise<EntradaResponse> {
+	return mapEntrada(await apiFetch<EntradaResponse>('/estoque/entradas', {
 		method: 'POST',
 		body: JSON.stringify(payload)
-	});
+	}));
+}
+
+// ---- Saídas ----
+
+export async function listarSaidasPorItem(
+	idItem: string,
+	fetchFn: typeof fetch = fetch
+): Promise<SaidaResponse[]> {
+	const raw = await apiFetch<SaidaResponse[]>(`/estoque/saidas${buildQuery({ idItem })}`, {}, fetchFn);
+	return raw.map(mapSaida);
+}
+
+export async function buscarSaida(
+	id: string,
+	fetchFn: typeof fetch = fetch
+): Promise<SaidaResponse> {
+	return mapSaida(await apiFetch<SaidaResponse>(`/estoque/saidas/${id}`, {}, fetchFn));
+}
+
+export async function criarSaida(payload: CreateSaidaPayload): Promise<SaidaResponse> {
+	return mapSaida(await apiFetch<SaidaResponse>('/estoque/saidas', {
+		method: 'POST',
+		body: JSON.stringify(payload)
+	}));
 }

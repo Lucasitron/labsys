@@ -13,8 +13,9 @@ npm install
 npm run dev
 ```
 
-A aplicação roda em http://localhost:5173. Em dev, `/api/*` é proxyado para o
-backend Laravel (`http://localhost:8080`).
+A aplicação roda em http://localhost:5173. `VITE_API_BASE_URL` deve incluir o
+prefixo `/api` (ex.: `http://localhost:8080/api`). Em dev, o proxy do Vite
+encaminha `/api` para o backend.
 
 ## Como testar
 
@@ -35,25 +36,20 @@ npm run preview     # serve o bundle em modo produção
 ```text
 src/
 ├── lib/
+│   ├── api/          # clientes HTTP por módulo (client.ts = fetch + auth + buildQuery)
 │   ├── components/   # componentes reutilizáveis
+│   ├── config/       # configuração de UI
 │   ├── stores/       # stores Svelte (estado global)
-│   ├── services/     # consumo da API
-│   ├── utils/        # utilitários
-│   └── types/        # tipos TypeScript
+│   ├── types/        # tipos TypeScript
+│   └── utils/        # utilitários puros (formatação, validação)
 ├── routes/
-│   ├── (auth)/       # rotas de autenticação
+│   ├── auth/         # rotas de autenticação
 │   ├── (app)/        # rotas autenticadas
 │   └── +layout.svelte
 ├── app.html
 └── app.css
 tests/
-├── unit/
-├── integration/
-└── e2e/
+└── unit/             # Vitest
 ```
 
-## Documentação
-
-*   [Relatório de bugs](docs/BUGS.md)
-*   [Plano de ação](docs/ACTION_PLAN.md)
-*   [Changelog](docs/CHANGELOG.md)
+Documentação do sistema: [`../README.md`](../README.md) e `.opencode/specs/` (local).

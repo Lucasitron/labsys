@@ -1,57 +1,33 @@
-import type {
-	CreateLoanPayload,
-	Loan,
-	LoanParams,
-	LoansResult,
-	PageInfo,
-	ReturnLoanPayload
-} from '$lib/types/stock';
-import { buildQuery, stockFetch } from './request';
+import type { CreateEmprestimoPayload, Emprestimo } from '$lib/types/stock';
+import { apiFetch } from '$lib/api/client';
 
-interface LoanListResult {
-	loans: Loan[];
-	pagination: PageInfo;
-	counts: { ativos: number; atrasados: number };
+function mapEmprestimo(raw: Emprestimo): Emprestimo {
+	return { ...raw, quantidade: Number(raw.quantidade) };
 }
 
-const STATUS_MAP: Record<string, string> = {
-	ativos: 'active',
-	atrasados: 'overdue',
-	historico: 'history'
-};
-
-export async function fetchLoans(
-	fetchFn: typeof fetch,
-	params: LoanParams
-): Promise<LoansResult> {
-	const qs = buildQuery({
-		status: STATUS_MAP[params.tab] ?? 'active',
-		page: params.page,
-		pageSize: params.pageSize,
-		search: params.search
-	});
-	const result = await stockFetch<LoanListResult>(`/stock/loans${qs}`, {}, fetchFn);
-	return {
-		loans: result.loans ?? [],
-		pagination: result.pagination,
-		counts: result.counts
-	};
+export async function listarAtrasados(
+	fetchFn: typeof fetch = fetch
+): Promise<Emprestimo[]> {
+	const raw = await apiFetch<Emprestimo[]>('/estoque/emprestimos/atrasados', {}, fetchFn);
+	return raw.map(mapEmprestimo);
 }
 
-export async function fetchLoan(fetchFn: typeof fetch, id: string): Promise<Loan> {
-	return stockFetch<Loan>(`/stock/loans/${id}`, {}, fetchFn);
+export async function buscarEmprestimo(
+	id: string,
+	fetchFn: typeof fetch = fetch
+): Promise<Emprestimo> {
+	return mapEmprestimo(await apiFetch<Emprestimo>(`/estoque/emprestimos/${id}`, {}, fetchFn));
 }
 
-export function createLoan(payload: CreateLoanPayload): Promise<unknown> {
-	return stockFetch<unknown>('/stock/loans', {
+export async function criarEmprestimo(payload: CreateEmprestimoPayload): Promise<Emprestimo> {
+	return mapEmprestimo(await apiFetch<Emprestimo>('/estoque/emprestimos', {
 		method: 'POST',
 		body: JSON.stringify(payload)
-	});
+	}));
 }
 
-export function returnLoan(id: string, payload: ReturnLoanPayload): Promise<unknown> {
-	return stockFetch<unknown>(`/stock/loans/${id}/return`, {
-		method: 'POST',
-		body: JSON.stringify(payload)
-	});
+export async function devolverEmprestimo(id: string): Promise<Emprestimo> {
+	return mapEmprestimo(await apiFetch<Emprestimo>(`/estoque/emprestimos/${id}/devolucao`, {
+		method: 'PUT'
+	}));
 }

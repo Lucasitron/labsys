@@ -49,6 +49,7 @@ beforeEach(() => {
 	gotoMock.mockReset();
 	logoutMock.mockReset();
 	authMock.set({ user: null, token: null, isAuthenticated: false });
+	localStorage.removeItem('fablab.auth');
 	window.history.replaceState({}, '', '/');
 });
 
@@ -71,14 +72,14 @@ describe('api/dashboard', () => {
 		expect(result).toEqual(SUMMARY);
 	});
 
-	it('fetchUnreadCount monta GET /notifications/unread/count', async () => {
+	it('fetchUnreadCount monta GET /notificacoes/nao-lidas/contagem', async () => {
 		const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ count: 2 }));
 		const { fetchUnreadCount } = await freshDashboard();
 
 		const result = await fetchUnreadCount(fetchMock);
 
 		expect(fetchMock).toHaveBeenCalledTimes(1);
-		expect(fetchMock.mock.calls[0]![0]).toBe('http://api.test/notifications/unread/count');
+		expect(fetchMock.mock.calls[0]![0]).toBe('http://api.test/notificacoes/nao-lidas/contagem');
 		expect(result).toEqual({ count: 2 });
 	});
 
@@ -99,6 +100,7 @@ describe('api/dashboard', () => {
 
 	it('envia Authorization Bearer quando há token na store', async () => {
 		authMock.set({ user: null, token: 'tk-123', isAuthenticated: true });
+		localStorage.setItem('fablab.auth', JSON.stringify({ token: 'tk-123' }));
 		const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse(SUMMARY));
 		const { fetchSummary } = await freshDashboard();
 

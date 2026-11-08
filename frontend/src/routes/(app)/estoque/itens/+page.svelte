@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
-	import type { StockItem, Tone } from '$lib/types/stock';
-	import { fetchStatuses, exportItemsCsv, bulkAction } from '$lib/api/stock/items';
-	import { statusMeta, quantityTone } from '$lib/utils/stock-status';
+	import type { StockItem, Tone, FilterOption } from '$lib/types/stock';
+	import { exportarCsv, importarCsv } from '$lib/api/stock/items';
+	import { statusMeta, quantityTone, categoriaMeta, localizacaoLabel } from '$lib/utils/stock-status';
 	import { fmtQty } from '$lib/utils/stock-format';
 	import { toasts, toastError } from '$lib/stores/toast';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
@@ -15,12 +15,7 @@
 	import TableSkeleton from '$lib/components/ui/TableSkeleton.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
-	import Checkbox from '$lib/components/ui/Checkbox.svelte';
-	import RowActions, { type RowAction } from '$lib/components/ui/RowActions.svelte';
-	import BulkActionsBar from '$lib/components/ui/BulkActionsBar.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
-	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	let { data }: PageProps = $props();
@@ -33,7 +28,15 @@
 	const pagination = $derived(result?.pagination);
 	const filters = $derived(result?.filters);
 
-	const statusOptions = $derived(fetchStatuses());
+	const chipCats = $derived(
+		(filters?.categories ?? [] as FilterOption[]).filter((c) => data.params.categories.includes(c.id))
+	);
+	const chipLocs = $derived(
+		(filters?.locations ?? [] as FilterOption[]).filter((l) => data.params.locations.includes(l.id))
+	);
+	const chipStatus = $derived(
+		(filters?.statuses ?? [] as FilterOption[]).filter((s) => data.params.statuses.includes(s.id))
+	);
 
 	const hasFilters = $derived(
 		data.params.search !== '' ||
@@ -41,39 +44,6 @@
 			data.params.locations.length > 0 ||
 			data.params.statuses.length > 0
 	);
-
-	// ---- seleção ----
-
-	let selected = $state(new Set<string>());
-	let lastPageKey = $state(0);
-	let bulkOpen = $state(false);
-	let deleteOpen = $state(false);
-	let categoryTarget = $state('');
-	let busy = $state(false);
-
-	$effect(() => {
-		if (!pagination) return;
-		const key = pagination.page * 1000 + pagination.pageSize;
-		if (key !== lastPageKey) {
-			selected = new Set();
-			lastPageKey = key;
-		}
-	});
-
-	const selectedCount = $derived(selected.size);
-	const pageVisibleSelected = $derived(items.filter((i) => selected.has(i.id)).length);
-	const allPageSelected = $derived(items.length > 0 && pageVisibleSelected === items.length);
-	const somePageSelected = $derived(pageVisibleSelected > 0 && !allPageSelected);
-
-	const chipCats = $derived(
-		filters?.categories.filter((c) => data.params.categories.includes(c.id)) ?? []
-	);
-	const chipLocs = $derived(
-		filters?.locations.filter((l) => data.params.locations.includes(l.id)) ?? []
-	);
-	const chipStatus = $derived(statusOptions.filter((s) => data.params.statuses.includes(s.id)));
-
-	const cardCategories = $derived(filters?.categories ?? []);
 
 	// ---- URL como fonte de verdade ----
 
@@ -158,72 +128,55 @@
 		return data.params.sort === `${col}:asc`;
 	}
 
-	// ---- seleção / bulk ----
-
-	function toggle(id: string): void {
-		const next = new Set(selected);
-		if (next.has(id)) next.delete(id);
-		else next.add(id);
-		selected = next;
-	}
-
-	function toggleAll(): void {
-		const next = new Set(selected);
-		for (const item of items) {
-			if (allPageSelected) next.delete(item.id);
-			else next.add(item.id);
-		}
-		selected = next;
-	}
-
-	function clearSelection(): void {
-		selected = new Set();
-	}
-
-	async function handleBulkCategory(): Promise<void> {
-		if (!categoryTarget) return;
-		busy = true;
-		try {
-			const res = await bulkAction([...selected], 'updateCategory', categoryTarget);
-			toasts.success(`Categoria atualizada em ${res.updated} item(ns)`);
-			selected = new Set();
-			categoryTarget = '';
-			bulkOpen = false;
-			await invalidateAll();
-		} catch (err) {
-			toastError(err, 'Não foi possível alterar a categoria');
-		} finally {
-			busy = false;
-		}
-	}
-
-	async function handleBulkDelete(): Promise<void> {
-		busy = true;
-		try {
-			const res = await bulkAction([...selected], 'delete');
-			toasts.success(`${res.updated} item(ns) excluído(s)`);
-			deleteOpen = false;
-			const emptyAfter = items.length === 1 && (data.params.page ?? 1) > 1;
-			if (emptyAfter) {
-				selected = new Set();
-				updateUrl({ ...filtersOnly(), page: (data.params.page ?? 1) - 1 });
-			} else {
-				selected = new Set();
-				await invalidateAll();
-			}
-		} catch (err) {
-			toastError(err, 'Não foi possível excluir os itens');
-		} finally {
-			busy = false;
-		}
-	}
-
 	async function handleExport(): Promise<void> {
 		try {
-			await exportItemsCsv(data.params);
+			await exportarCsv();
 			toasts.info('Exportação CSV iniciada');
 		} catch (err) {
 			toastError(err, 'Não foi possível exportar');
+		}
+	}
+
+	// ---- Importar CSV (multipart) ----
+
+	let importOpen = $state(false);
+	let importFile = $state<File | null>(null);
+	let importError = $state('');
+	let importing = $state(false);
+
+	function openImport(): void {
+		importFile = null;
+		importError = '';
+		importOpen = true;
+	}
+
+	async function handleImport(e: Event): Promise<void> {
+		e.preventDefault();
+		if (!importFile) {
+			importError = 'Selecione um arquivo CSV para importar';
+			return;
+		}
+		if (!(importFile.type === 'text/csv' || importFile.name.toLowerCase().endsWith('.csv'))) {
+			importError = 'O arquivo deve ser um CSV (.csv)';
+			return;
+		}
+		if (importFile.size > 10_000_000) {
+			importError = 'O arquivo deve ter no máximo 10 MB';
+			return;
+		}
+		importing = true;
+		importError = '';
+		try {
+			const criados = await importarCsv(importFile);
+			toasts.success(
+				criados.length === 1 ? '1 item importado' : `${criados.length} itens importados`
+			);
+			importOpen = false;
+			await invalidateAll();
+		} catch (err) {
+			importError = err instanceof Error ? err.message : 'Não foi possível importar o arquivo';
+		} finally {
+			importing = false;
 		}
 	}
 
@@ -239,22 +192,18 @@
 	};
 
 	function qtyClass(item: StockItem): string {
-		return QTY_TONES[quantityTone(item.quantity.current, item.quantity.minimum)];
+		return QTY_TONES[quantityTone(item.quantidadeAtual, item.estoqueMinimo)];
 	}
 
-	const gridCols = $derived(
-		canEdit
-			? 'md:grid-cols-[32px_1fr_120px_130px_90px_120px_40px]'
-			: 'md:grid-cols-[1fr_120px_130px_90px_120px]'
-	);
-
-	function rowActions(_item: StockItem): RowAction[] {
-		return [{ id: 'view', label: 'Ver detalhes', icon: 'eye' }];
+	function categoryLabel(item: StockItem): string {
+		return categoriaMeta(item.categoria).label;
 	}
 
-	function onRowAction(item: StockItem, id: string): void {
-		if (id === 'view') void goto(`/estoque/itens/${item.id}`);
+	function locationLabel(item: StockItem): string {
+		return localizacaoLabel(item.localizacao);
 	}
+
+	const gridCols = 'md:grid-cols-[1fr_120px_130px_90px_120px]';
 
 	function openDetail(item: StockItem): void {
 		void goto(`/estoque/itens/${item.id}`);
@@ -272,13 +221,24 @@
 	>
 		{#snippet children()}
 			<button
+				data-testid="it-exportar"
 				onclick={handleExport}
 				class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-brand/50 hover:text-brandhi"
 			>
 				<Icon name="arrow-down-tray" class="h-4 w-4" /> Exportar
 			</button>
 			{#if canEdit}
+				<button
+					data-testid="it-importar"
+					onclick={openImport}
+					class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-brand/50 hover:text-brandhi"
+				>
+					<Icon name="arrow-up-tray" class="h-4 w-4" /> Importar
+				</button>
+			{/if}
+			{#if canEdit}
 				<a
+					data-testid="it-novo"
 					href="/estoque/itens/novo"
 					class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-colors hover:bg-brandhi"
 				>
@@ -289,11 +249,11 @@
 	</PageHeader>
 
 	<!-- Toolkit: busca + filtros -->
-	<div class="flex flex-wrap items-center gap-2">
+	<div class="flex flex-wrap items-center gap-2" data-testid="it-filtros">
 		<SearchInput
 			value={data.params.search}
 			onSearch={handleSearch}
-			placeholder="Buscar por código ou nome…"
+			placeholder="Buscar por nome…"
 			class="min-w-56 flex-1"
 		/>
 		<Dropdown
@@ -312,7 +272,7 @@
 		/>
 		<Dropdown
 			label="Status"
-			options={statusOptions}
+			options={filters?.statuses ?? []}
 			selected={data.params.statuses}
 			onToggle={(id) => toggleFilter('status', id)}
 			onClear={() => clearFilter('status')}
@@ -333,7 +293,7 @@
 				/>
 			{/each}
 			{#each chipStatus as s (s.id)}
-				<Chip label={s.label} onRemove={() => toggleFilter('status', s.id)} />
+				<Chip label={s.label} count={s.count} onRemove={() => toggleFilter('status', s.id)} />
 			{/each}
 			<button
 				onclick={clearAllFilters}
@@ -345,7 +305,13 @@
 	{/if}
 
 	{#if insError && !result}
-		<ErrorBanner message="Não foi possível carregar os itens" hint={insError} onRetry={invalidateAll} />
+		<div data-testid="it-error">
+			<ErrorBanner
+				message="Não foi possível carregar os itens"
+				hint={insError}
+				onRetry={invalidateAll}
+			/>
+		</div>
 	{:else if !result}
 		<!-- Loading -->
 		<div class="overflow-hidden rounded-xl border border-border bg-surface">
@@ -357,7 +323,7 @@
 			</div>
 		</div>
 	{:else if items.length === 0}
-		<div class="rounded-xl border border-border bg-surface">
+		<div class="rounded-xl border border-border bg-surface" data-testid="it-empty">
 			{#if hasFilters}
 				<EmptyState
 					icon="filter"
@@ -366,6 +332,7 @@
 				>
 					{#snippet children()}
 						<button
+							data-testid="it-empty-limpar"
 							onclick={clearAllFilters}
 							class="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-brand/50 hover:text-brandhi"
 						>
@@ -382,6 +349,7 @@
 					{#snippet children()}
 						{#if canEdit}
 							<a
+								data-testid="it-empty-novo"
 								href="/estoque/itens/novo"
 								class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-brandhi"
 							>
@@ -394,17 +362,10 @@
 		</div>
 	{:else}
 		<!-- Tabela desktop -->
-		<div class="hidden overflow-hidden rounded-xl border border-border bg-surface md:block">
+		<div class="hidden overflow-hidden rounded-xl border border-border bg-surface md:block" data-testid="it-tabela">
 			<div
 				class="grid items-center gap-3 border-b border-border bg-elevated/50 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-muted {gridCols}"
 			>
-				{#if canEdit}
-					<Checkbox
-						checked={allPageSelected}
-						indeterminate={somePageSelected}
-						onChange={toggleAll}
-					/>
-				{/if}
 				<button
 					onclick={() => toggleSort('name')}
 					class="inline-flex items-center gap-1 text-left uppercase tracking-wide transition-colors hover:text-ink"
@@ -426,54 +387,39 @@
 					</span>
 				</button>
 				<span>Status</span>
-				{#if canEdit}<span></span>{/if}
 			</div>
 
 			<div class="divide-y divide-border">
 				{#each items as item (item.id)}
 					<div
+						data-testid="it-linha-{item.id}"
 						onclick={() => openDetail(item)}
 						role="button"
 						tabindex="0"
 						onkeydown={(e) => {
 							if (e.key === 'Enter') openDetail(item);
 						}}
-						class="grid cursor-pointer items-center gap-3 px-4 py-3 transition-colors hover:bg-elevated/40 {gridCols} {selected.has(item.id)
-							? 'border-l-2 border-brand bg-brand/5'
-							: 'border-l-2 border-transparent'}"
+						class="grid cursor-pointer items-center gap-3 px-4 py-3 transition-colors hover:bg-elevated/40 {gridCols} border-l-2 border-transparent"
 					>
-						{#if canEdit}
-							<div onclick={(e) => e.stopPropagation()}>
-								<Checkbox checked={selected.has(item.id)} onChange={() => toggle(item.id)} />
-							</div>
-						{/if}
 						<div class="min-w-0">
-							<p class="truncate font-mono text-xs text-muted">{item.code}</p>
-							<p class="truncate text-sm text-ink">{item.name}</p>
+							<p class="truncate text-sm text-ink">{item.nome}</p>
+							<p class="truncate text-xs text-muted">{item.unidadeMedida}</p>
 						</div>
 						<span
 							class="w-fit rounded border border-border bg-elevated px-2 py-0.5 text-[10px] font-medium text-ink"
 						>
-							{item.category.label}
+							{categoryLabel(item)}
 						</span>
-						<span class="truncate text-xs text-muted">{item.location.label}</span>
+						<span class="truncate text-xs text-muted">{locationLabel(item)}</span>
 						<span class="text-right font-mono text-sm {qtyClass(item)}">
-							{fmtQty(item.quantity.current)}/{item.quantity.minimum}
+							{fmtQty(item.quantidadeAtual)}/{fmtQty(item.estoqueMinimo)}
 						</span>
 						<StatusBadge {...statusMeta(item.status)} />
-						{#if canEdit}
-							<div class="flex justify-end" onclick={(e) => e.stopPropagation()}>
-								<RowActions
-									actions={rowActions(item)}
-									onSelect={(id) => onRowAction(item, id)}
-								/>
-							</div>
-						{/if}
 					</div>
 				{/each}
 			</div>
 
-			<div class="border-t border-border px-4 py-3">
+			<div class="border-t border-border px-4 py-3" data-testid="it-paginacao">
 				<Pagination
 					page={pagination?.page ?? 1}
 					totalPages={pagination?.totalPages ?? 0}
@@ -490,34 +436,31 @@
 		<div class="space-y-2 md:hidden" role="list">
 			{#each items as item (item.id)}
 				<div
-					role="listitem"
+					data-testid="it-card-{item.id}"
+					role="button"
+					tabindex="0"
 					onclick={() => openDetail(item)}
-					class="rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-elevated/40 {selected.has(item.id)
-						? 'border-brand'
-						: ''}"
+					onkeydown={(e) => {
+						if (e.key === 'Enter') openDetail(item);
+					}}
+					class="rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-elevated/40"
 				>
 					<div class="flex items-start justify-between gap-3">
 						<div class="min-w-0">
-							<p class="truncate font-mono text-xs text-muted">{item.code}</p>
-							<p class="mt-0.5 truncate text-sm font-medium text-ink">{item.name}</p>
+							<p class="truncate text-sm font-medium text-ink">{item.nome}</p>
 						</div>
-						{#if canEdit}
-							<div onclick={(e) => e.stopPropagation()}>
-								<Checkbox checked={selected.has(item.id)} onChange={() => toggle(item.id)} />
-							</div>
-						{/if}
 					</div>
 					<div class="mt-2 flex items-center justify-between gap-2">
 						<div class="flex items-center gap-2">
 							<span
 								class="rounded border border-border bg-elevated px-2 py-0.5 text-[10px] font-medium text-ink"
 							>
-								{item.category.label}
+								{categoryLabel(item)}
 							</span>
-							<span class="text-xs text-muted">{item.location.label}</span>
+							<span class="text-xs text-muted">{locationLabel(item)}</span>
 						</div>
 						<span class="text-right font-mono text-sm {qtyClass(item)}">
-							{fmtQty(item.quantity.current)}/{item.quantity.minimum}
+							{fmtQty(item.quantidadeAtual)}/{fmtQty(item.estoqueMinimo)}
 						</span>
 					</div>
 					<div class="mt-2 flex items-center justify-between">
@@ -526,7 +469,7 @@
 					</div>
 				</div>
 			{/each}
-			<div class="pt-1">
+			<div class="pt-1" data-testid="it-paginacao-mobile">
 				<Pagination
 					page={pagination?.page ?? 1}
 					totalPages={pagination?.totalPages ?? 0}
@@ -539,60 +482,64 @@
 			</div>
 		</div>
 	{/if}
+
+	<!-- Importar CSV -->
+	<Modal
+		open={importOpen}
+		title="Importar itens (CSV)"
+		subtitle="O arquivo deve seguir o formato de exportação dos itens."
+		onClose={() => (importOpen = false)}
+		width="md"
+	>
+		{#snippet children()}
+			<form onsubmit={handleImport} data-testid="it-import-modal" novalidate>
+				<div class="space-y-4">
+					<div>
+						<label
+							for="it-import-file"
+							class="mb-1 block text-xs font-medium text-muted"
+						>
+							Arquivo CSV <span class="text-danger">*</span>
+						</label>
+						<input
+							id="it-import-file"
+							data-testid="it-import-file"
+							type="file"
+							accept=".csv,text/csv"
+							onchange={(e) => {
+								importFile = (e.currentTarget as HTMLInputElement).files?.[0] ?? null;
+								importError = '';
+							}}
+							aria-label="Selecionar arquivo CSV de itens"
+							class="w-full rounded-lg border border-border bg-elevated px-3 py-2.5 text-sm text-ink file:mr-3 file:rounded-md file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"
+						/>
+						{#if importError}
+							<p class="mt-2 rounded-lg border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger" data-testid="it-import-error">
+								{importError}
+							</p>
+						{/if}
+					</div>
+					<div class="flex flex-wrap items-center justify-end gap-2">
+						<button
+							type="button"
+							data-testid="it-import-cancelar"
+							onclick={() => (importOpen = false)}
+							class="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-ink transition-colors hover:bg-border/40"
+						>
+							Cancelar
+						</button>
+						<button
+							type="submit"
+							data-testid="it-import-enviar"
+							disabled={importing}
+							class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-colors hover:bg-brandhi disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							<Icon name="arrow-up-tray" class="h-4 w-4" />
+							{importing ? 'Importando…' : 'Importar'}
+						</button>
+					</div>
+				</div>
+			</form>
+		{/snippet}
+	</Modal>
 </div>
-
-{#if selectedCount > 0}
-	<BulkActionsBar
-		count={selectedCount}
-		onCancel={clearSelection}
-		actions={[
-			{ label: 'Alterar categoria', onClick: () => (bulkOpen = true) },
-			{ label: 'Excluir', danger: true, onClick: () => (deleteOpen = true) }
-		]}
-	/>
-{/if}
-
-<Modal
-	open={bulkOpen}
-	title="Alterar categoria"
-	subtitle={`${selectedCount} item(ns) selecionado(s)`}
-	onClose={busy ? undefined : () => (bulkOpen = false)}
-	width="sm"
->
-	{#snippet children()}
-		<Select
-			id="bulk-category"
-			label="Nova categoria"
-			options={cardCategories}
-			value={categoryTarget}
-			onChange={(v) => (categoryTarget = v)}
-			placeholder="Selecione…"
-		/>
-	{/snippet}
-	{#snippet footer()}
-		<button
-			onclick={() => (bulkOpen = false)}
-			disabled={busy}
-			class="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-border/40 disabled:opacity-50"
-		>
-			Cancelar
-		</button>
-		<button
-			onclick={handleBulkCategory}
-			disabled={busy || !categoryTarget}
-			class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brandhi disabled:cursor-not-allowed disabled:opacity-50"
-		>
-			{busy ? 'Salvando…' : 'Aplicar'}
-		</button>
-	{/snippet}
-</Modal>
-
-<ConfirmDialog
-	open={deleteOpen}
-	title="Excluir itens"
-	message={`Você está prestes a excluir ${selectedCount} item(ns). Esta ação não pode ser desfeita.`}
-	confirmLabel="Excluir"
-	loading={busy}
-	onCancel={() => (deleteOpen = false)}
-	onConfirm={handleBulkDelete}
-/>

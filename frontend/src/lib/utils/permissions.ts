@@ -1,4 +1,5 @@
 import type { Module, Role, User } from '$lib/types/auth';
+import type { PermissaoMatriz, PermissaoNivel } from '$lib/types/configuracoes';
 
 export const VIEW_RULES: Record<Module, readonly Role[]> = {
 	dashboard: [0, 1, 2, 3, 4],
@@ -35,10 +36,19 @@ export function canView(user: User | null, module: Module): boolean {
 	return VIEW_RULES[module].includes(user.role);
 }
 
+export function isResponsavelEstoque(user: User | null): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	if (user.role === 4) return false;
+	return (user.responsibilities?.estoque?.length ?? 0) > 0;
+}
+
 export function canEdit(user: User | null, module: Module): boolean {
 	if (!user) return false;
 	if (user.role === 0) return true;
 	if (user.roles?.[module] === 'edit') return true;
+	if (module === 'estoque' && isResponsavelEstoque(user)) return true;
+	if (module === 'rh' && isResponsavelRH(user)) return true;
 
 	return EDIT_RULES[module].includes(user.role);
 }
@@ -56,9 +66,11 @@ export function canSeeMachines(user: User | null): boolean {
 export function canSee5S(user: User | null): boolean {
 	if (!user) return false;
 	if (user.role === 0) return true;
+	// Matriz: 5S = Visualizar p/ 1/2/3; Recrutando (4) não participa.
+	if (user.role === 4) return false;
 	if (user.roles?.producao === null) return false;
-	const access = user.roles?.producao;
-	return (access === 'view' || access === 'edit') && user.role >= 1 && user.role <= 3;
+	if (user.roles?.producao === 'view' || user.roles?.producao === 'edit') return true;
+	return user.role === 1 || user.role === 2 || user.role === 3;
 }
 
 export function isResponsavelAtribuido(
@@ -74,13 +86,14 @@ export function isResponsavelAtribuido(
 export function canAuditar5S(user: User | null, auditorId?: string): boolean {
 	if (!user) return false;
 	if (user.role === 0) return true;
+	if (user.role === 3 || user.role === 4) return false;
 	if (auditorId) return isResponsavelAtribuido(user, { responsavelId: auditorId });
 	return user.role === 1 || user.role === 2;
 }
 
 export function canSeeAdvertencias(user: User | null): boolean {
 	if (!user) return false;
-	return user.role === 0 || user.roles?.producao === 'edit';
+	return user.role === 0;
 }
 
 export function canEditProducao(
@@ -91,4 +104,86 @@ export function canEditProducao(
 	if (canEdit(user, 'producao')) return true;
 	if (recurso) return isResponsavelAtribuido(user, recurso);
 	return false;
+}
+
+export function isAdmin(user: User | null): boolean {
+	return user?.role === 0;
+}
+
+export function isResponsavelRH(user: User | null): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	if (user.role === 4) return false;
+	return (user.responsibilities?.rh?.length ?? 0) > 0;
+}
+
+export function isTutor(user: User | null): boolean {
+	return isResponsavelRH(user);
+}
+
+export function isInstrutor(user: User | null): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	return (user.responsibilities?.rh ?? []).some((r) => r.toLowerCase().includes('instrutor'));
+}
+
+export function canEditRH(user: User | null, recurso?: string): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	if (user.roles?.rh === 'edit') return true;
+	if (user.role !== 1 && user.role !== 2) return false;
+	if (!isResponsavelRH(user)) return false;
+	if (recurso) return (user.responsibilities?.rh ?? []).includes(recurso);
+	return true;
+}
+
+export function canSeeNiveis(user: User | null): boolean {
+	return isAdmin(user);
+}
+
+export function isProprioRegistro(user: User | null, pessoaId: string): boolean {
+	if (!user || !pessoaId) return false;
+	return user.id === pessoaId;
+}
+
+export function canViewConfiguracoes(user: User | null): boolean {
+	return isAdmin(user);
+}
+
+export function isResponsavelVendas(user: User | null): boolean {
+	if (!user) return false;
+	if (user.role === 0) return true;
+	if (user.role === 4) return false;
+	return (user.responsibilities?.vendas?.length ?? 0) > 0;
+}
+
+export function canEditVendas(user: User | null, record: { createdBy?: string }): boolean {
+	if (!user) return false;
+	if (isAdmin(user)) return true;
+	if (!record.createdBy) return false;
+	return user.id === record.createdBy;
+}
+
+export function canDecideVendas(user: User | null): boolean {
+	if (!user) return false;
+	return isAdmin(user) || isResponsavelVendas(user);
+}
+
+export function hasPermissao(
+	user: User | null,
+	modulo: Module,
+	acao: PermissaoNivel,
+	matriz?: PermissaoMatriz
+): boolean {
+	if (!user) return false;
+	if (acao === 'Nenhum') return false;
+	if (isAdmin(user)) return true;
+
+	if (matriz) {
+		const celula = matriz[modulo]?.[user.role];
+		if (acao === 'Editar') return celula === 'Editar';
+		return celula === 'Editar' || celula === 'Ver';
+	}
+
+	return acao === 'Editar' ? canEdit(user, modulo) : canView(user, modulo);
 }

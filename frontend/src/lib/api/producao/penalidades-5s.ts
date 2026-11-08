@@ -1,8 +1,4 @@
 import type { Paginado, Penalidade5S, PenalidadeStatus, PenalidadeTipo } from '$lib/types/producao';
-import { apiFetch } from '../client';
-import { bearer, montarQuery } from './client';
-
-const BASE = '/producao/penalidades-5s';
 
 export type PenalidadeFiltros = {
 	tipo?: PenalidadeTipo[];
@@ -17,25 +13,16 @@ export interface CriarPenalidadePayload {
 	motivo: string;
 }
 
+// Sem par no backend (sem controller Java nem rota Laravel): gateadas com mensagem.
 export async function obterPenalidades5S(
 	params: PenalidadeFiltros = {},
 	fetchFn: typeof fetch = fetch
 ): Promise<Paginado<Penalidade5S>> {
-	const qs = montarQuery(params);
-	return await apiFetch<Paginado<Penalidade5S>>(`${BASE}${qs}`, { headers: bearer() }, fetchFn);
+	throw new Error('Penalidades 5S indisponíveis — sem par no backend (Lote 3).');
 }
 
 export function criarPenalidade5S(payload: CriarPenalidadePayload): Promise<Penalidade5S> {
-	return apiFetch<Penalidade5S>(BASE, {
-		method: 'POST',
-		headers: bearer(),
-		body: JSON.stringify(payload)
-	});
-}
-
-export function marcarPenalidade5SCumprida(id: string): Promise<Penalidade5S> {
-	return apiFetch<Penalidade5S>(`${BASE}/${id}/cumprida`, {
-		method: 'PUT',
-		headers: bearer()
-	});
+	return Promise.reject(
+		new Error('Criar penalidade 5S indisponível — sem par no backend (Lote 3).')
+	);
 }

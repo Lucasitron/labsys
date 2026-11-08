@@ -1,26 +1,15 @@
-export type ItemStatus = 'available' | 'low' | 'out' | 'loaned' | 'maintenance';
-export type MovementType = 'in' | 'out';
-export type EntryKind = 'compra' | 'doacao' | 'devolucao' | 'ajuste';
-export type ExitReason = 'projeto' | 'consumo_interno' | 'perda' | 'descarte';
-export type LoanStatus = 'ativo' | 'devolvido';
-export type LoanComputed = 'no_prazo' | 'vence_hoje' | 'atrasado';
-export type LoanCondition = 'bom' | 'avaria' | 'danificado';
-export type Tone = 'success' | 'warn' | 'danger' | 'brand' | 'muted' | 'ink';
+// ---- Primitivas e tipos de exibição (derivados client) ----
+
+export type { Tone } from './ui';
+
+import type { Paginacao } from './pagination';
 
 export interface IdLabel {
 	id: string;
 	label: string;
 }
 
-export type Category = IdLabel;
-export type Location = IdLabel;
-
-export interface PageInfo {
-	page: number;
-	pageSize: number;
-	totalItems: number;
-	totalPages: number;
-}
+export type PageInfo = Paginacao;
 
 export interface FilterOption {
 	id: string;
@@ -28,33 +17,74 @@ export interface FilterOption {
 	count: number;
 }
 
-// ---- Itens ----
+export type ItemStatus = 'available' | 'low' | 'out' | 'loaned' | 'maintenance';
+export type MovementType = 'in' | 'out';
+export type EntryKind = 'compra' | 'doacao' | 'devolucao' | 'ajuste';
+export type TipoSaida = 'CONSUMO' | 'PERDA' | 'AJUSTE' | 'EMPRESTIMO';
+export type ExitReason = TipoSaida;
+export type LoanStatus = 'ATIVO' | 'DEVOLVIDO' | 'ATRASADO';
+export type LoanComputed = 'no_prazo' | 'vence_hoje' | 'atrasado';
+export type LoanCondition = 'bom' | 'avaria' | 'danificado';
+export type LoanTab = 'ativos' | 'atrasados' | 'historico';
+
+// ---- Backend Categoria (enum) ----
+
+export type CategoriaEnum = 'INSUMO' | 'FERRAMENTA' | 'PECA';
+
+// ---- Localizações (backend LocalizacaoResponse) ----
+
+export interface LocalizacaoResp {
+	id: string;
+	armario: string;
+	prateleira?: string;
+	caixa?: string;
+	descricao?: string;
+}
+
+// ---- Fornecedores (backend FornecedorResponse) ----
+
+export interface Fornecedor {
+	id: string;
+	nome: string;
+	contato?: string;
+	cnpj?: string;
+}
+
+// ---- Itens (backend ItemResponse) ----
 
 export interface StockItem {
 	id: string;
-	code: string;
-	name: string;
-	category: Category;
-	location: Location;
-	quantity: {
-		current: number;
-		minimum: number;
-		unit: string;
-	};
+	nome: string;
+	descricao?: string;
+	categoria: CategoriaEnum;
+	unidadeMedida: string;
+	quantidadeAtual: number;
+	estoqueMinimo: number;
+	localizacao: LocalizacaoResp | null;
+	// Derivado client (quantidadeAtual × estoqueMinimo) — backend não expõe `status`.
 	status: ItemStatus;
-	activeLoans: number;
-	updatedAt: string;
+	// UI-only: backend não expõe estoque em empréstimo / data de atualização.
+	activeLoans?: number;
+	updatedAt?: string;
 }
 
-export interface StockParams {
-	page: number;
-	pageSize: number;
-	search: string;
-	categories: string[];
-	locations: string[];
-	statuses: string[];
-	sort?: string;
+export interface ItemDetail extends StockItem {
+	// UI-only (D-3): área de operação derivada das telas atuais (backend não expõe).
 }
+
+export interface CreateItemPayload {
+	nome: string;
+	descricao?: string;
+	categoria: CategoriaEnum;
+	unidadeMedida: string;
+	quantidadeAtual: number;
+	estoqueMinimo: number;
+	idLocalizacao?: string | null;
+}
+
+export type UpdateItemPayload = Partial<CreateItemPayload>;
+
+// ---- Itens: tela lista (filtros/paginação client-side, R-9) ----
 
 export interface ItemFilters {
 	categories: FilterOption[];
@@ -68,64 +98,73 @@ export interface ItemsResult {
 	filters: ItemFilters;
 }
 
-export interface CreateItemPayload {
-	code: string;
-	name: string;
-	description?: string;
-	categoryId: string;
-	unit: string;
-	locationId: string;
-	initialQuantity?: number;
-	minimumQuantity?: number;
-	maximumQuantity?: number;
-	reorderPoint?: number;
-	leadTimeDays?: number;
-	unitValue?: number | null;
-}
+// ---- Entradas / Saídas (backend EntradaResponse / SaidaResponse) ----
 
-export interface ItemDetail {
+export interface EntradaResponse {
 	id: string;
-	code: string;
-	name: string;
-	description?: string;
-	category: Category;
-	location: Location;
-	unit: string;
-	current: number;
-	minimum: number;
-	maximum?: number | null;
-	reorderPoint?: number | null;
-	leadTimeDays?: number | null;
-	unitValue?: number | null;
-	status: ItemStatus;
-	activeLoans: number;
-	updatedBy?: string | null;
-	updatedRelative?: string | null;
-	lastEntry?: { at: string; quantity: number; kind: EntryKind } | null;
-	lastLoan?: { at: string } | null;
-	bomUsage?: { projectId: string; projectName: string; qty: number; unit: string }[];
+	idItem: string;
+	nomeItem?: string;
+	quantidade: number;
+	valorUnitario?: number | null;
+	dataEntrada: string;
+	idFornecedor?: string | null;
+	fornecedor?: Fornecedor | null;
+	notaFiscal?: string | null;
+	observacao?: string | null;
 }
 
-export interface HistoryEntry {
+export interface SaidaResponse {
 	id: string;
-	title: string;
-	by: string;
-	at: string;
-	tone: Tone;
+	idItem: string;
+	nomeItem?: string;
+	quantidade: number;
+	tipoSaida: TipoSaida;
+	dataSaida: string;
+	idReferencia?: string | null;
+	observacao?: string | null;
 }
 
-export interface ItemHistoryResult {
-	history: HistoryEntry[];
+export interface CreateEntradaPayload {
+	idItem: string;
+	idFornecedor?: string | null;
+	quantidade: number;
+	valorUnitario?: number | null;
+	dataEntrada?: string;
+	notaFiscal?: string | null;
+	observacao?: string | null;
 }
 
-// ---- Movimentações (Entradas/Saídas) ----
+export interface CreateSaidaPayload {
+	idItem: string;
+	quantidade: number;
+	tipoSaida: TipoSaida;
+	idReferencia?: string | null;
+	observacao?: string | null;
+}
 
+// ---- Movimentações: view unificada p/ histórico de item (G-7) ----
+
+export interface MovementDetail {
+	id: string;
+	tipo: 'entrada' | 'saida';
+	itemNome: string;
+	unidadeMedida: string;
+	quantidade: number;
+	data: string;
+	referencia?: string | null;
+	valorUnitario?: number | null;
+	fornecedor?: Fornecedor | null;
+	tipoSaida?: TipoSaida;
+	observacao?: string | null;
+}
+
+// View de movimentação para as telas atuais (bloco 2 migra para MovementDetail).
 export interface Movement {
 	id: string;
 	type: MovementType;
 	kind?: EntryKind;
 	reason?: ExitReason;
-	item: { id: string; code: string; name: string; unit: string };
+	item: { id: string; code?: string; name: string; unit: string };
 	quantity: number;
 	date: string;
 	origin?: string;
@@ -136,15 +175,9 @@ export interface Movement {
 	observation?: string;
 }
 
-export interface MovementParams {
-	type: MovementType;
-	page: number;
-	pageSize: number;
-	search: string;
-	kinds: string[];
-	reasons: string[];
-	period: string;
-	itemId?: string;
+export interface MovementSummary {
+	entries?: { count: number; sum: number };
+	exits?: { count: number; sum: number };
 }
 
 export interface MovementFilters {
@@ -159,163 +192,75 @@ export interface MovementsResult {
 	filters: MovementFilters;
 }
 
-export interface CreateEntryPayload {
-	type: 'in';
-	kind: EntryKind;
-	itemId: string;
-	quantity: number;
-	unit: string;
-	date: string;
-	supplierId: string;
-	notaFiscal?: string;
-	unitValue?: number | null;
-	observation?: string;
-}
+// ---- Empréstimos (backend EmprestimoResponse) ----
 
-export interface CreateExitPayload {
-	type: 'out';
-	reason: ExitReason;
-	itemId: string;
-	quantity: number;
-	unit: string;
-	date: string;
-	responsibleId: string;
-	projectId?: string | null;
-	observation?: string;
-}
-
-export type CreateMovementPayload = CreateEntryPayload | CreateExitPayload;
-
-export interface MovementSummary {
-	entries?: { count: number; sum: number };
-	exits?: { count: number; sum: number };
-}
-
-export interface ItemMovementsResult {
-	summary: MovementSummary;
-	movements: Movement[];
-	pagination: PageInfo;
-}
-
-// ---- Empréstimos ----
-
-export type LoanTab = 'ativos' | 'atrasados' | 'historico';
-
-export interface Loan {
+export interface Emprestimo {
 	id: string;
-	item: { id: string; code: string; name: string; unit: string };
-	borrower: { id: string; name: string; initials: string };
-	quantity: number;
-	borrowDate: string;
-	dueDate: string;
+	idItem: string;
+	nomeItem: string;
+	idPessoa: string;
+	quantidade: number;
+	dataEmprestimo: string;
+	dataDevolucaoPrevista: string;
+	dataDevolucaoReal: string | null;
 	status: LoanStatus;
-	computed: LoanComputed;
-	overdueDays: number;
-	purpose?: string;
-	condition?: LoanCondition | null;
-	returnDate?: string | null;
-	returnedQuantity?: number;
-	responsible?: string;
+	observacao?: string;
+	loanComputed: LoanComputed;
 }
 
-export interface LoanParams {
-	tab: LoanTab;
-	page: number;
-	pageSize: number;
-	search: string;
+export interface CreateEmprestimoPayload {
+	idItem: string;
+	idPessoa: string;
+	quantidade: number;
+	dataDevolucaoPrevista: string;
+	observacao?: string;
 }
 
-export interface LoansResult {
-	loans: Loan[];
-	pagination: PageInfo;
-	counts: { ativos: number; atrasados: number };
+// ---- BOM (backend BomResponse) ----
+
+export interface BomItemResponse {
+	idItem: string;
+	nomeItem: string;
+	quantidadePrevista: number;
+	quantidadeReal: number;
 }
 
-export interface CreateLoanPayload {
-	itemId: string;
-	borrowerId: string;
-	quantity: number;
-	borrowDate: string;
-	dueDate: string;
-	purpose?: string;
-	observation?: string;
-}
-
-export interface ReturnLoanPayload {
-	returnDate: string;
-	quantityReturned: number;
-	condition: LoanCondition;
-	observation?: string;
-}
-
-// ---- Fornecedores ----
-
-export interface Supplier {
+export interface BomResponse {
 	id: string;
-	name: string;
-	email?: string;
+	idProdutoServico: string;
+	nome: string;
+	versao: number;
+	editavel: boolean;
+	itens: BomItemResponse[];
+}
+
+export interface BomItemPayload {
+	idItem: string;
+	quantidadePrevista: number;
+}
+
+export interface CreateBomPayload {
+	idProdutoServico: string;
+	nome: string;
+	versao: number;
+	itens: BomItemPayload[];
+}
+
+export interface RegistrarConsumoPayload {
+	itens: { idItem: string; quantidade: number }[];
+}
+
+// ---- Cadastros ----
+
+export interface CreateSupplierPayload {
+	nome: string;
+	contato?: string;
 	cnpj?: string;
-	contactPhone?: string;
-	itemsCount: number;
-	rating: number;
-	lastPurchase?: {
-		date: string;
-		value?: number | null;
-		notaFiscal?: string;
-	} | null;
 }
 
-export interface SuppliersResult {
-	suppliers: Supplier[];
-	pagination: PageInfo;
-}
-
-// ---- Localizações ----
-
-export interface StockLocation {
-	id: string;
-	code: string;
-	name: string;
-	description?: string;
-	itemsCount: number;
-	unitsCount: number;
-	capacityPercent: number;
-	capacityVariant: Tone;
-}
-
-export interface LocationsResult {
-	locations: StockLocation[];
-}
-
-// ---- BOM ----
-
-export interface BomRow {
-	item: { code: string; name: string };
-	qtyPerUnit: number;
-	unit: string;
-	units: number;
-	totalNeed: number;
-	available: number;
-	missing: number;
-	status: 'ok' | 'faltam';
-}
-
-export interface BomReport {
-	bomId: string;
-	projectName: string;
-	units: number;
-	short: string[];
-	items: BomRow[];
-	generated: boolean;
-}
-
-export interface BomOrderResult {
-	orderCode: string;
-	items: string[];
-}
-
-export interface ProjectOption {
-	id: string;
-	code: string;
-	name: string;
+export interface CreateLocationPayload {
+	armario: string;
+	prateleira?: string;
+	caixa?: string;
+	descricao?: string;
 }

@@ -6,9 +6,12 @@ export const API_BASE: string =
 
 const TIMEOUT_MS = 15_000;
 
-const AUTH_PUBLIC_PATHS = new Set(['/auth/login']);
+const AUTH_PUBLIC_PATHS = new Set(['/auth/login', '/auth/refresh']);
 
-let redirecting = false;
+	let redirecting = false;
+
+// Refresh compartilhado entre 401s concorrentes (1 retry com o refreshToken).
+let refreshInFlight: Promise<string | null> | null = null;
 
 export class ApiError extends Error {
 	readonly status: number;
@@ -41,6 +44,18 @@ export function sanitizeRedirect(path: string | null): string {
 	return path;
 }
 
+function readPersistedAccessToken(): string | null {
+	if (!browser) return null;
+	try {
+		const raw = localStorage.getItem('fablab.auth');
+		if (!raw) return null;
+		const data = JSON.parse(raw) as { token?: string | null };
+		return data.token ?? null;
+	} catch {
+		return null;
+	}
+}
+
 function isPublicAuthPath(path: string): boolean {
 	return AUTH_PUBLIC_PATHS.has(path);
 }
@@ -66,14 +81,41 @@ async function handleUnauthorized(requestPath: string): Promise<void> {
 export async function apiFetch<T>(
 	path: string,
 	init: RequestInit = {},
-	fetchFn: typeof fetch = fetch
+	fetchFn: typeof fetch = fetch,
+	retried = false
 ): Promise<T> {
+	const response = await apiFetchResponse(path, init, fetchFn, retried);
+	if (response.status === 204) return undefined as T;
+	const text = await response.text();
+	return (text ? JSON.parse(text) : undefined) as T;
+}
+
+export async function apiFetchBlob(
+	path: string,
+	init: RequestInit = {},
+	fetchFn: typeof fetch = fetch
+): Promise<Blob> {
+	return (await apiFetchResponse(path, init, fetchFn)).blob();
+}
+
+async function apiFetchResponse(
+	path: string,
+	init: RequestInit,
+	fetchFn: typeof fetch,
+	retried = false
+): Promise<Response> {
 	const controller = new AbortController();
 	const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
 	const headers = new Headers(init.headers);
-	if (!headers.has('Content-Type')) {
+	const isFormData = typeof FormData !== 'undefined' && init.body instanceof FormData;
+	if (!isFormData && !headers.has('Content-Type')) {
 		headers.set('Content-Type', 'application/json');
+	}
+
+	if (!isPublicAuthPath(path) && !headers.has('Authorization')) {
+		const token = readPersistedAccessToken();
+		if (token) headers.set('Authorization', `Bearer ${token}`);
 	}
 
 	let response: Response;
@@ -93,6 +135,16 @@ export async function apiFetch<T>(
 	}
 
 	if (!response.ok) {
+		if (response.status === 401 && !retried && !isPublicAuthPath(path)) {
+			refreshInFlight ??= tryRefresh(fetchFn);
+			const renewed = await refreshInFlight;
+			refreshInFlight = null;
+			if (renewed) {
+				const retryInit: RequestInit = { ...init, headers: withRefreshedAuth(init, renewed) };
+				return apiFetchResponse(path, retryInit, fetchFn, true);
+			}
+		}
+
 		const payload = await readPayload(response);
 		const code = payload.code ?? payload.error ?? 'UNKNOWN';
 		const apiError = new ApiError(response.status, code, payload.message ?? `Erro ${response.status}`);
@@ -104,7 +156,7 @@ export async function apiFetch<T>(
 		throw apiError;
 	}
 
-	return (await response.json()) as T;
+	return response;
 }
 
 async function readPayload(response: Response): Promise<ErrorPayload> {
@@ -113,4 +165,64 @@ async function readPayload(response: Response): Promise<ErrorPayload> {
 	} catch {
 		return {};
 	}
+}
+
+// T01: tenta 1x o refresh com o refreshToken persistido (sem Bearer) antes do logout.
+// Leitura síncrona do persistido (mesma chave da store) p/ não escalonar 401s
+// concorrentes — a flag anti-duplicidade do logout continua valendo.
+function readPersistedRefreshToken(): string | null {
+	if (!browser) return null;
+	try {
+		const raw = localStorage.getItem('fablab.auth');
+		if (!raw) return null;
+		const data = JSON.parse(raw) as { refreshToken?: string | null };
+		return data.refreshToken ?? null;
+	} catch {
+		return null;
+	}
+}
+
+async function tryRefresh(fetchFn: typeof fetch): Promise<string | null> {
+	const refreshToken = readPersistedRefreshToken();
+	if (!refreshToken) return null;
+	try {
+		const res = await fetchFn(`${API_BASE}/auth/refresh`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ refreshToken })
+		});
+		if (!res.ok) return null;
+		const data = (await res.json()) as { accessToken?: string; refreshToken?: string | null };
+		if (!data.accessToken) return null;
+		const { applyRefreshedTokens } = await import('$lib/stores/auth');
+		applyRefreshedTokens(data.accessToken, data.refreshToken ?? null);
+		return data.accessToken;
+	} catch {
+		return null;
+	}
+}
+
+function withRefreshedAuth(init: RequestInit, token: string): Headers {
+	const headers = new Headers(init.headers);
+	headers.set('Authorization', `Bearer ${token}`);
+	return headers;
+}
+
+
+export function buildQuery(
+	params: Record<string, string | number | undefined | string[]>
+): string {
+	const search = new URLSearchParams();
+	for (const [key, value] of Object.entries(params)) {
+		if (value === undefined) continue;
+		if (Array.isArray(value)) {
+			for (const v of value) {
+				if (v) search.append(key, v);
+			}
+		} else if (String(value) !== '') {
+			search.append(key, String(value));
+		}
+	}
+	const qs = search.toString();
+	return qs ? `?${qs}` : '';
 }

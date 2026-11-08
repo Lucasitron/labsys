@@ -1,4 +1,5 @@
-import type { Module } from '$lib/types/auth';
+import type { Module, User } from '$lib/types/auth';
+import { canDecideVendas, canSee5S, canSeeAdvertencias, isAdmin } from '$lib/utils/permissions';
 
 export type MenuIcon =
 	| 'dashboard'
@@ -15,12 +16,25 @@ export interface MenuItem {
 	path: string;
 	module: Module;
 	icon: MenuIcon;
-	children?: { label: string; path: string }[];
+	children?: {
+		label: string;
+		path: string;
+		canSee?: (user: User | null) => boolean;
+		disabled?: boolean;
+	}[];
 }
 
 export const menuItems: MenuItem[] = [
 	{ label: 'Dashboard', path: '/dashboard', module: 'dashboard', icon: 'dashboard' },
-	{ label: 'Pessoas & RH', path: '/pessoas', module: 'rh', icon: 'rh' },
+	{ label: 'Pessoas & RH', path: '/pessoas', module: 'rh', icon: 'rh',
+		children: [
+			{ label: 'Pessoas', path: '/pessoas' },
+			{ label: 'Processo seletivo', path: '/pessoas/processo-seletivo' },
+			{ label: 'Registro de horas', path: '/pessoas/registro-horas' },
+			{ label: 'Treinamentos', path: '/pessoas/treinamentos', disabled: true },
+			{ label: 'Níveis & acesso', path: '/pessoas/niveis', canSee: isAdmin }
+		]
+	},
 	{
 		label: 'Estoque',
 		path: '/estoque',
@@ -36,7 +50,16 @@ export const menuItems: MenuItem[] = [
 			{ label: 'BOM', path: '/estoque/bom' }
 		]
 	},
-	{ label: 'Vendas & CRM', path: '/vendas', module: 'vendas', icon: 'vendas' },
+	{ label: 'Vendas & CRM', path: '/vendas', module: 'vendas', icon: 'vendas',
+		children: [
+			{ label: 'Clientes', path: '/vendas/clientes' },
+			{ label: 'Orçamentos', path: '/vendas/orcamentos' },
+			{ label: 'Encomendas', path: '/vendas/encomendas' },
+			{ label: 'Marketplace', path: '/vendas/marketplace' },
+			{ label: 'Marketing', path: '/vendas/marketing' },
+			{ label: 'Solicitações de edição', path: '/vendas/solicitacoes', canSee: canDecideVendas }
+		]
+	},
 	{
 		label: 'Produção',
 		path: '/producao',
@@ -47,17 +70,53 @@ export const menuItems: MenuItem[] = [
 			{ label: 'Projetos', path: '/producao/projetos' },
 			{ label: 'Tarefas', path: '/producao/tarefas' },
 			{ label: 'Máquinas', path: '/producao/maquinas' },
-			{ label: '5S: Setores', path: '/producao/5s/setores' },
-			{ label: '5S: Auditoria', path: '/producao/5s/auditoria' },
-			{ label: '5S: Pendências', path: '/producao/5s/pendencias' },
-			{ label: '5S: Ranking', path: '/producao/5s/ranking' },
-			{ label: '5S: Advertências', path: '/producao/5s/advertencias' },
-			{ label: '5S: Mesas', path: '/producao/5s/mesas' }
+			{ label: '5S: Setores', path: '/producao/5s/setores', canSee: canSee5S },
+			{ label: '5S: Auditoria', path: '/producao/5s/auditoria', canSee: canSee5S },
+			{ label: '5S: Pendências', path: '/producao/5s/pendencias', canSee: canSee5S, disabled: true },
+			{ label: '5S: Ranking', path: '/producao/5s/ranking', canSee: canSee5S, disabled: true },
+			{
+				label: '5S: Advertências',
+				path: '/producao/5s/advertencias',
+				canSee: canSeeAdvertencias,
+				disabled: true
+			},
+			{ label: '5S: Mesas', path: '/producao/5s/mesas', canSee: canSee5S }
 		]
 	},
-	{ label: 'Financeiro', path: '/financeiro', module: 'financeiro', icon: 'financeiro' },
-	{ label: 'Notificações', path: '/notificacoes', module: 'notificacoes', icon: 'notificacoes' },
-	{ label: 'Configurações', path: '/configuracoes', module: 'configuracoes', icon: 'configuracoes' }
+	{ label: 'Financeiro', path: '/financeiro', module: 'financeiro', icon: 'financeiro',
+		children: [
+			{ label: 'Resumo', path: '/financeiro' },
+			{ label: 'Lançamentos', path: '/financeiro/lancamentos' },
+			{ label: 'Contas a pagar', path: '/financeiro/contas-pagar' },
+			{ label: 'Contas a receber', path: '/financeiro/contas-receber' },
+			{ label: 'Doações & recursos', path: '/financeiro/doacoes' },
+			{ label: 'Custeio', path: '/financeiro/custeio' },
+			{ label: 'Relatórios', path: '/financeiro/relatorios' }
+		]
+	},
+	{
+		label: 'Notificações',
+		path: '/notificacoes',
+		module: 'notificacoes',
+		icon: 'notificacoes',
+		children: [
+			{ label: 'Minhas notificações', path: '/notificacoes' },
+			{ label: 'Preferências de canais', path: '/notificacoes/preferencias', canSee: isAdmin },
+			{ label: 'Histórico', path: '/notificacoes/historico', canSee: isAdmin }
+		]
+	},
+	{
+		label: 'Configurações',
+		path: '/configuracoes',
+		module: 'configuracoes',
+		icon: 'configuracoes',
+		children: [
+			{ label: 'Meu perfil', path: '/configuracoes/perfil' },
+			{ label: 'Usuários', path: '/configuracoes/usuarios', canSee: isAdmin },
+			{ label: 'Permissões', path: '/configuracoes/permissoes', canSee: isAdmin },
+			{ label: 'Sistema', path: '/configuracoes/sistema', canSee: isAdmin }
+		]
+	}
 ];
 
 export interface Crumb {

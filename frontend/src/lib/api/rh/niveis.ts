@@ -1,0 +1,72 @@
+import { apiFetch } from '$lib/api/client';
+import type { Nivel, NivelMatrix, NivelMembro } from '$lib/types/rh';
+
+
+export const NIVEL_PARA_INT: Record<Nivel, number> = {
+	admin: 0,
+	bolsista: 1,
+	voluntario: 2,
+	estagiario: 3,
+	recrutando: 4
+};
+
+const INT_PARA_NIVEL: Nivel[] = ['admin', 'bolsista', 'voluntario', 'estagiario', 'recrutando'];
+
+interface RawNivel {
+	id: string;
+	codigo: number;
+	label: string;
+	total: number;
+}
+
+interface RawPermissao {
+	id: string;
+	rotulo: string;
+	admin: string;
+	bolsista: string;
+	voluntario: string;
+	estagiario: string;
+	recrutando: string;
+}
+
+// Adaptador de leitura: o back serve {niveis[], permissoes[]} —
+// converte p/ o Record da tela (sem inventar vínculo).
+export function mapNivelMatrix(raw: { niveis: RawNivel[]; permissoes: RawPermissao[] }): NivelMatrix {
+	const niveis = raw.niveis
+		.map((n) => INT_PARA_NIVEL[n.codigo] ?? null)
+		.filter((n): n is Nivel => n !== null);
+	const matriz: NivelMatrix['matriz'] = {};
+	const modulos: string[] = [];
+	for (const p of raw.permissoes ?? []) {
+		modulos.push(p.id);
+		matriz[p.id] = {
+			admin: p.admin,
+			bolsista: p.bolsista,
+			voluntario: p.voluntario,
+			estagiario: p.estagiario,
+			recrutando: p.recrutando
+		};
+	}
+	return { modulos, niveis, matriz };
+}
+
+export async function getNiveis(fetchFn: typeof fetch = fetch): Promise<NivelMatrix> {
+	const raw = await apiFetch<{ niveis: RawNivel[]; permissoes: RawPermissao[] }>(
+		'/rh/niveis',
+		{},
+		fetchFn
+	);
+	return mapNivelMatrix(raw);
+}
+
+export async function alterarNivel(
+	membroId: string,
+	nivel: Nivel,
+	fetchFn: typeof fetch = fetch
+): Promise<NivelMembro> {
+	return await apiFetch<NivelMembro>(
+		`/rh/niveis/${membroId}/membros`,
+		{ method: 'PATCH', body: JSON.stringify({ nivel: NIVEL_PARA_INT[nivel] }) },
+		fetchFn
+	);
+}
