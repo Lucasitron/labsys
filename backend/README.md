@@ -1,7 +1,7 @@
 # backend — Monólito modular FabLab (Laravel)
 
 API do Sistema de Gestão FabLab. **PHP 8.3 + Laravel 12**, monólito **modular em MVC**: cada
-bounded context é um módulo (`app/Modules/<Modulo>`) isolado por namespace e por **schema** no
+bounded context isolado por namespace layer-first (`app/{Models,Http,Services,...}/<Modulo>`) e por **schema** no
 Postgres único (`fablab`). O SPA SvelteKit consome **um único endpoint HTTP** (`/api/**`).
 
 ## Estrutura
@@ -11,16 +11,16 @@ app/
 ├── Events/                     # 1 classe por const NAME (eventos consolidados)
 ├── Http/Controllers/           # Controller base (principal() → Caller)
 ├── Rules/                      # regras compartilhadas (CpfCnpjRule)
-├── Shared/
-│   ├── Auth/Caller.php         # identidade do chamador (idUser/role/admin)
-│   ├── Exceptions/             # ApiException + ErrorResponse
-│   └── ...                     # Contracts transversais
-├── Modules/<Modulo>/
-│   ├── Models/                 # Eloquent ($table = '<schema>.<tabela>')
-│   ├── Http/                   # Controllers · Requests (FormRequest) · Resources
-│   ├── Services/               # só quando há regra de negócio real
-│   ├── Policies/  Events/  Listeners/
-│   └── routes.php              # rotas /api/<modulo>
+├── Exceptions/                 # ApiException + ErrorResponse
+├── Shared/Auth/Caller.php      # identidade do chamador
+├── Models/<Modulo>/            # Eloquent ($table = '<schema>.<tabela>')
+├── Http/Controllers/<Modulo>/  # Controllers (FormRequest + Resource)
+├── Http/Requests/<Modulo>/     # validação/autorização
+├── Http/Resources/<Modulo>/    # View JSON
+├── Services/<Modulo>/          # só quando há regra de negócio real
+├── Policies/  Events/  Listeners/<Modulo>/
+├── Contracts/  Enums/<Modulo>/
+├── routes/modules/<modulo>.php  # rotas /api/<modulo>
 └── Console/Commands/
 config/fablab.php               # kill-switches de scheduler
 database/
@@ -28,7 +28,7 @@ database/
 └── seeders/
 ```
 
-**Eventos:** uma classe por `const NAME` em `app/Events/`; consumidores em `Modules/*/Listeners/`
+**Eventos:** uma classe por `const NAME` em `app/Events/`; consumidores em `app/Listeners/<Modulo>/`
 e binds em `AppServiceProvider`.
 **Schedulers:** flags `SCHEDULER_ENABLED` lidas de `config('fablab.schedulers.*')`.
 
