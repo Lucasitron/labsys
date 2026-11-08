@@ -202,7 +202,7 @@
 		if (!somenteDigitos(documento)) novos['documento'] = `Informe o ${tipo === 'pf' ? 'CPF' : 'CNPJ'}.`;
 		else if (!docValido) novos['documento'] = `${tipo === 'pf' ? 'CPF' : 'CNPJ'} inválido.`;
 		if (!email.trim()) novos['email'] = 'Informe o e-mail.';
-		else if (!isEmail(email.trim()))
+		else if (!isEmail(email))
 			novos['email'] = 'Informe um e-mail válido.';
 		if (somenteDigitos(telefone).length < 10) novos['telefone'] = 'Informe um telefone válido com DDD.';
 		if (cep && somenteDigitos(cep).length !== 8) novos['cep'] = 'CEP deve ter 8 dígitos.';

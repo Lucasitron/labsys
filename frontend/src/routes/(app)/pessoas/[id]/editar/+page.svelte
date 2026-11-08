@@ -92,11 +92,11 @@
 		const novos: Record<string, string> = {};
 		if (!nome.trim()) novos['nome'] = 'Informe o nome completo.';
 		if (!email.trim()) novos['email'] = 'Informe o e-mail.';
-		else if (!isEmail(email.trim()))
+		else if (!isEmail(email))
 			novos['email'] = 'Informe um e-mail válido.';
 		if (criarAcesso) {
 			if (!acessoEmail.trim()) novos['acesso'] = 'Informe o e-mail de acesso.';
-			else if (!isEmail(acessoEmail.trim()))
+			else if (!isEmail(acessoEmail))
 				novos['acesso'] = 'Informe um e-mail válido para o acesso.';
 			else if (acessoSenha && acessoSenha.length < 8)
 				novos['acesso'] = 'A senha deve ter ao menos 8 caracteres.';

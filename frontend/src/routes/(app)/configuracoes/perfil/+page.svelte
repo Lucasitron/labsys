@@ -70,7 +70,7 @@
 		if (!nome.trim()) erros.nome = 'Informe o nome completo.';
 		if (!email.trim()) {
 			erros.email = 'Informe o e-mail institucional.';
-		} else if (!isEmail(email.trim())) {
+		} else if (!isEmail(email)) {
 			erros.email = 'E-mail inválido.';
 		}
 		return erros;

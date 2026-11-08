@@ -258,7 +258,7 @@
 		if (!nomeInsc.trim()) novos['nome'] = 'Informe o nome completo.';
 		if (!matriculaInsc.trim()) novos['matricula'] = 'Informe a matrícula.';
 		if (!emailInsc.trim()) novos['email'] = 'Informe o e-mail.';
-		else if (!isEmail(emailInsc.trim()))
+		else if (!isEmail(emailInsc))
 			novos['email'] = 'Informe um e-mail válido.';
 		if (ehAdmin && !tutorIdInsc) novos['tutor'] = 'Selecione o tutor responsável.';
 		errosInsc = novos;

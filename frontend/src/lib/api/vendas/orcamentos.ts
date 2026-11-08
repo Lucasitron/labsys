@@ -1,5 +1,5 @@
 import { apiFetch } from '$lib/api/client';
-import { paginarClient } from '$lib/api/producao';
+import { paginarClient } from '$lib/utils/pagination';
 import type {
 	CreateOrcamentoPayload,
 	ListOrcamentosParams,

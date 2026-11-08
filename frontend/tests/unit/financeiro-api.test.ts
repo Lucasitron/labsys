@@ -1,6 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { writable } from 'svelte/store';
-
 const { apiFetchMock, ApiError } = vi.hoisted(() => {
 	class ApiError extends Error {
 		status: number;
@@ -15,20 +13,9 @@ const { apiFetchMock, ApiError } = vi.hoisted(() => {
 	return { apiFetchMock: vi.fn(), ApiError };
 });
 
-const authMock = writable<{ user: null; token: string | null; isAuthenticated: boolean }>({
-	user: null,
-	token: null,
-	isAuthenticated: false
-});
-
 vi.mock('$lib/api/client', () => ({
 	apiFetch: apiFetchMock,
 	ApiError
-}));
-
-vi.mock('$lib/stores/auth', () => ({
-	auth: authMock,
-	logout: vi.fn()
 }));
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
@@ -68,11 +55,9 @@ async function freshRelatorios(): Promise<typeof import('$lib/api/financeiro/rel
 
 beforeEach(() => {
 	apiFetchMock.mockReset();
-	authMock.set({ user: null, token: null, isAuthenticated: false });
 });
 
 afterEach(() => {
-	authMock.set({ user: null, token: null, isAuthenticated: false });
 });
 
 function chamada(indice = 0): { path: string; init: Record<string, unknown> } {
@@ -242,7 +227,7 @@ describe('financeiro/api — relatórios (1 endpoint por pane + ?periodo=)', () 
 	});
 });
 
-describe('financeiro/api — erros e bearer', () => {
+describe('financeiro/api — erros', () => {
 	it('409 (ex.: pagamento duplicado) propaga ApiError', async () => {
 		apiFetchMock.mockRejectedValueOnce(new ApiError(409, 'CONFLITO', 'Baixa já registrada.'));
 		const { registrarPagamento } = await freshLancamentos();

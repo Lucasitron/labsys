@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { writable } from 'svelte/store';
 import type {
 	Notification,
 	NotificationPreferences,
@@ -8,19 +7,8 @@ import type {
 
 const { apiFetchMock } = vi.hoisted(() => ({ apiFetchMock: vi.fn() }));
 
-const authMock = writable<{ user: null; token: string | null; isAuthenticated: boolean }>({
-	user: null,
-	token: null,
-	isAuthenticated: false
-});
-
 vi.mock('$lib/api/client', () => ({
 	apiFetch: apiFetchMock
-}));
-
-vi.mock('$lib/stores/auth', () => ({
-	auth: authMock,
-	logout: vi.fn()
 }));
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
@@ -68,7 +56,6 @@ async function freshApi() {
 
 beforeEach(() => {
 	apiFetchMock.mockReset();
-	authMock.set({ user: null, token: null, isAuthenticated: false });
 });
 
 afterEach(() => {

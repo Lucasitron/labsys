@@ -44,7 +44,7 @@ export function sanitizeRedirect(path: string | null): string {
 	return path;
 }
 
-export function readPersistedAccessToken(): string | null {
+function readPersistedAccessToken(): string | null {
 	if (!browser) return null;
 	try {
 		const raw = localStorage.getItem('fablab.auth');

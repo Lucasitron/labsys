@@ -1,6 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { writable } from 'svelte/store';
-
 const { apiFetchMock, ApiError } = vi.hoisted(() => {
 	class ApiError extends Error {
 		status: number;
@@ -15,20 +13,9 @@ const { apiFetchMock, ApiError } = vi.hoisted(() => {
 	return { apiFetchMock: vi.fn(), ApiError };
 });
 
-const authMock = writable<{ user: null; token: string | null; isAuthenticated: boolean }>({
-	user: null,
-	token: null,
-	isAuthenticated: false
-});
-
 vi.mock('$lib/api/client', () => ({
 	apiFetch: apiFetchMock,
 	ApiError
-}));
-
-vi.mock('$lib/stores/auth', () => ({
-	auth: authMock,
-	logout: vi.fn()
 }));
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
@@ -61,11 +48,9 @@ async function freshSolicitacoes() {
 
 beforeEach(() => {
 	apiFetchMock.mockReset();
-	authMock.set({ user: null, token: null, isAuthenticated: false });
 });
 
 afterEach(() => {
-	authMock.set({ user: null, token: null, isAuthenticated: false });
 });
 
 function chamada(indice = 0): { path: string; init: Record<string, unknown> } {
@@ -230,7 +215,7 @@ describe('vendas/api — solicitações (decisão com motivo)', () => {
 	});
 });
 
-describe('vendas/api — erros e bearer', () => {
+describe('vendas/api — erros', () => {
 	it('409 (ex.: cliente duplicado) propaga ApiError', async () => {
 		apiFetchMock.mockRejectedValueOnce(new ApiError(409, 'DUPLICADO', 'Cliente já cadastrado.'));
 		const { createCliente } = await freshClientes();

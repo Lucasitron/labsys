@@ -69,7 +69,7 @@
 		if (!matricula.trim()) novos['matricula'] = 'Informe a matrícula.';
 		if (criarAcesso) {
 			if (!email.trim()) novos['email'] = 'Informe o e-mail de acesso.';
-			else if (!isEmail(email.trim()))
+			else if (!isEmail(email))
 				novos['email'] = 'Informe um e-mail válido.';
 		}
 		if (criarAcesso && senha && senha.length < 8)
