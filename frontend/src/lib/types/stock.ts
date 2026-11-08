@@ -2,24 +2,14 @@
 
 export type { Tone } from './ui';
 
+import type { Paginacao } from './pagination';
+
 export interface IdLabel {
 	id: string;
 	label: string;
 }
 
-export interface PageInfo {
-	page: number;
-	pageSize: number;
-	totalItems: number;
-	totalPages: number;
-}
-
-export interface Pagination<T> {
-	items: T[];
-	page: number;
-	pageSize: number;
-	total: number;
-}
+export type PageInfo = Paginacao;
 
 export interface FilterOption {
 	id: string;

@@ -1,4 +1,4 @@
-export type { Paged } from './pagination';
+import type { Paginacao } from './pagination';
 
 export type PersonType = 'funcionario' | 'bolsista' | 'voluntario' | 'estagiario';
 
@@ -24,12 +24,7 @@ export type GuideStatus = 'validado' | 'em_revisao' | 'rascunho';
 
 export type DisponibilidadeStatus = 'livre' | 'ocupada' | 'indisponivel';
 
-export interface PageInfo {
-	page: number;
-	pageSize: number;
-	totalItems: number;
-	totalPages: number;
-}
+export type PageInfo = Paginacao;
 
 export interface RhListParams {
 	search?: string;

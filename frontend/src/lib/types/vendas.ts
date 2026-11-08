@@ -1,4 +1,5 @@
 import type { Tone } from '$lib/types/stock';
+import type { Paginacao } from './pagination';
 
 export type TipoPessoa = 'pf' | 'pj';
 export type OrcamentoStatus = 'Pendente' | 'Aprovado' | 'Recusado' | 'Ajuste';
@@ -233,12 +234,7 @@ export interface DecidirSolicitacaoPayload {
 	motivo?: string;
 }
 
-export interface Pagination {
-	page: number;
-	pageSize: number;
-	totalItems: number;
-	totalPages: number;
-}
+export type Pagination = Paginacao;
 
 export interface ClientesResult {
 	clientes: Cliente[];
@@ -317,4 +313,3 @@ export interface ListSolicitacoesParams {
 	status?: SolicitacaoStatus;
 }
 
-export type { Paged } from './pagination';

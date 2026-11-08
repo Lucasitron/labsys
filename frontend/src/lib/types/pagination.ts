@@ -11,7 +11,3 @@ export interface Paginado<T> {
 	paginacao: Paginacao;
 }
 
-export interface Paged<T> {
-	items: T[];
-	pagination: Paginacao;
-}
