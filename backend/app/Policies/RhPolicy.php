@@ -7,7 +7,7 @@ use App\Models\Rh\Funcionario;
 use App\Models\Rh\ProcessoSeletivo;
 use App\Models\Rh\Tutor;
 use App\Services\Rh\RhPrincipal;
-use App\Shared\Exceptions\ForbiddenException;
+use App\Exceptions\ForbiddenException;
 
 /**
  * Autorização do RH (port de AutorizacaoHelper + @PreAuthorize).

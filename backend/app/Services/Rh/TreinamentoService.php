@@ -8,8 +8,8 @@ use App\Models\Rh\Treinamento;
 use App\Models\Rh\Tutor;
 use App\Policies\RhPolicy;
 use App\Services\Rh\RhPrincipal;
-use App\Shared\Exceptions\ForbiddenException;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\ResourceNotFoundException;
 
 /**
  * Treinamentos LMS (F6): criar por Admin (idTutor obrigatório) ou tutor

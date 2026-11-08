@@ -4,7 +4,7 @@ namespace Tests\Unit\Auth;
 
 use App\Enums\Auth\Role;
 use App\Services\Auth\TokenService;
-use App\Shared\Exceptions\TokenInvalidException;
+use App\Exceptions\TokenInvalidException;
 use Tests\TestCase;
 
 class TokenServiceTest extends TestCase

@@ -7,8 +7,8 @@ use App\Services\Estoque\EstoquePrincipal;
 use App\Models\Estoque\Item;
 use App\Models\Estoque\SaidaEstoque;
 use App\Policies\EstoquePolicy;
-use App\Shared\Exceptions\ResourceNotFoundException;
-use App\Shared\Exceptions\SaldoInsuficienteException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\SaldoInsuficienteException;
 use Illuminate\Support\Facades\DB;
 
 /** Saídas manuais — consumo, perda, ajuste (regras só aqui). */

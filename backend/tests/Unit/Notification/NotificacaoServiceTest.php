@@ -127,14 +127,14 @@ class NotificacaoServiceTest extends TestCase
         try {
             $this->inbox->marcarComoLida((int) $n->getKey(), 22, false);
             $this->fail('leitura alheia deveria lançar');
-        } catch (\App\Shared\Exceptions\ForbiddenException) {
+        } catch (\App\Exceptions\ForbiddenException) {
             $this->assertTrue(true);
         }
 
         try {
             $this->inbox->marcarComoLida(999999, 11, false);
             $this->fail('ausente deveria lançar');
-        } catch (\App\Shared\Exceptions\ResourceNotFoundException) {
+        } catch (\App\Exceptions\ResourceNotFoundException) {
             $this->assertTrue(true);
         }
 

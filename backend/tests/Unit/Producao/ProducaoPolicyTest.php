@@ -6,7 +6,7 @@ use App\Enums\Auth\Role;
 use App\Enums\Producao\KanbanStatus;
 use App\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
-use App\Shared\Exceptions\ForbiddenException;
+use App\Exceptions\ForbiddenException;
 use PHPUnit\Framework\TestCase;
 
 /** Policy + vínculo + rótulos (sem banco). */

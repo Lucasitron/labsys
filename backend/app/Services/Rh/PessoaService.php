@@ -16,8 +16,8 @@ use App\Models\Rh\ProcessoSeletivo;
 use App\Policies\RhPolicy;
 use App\Services\Rh\RhPrincipal;
 use App\Rules\CpfRule;
-use App\Shared\Exceptions\ForbiddenException;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 

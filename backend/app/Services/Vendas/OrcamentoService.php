@@ -11,8 +11,8 @@ use App\Models\Vendas\ItemOrcamento;
 use App\Models\Vendas\Orcamento;
 use App\Policies\VendasPolicy;
 use App\Shared\Auth\Caller;
-use App\Shared\Exceptions\ConflitoException;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

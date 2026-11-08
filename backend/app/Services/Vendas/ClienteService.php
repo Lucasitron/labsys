@@ -11,8 +11,8 @@ use App\Models\Vendas\TagCliente;
 use App\Policies\VendasPolicy;
 use App\Rules\DocumentoRule;
 use App\Shared\Auth\Caller;
-use App\Shared\Exceptions\ConflitoException;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 /** Gestão de clientes PF/PJ (regras só aqui). Escrita = Admin (matriz prevalece). */

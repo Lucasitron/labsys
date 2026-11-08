@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Shared\Exceptions;
+namespace App\Exceptions;
 
 class PermissaoInvalidaException extends ApiException
 {

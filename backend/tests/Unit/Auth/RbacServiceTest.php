@@ -6,7 +6,7 @@ use App\Enums\Auth\PermissaoNivel;
 use App\Enums\Auth\Role;
 use App\Models\Auth\PermissaoMatriz;
 use App\Services\Auth\RbacService;
-use App\Shared\Exceptions\PermissaoInvalidaException;
+use App\Exceptions\PermissaoInvalidaException;
 use Tests\TestCase;
 
 class RbacServiceTest extends TestCase

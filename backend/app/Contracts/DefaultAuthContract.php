@@ -9,7 +9,7 @@ use App\Models\Auth\UserPermission;
 use App\Services\Auth\TokenBlacklistService;
 use App\Services\Auth\TokenService;
 use App\Services\Auth\UsuarioService;
-use App\Shared\Exceptions\TokenInvalidException;
+use App\Exceptions\TokenInvalidException;
 use Illuminate\Support\Str;
 
 class DefaultAuthContract implements AuthContract

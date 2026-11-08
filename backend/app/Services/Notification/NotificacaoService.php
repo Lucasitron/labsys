@@ -9,7 +9,7 @@ use App\Models\Notification\NotificacaoHistorico;
 use App\Models\Notification\PreferenciaNotificacao;
 use App\Policies\NotificationPolicy;
 use App\Support\Notification\LinkValidator;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 /**

@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Shared\Auth\Caller;
-use App\Shared\Exceptions\ForbiddenException;
+use App\Exceptions\ForbiddenException;
 
 /**
  * Autorização do Financeiro (rbac-matrix.md regra 2 ≡ Java

@@ -6,8 +6,8 @@ use App\Enums\Financeiro\StatusCompra;
 use App\Shared\Auth\Caller;
 use App\Models\Financeiro\SolicitacaoCompra;
 use App\Policies\FinanceiroPolicy;
-use App\Shared\Exceptions\ConflitoException;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 
 /**
  * Fluxo informativo de compras: registra com `REGISTRADA`, publica

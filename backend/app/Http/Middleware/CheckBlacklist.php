@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Auth\TokenBlacklist;
-use App\Shared\Exceptions\TokenBlacklistedException;
+use App\Exceptions\TokenBlacklistedException;
 use Closure;
 use Illuminate\Http\Request;
 

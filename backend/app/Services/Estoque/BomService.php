@@ -7,7 +7,7 @@ use App\Models\Estoque\Item;
 use App\Models\Estoque\ItemBom;
 use App\Models\Estoque\ListaMateriais;
 use App\Policies\EstoquePolicy;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 /** Listas de Materiais — BOM (regras só aqui). Sem tabela de reserva. */

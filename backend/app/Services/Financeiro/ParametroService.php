@@ -6,7 +6,7 @@ use App\Shared\Auth\Caller;
 use App\Models\Financeiro\ParametroOverhead;
 use App\Models\Financeiro\ValorHoraNivel;
 use App\Policies\FinanceiroPolicy;
-use App\Shared\Exceptions\ConfiguracaoInvalidaException;
+use App\Exceptions\ConfiguracaoInvalidaException;
 use Illuminate\Support\Facades\Log;
 
 /**

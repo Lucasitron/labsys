@@ -6,7 +6,7 @@ use App\Enums\Auth\Role;
 use App\Enums\Auth\SituacaoUsuario;
 use App\Models\Auth\Login;
 use App\Models\Auth\UserPermission;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;

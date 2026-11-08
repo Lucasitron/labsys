@@ -8,8 +8,8 @@ use App\Shared\Auth\Caller;
 use App\Models\Financeiro\CategoriaFinanceira;
 use App\Models\Financeiro\LancamentoFinanceiro;
 use App\Policies\FinanceiroPolicy;
-use App\Shared\Exceptions\ConflitoException;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

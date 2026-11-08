@@ -5,7 +5,7 @@ namespace Tests\Unit\Financeiro;
 use App\Enums\Auth\Role;
 use App\Shared\Auth\Caller;
 use App\Policies\FinanceiroPolicy;
-use App\Shared\Exceptions\ForbiddenException;
+use App\Exceptions\ForbiddenException;
 use PHPUnit\Framework\TestCase;
 
 /** FinanceiroPolicy: só Admin passa (sem vínculo, sem próprio). */

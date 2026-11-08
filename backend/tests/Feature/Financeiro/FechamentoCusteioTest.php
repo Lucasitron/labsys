@@ -167,7 +167,7 @@ class FechamentoCusteioTest extends FinanceiroTestCase
         try {
             app(CusteioService::class)->calcularDoEvento(8);
             $this->fail('Deveria falhar sem valor/hora');
-        } catch (\App\Shared\Exceptions\ConfiguracaoInvalidaException $e) {
+        } catch (\App\Exceptions\ConfiguracaoInvalidaException $e) {
             $this->assertStringContainsString('nível', $e->getMessage());
         }
         $this->assertSame(0, \App\Models\Financeiro\CustoEncomenda::where('id_encomenda', 8)->count());
@@ -179,7 +179,7 @@ class FechamentoCusteioTest extends FinanceiroTestCase
         try {
             app(CusteioService::class)->calcularDoEvento(8);
             $this->fail('Deveria falhar sem overhead');
-        } catch (\App\Shared\Exceptions\ConfiguracaoInvalidaException $e) {
+        } catch (\App\Exceptions\ConfiguracaoInvalidaException $e) {
             $this->assertStringContainsString('overhead', $e->getMessage());
         }
         $this->assertSame(0, \App\Models\Financeiro\CustoEncomenda::where('id_encomenda', 8)->count());

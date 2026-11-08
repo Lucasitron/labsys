@@ -9,7 +9,7 @@ use App\Models\Producao\SetorChecklist;
 use App\Models\Producao\SetorResponsavel;
 use App\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

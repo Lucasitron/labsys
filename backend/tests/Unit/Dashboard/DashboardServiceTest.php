@@ -8,7 +8,7 @@ use App\Contracts\EstoqueContract;
 use App\Contracts\NotificationContract;
 use App\Contracts\ProducaoContract;
 use App\Contracts\RhContract;
-use App\Shared\Exceptions\ForbiddenException;
+use App\Exceptions\ForbiddenException;
 use Tests\TestCase;
 
 class FakeRhContract implements RhContract

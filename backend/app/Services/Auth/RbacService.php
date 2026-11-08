@@ -6,7 +6,7 @@ use App\Enums\Auth\Modulo;
 use App\Enums\Auth\PermissaoNivel;
 use App\Enums\Auth\Role;
 use App\Models\Auth\PermissaoMatriz;
-use App\Shared\Exceptions\PermissaoInvalidaException;
+use App\Exceptions\PermissaoInvalidaException;
 
 /**
  * Matriz RBAC: MATRIX em memória (compat) + células persistentes em

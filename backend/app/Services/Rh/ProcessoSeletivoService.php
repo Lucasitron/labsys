@@ -12,8 +12,8 @@ use App\Models\Rh\ProcessoSeletivo;
 use App\Models\Rh\Tutor;
 use App\Policies\RhPolicy;
 use App\Services\Rh\RhPrincipal;
-use App\Shared\Exceptions\ForbiddenException;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\ResourceNotFoundException;
 
 /**
  * Processo seletivo (F5): candidato = pessoa + funcionário nível 4/Recrutando.

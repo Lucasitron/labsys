@@ -8,11 +8,11 @@ use App\Enums\Auth\SituacaoUsuario;
 use App\Events\RfidAccessEvent;
 use App\Models\Auth\Login;
 use App\Models\Auth\UserPermission;
-use App\Shared\Exceptions\ForbiddenException;
-use App\Shared\Exceptions\InvalidCredentialsException;
-use App\Shared\Exceptions\ResourceNotFoundException;
-use App\Shared\Exceptions\TokenBlacklistedException;
-use App\Shared\Exceptions\TokenInvalidException;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\InvalidCredentialsException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\TokenBlacklistedException;
+use App\Exceptions\TokenInvalidException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 

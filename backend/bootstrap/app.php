@@ -1,7 +1,7 @@
 <?php
 
-use App\Shared\Exceptions\ApiException;
-use App\Shared\Exceptions\ErrorResponse;
+use App\Exceptions\ApiException;
+use App\Exceptions\ErrorResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;

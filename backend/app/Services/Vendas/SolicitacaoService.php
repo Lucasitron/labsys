@@ -8,8 +8,8 @@ use App\Enums\Vendas\TipoSolicitacao;
 use App\Models\Vendas\SolicitacaoEdicao;
 use App\Policies\VendasPolicy;
 use App\Shared\Auth\Caller;
-use App\Shared\Exceptions\ConflitoException;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 
 /**
  * Solicitações de edição (contrato mínimo D-4): qualquer autenticado (exceto

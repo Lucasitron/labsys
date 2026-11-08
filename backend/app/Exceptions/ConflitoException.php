@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Shared\Exceptions;
+namespace App\Exceptions;
 
 /** Conflito de estado/versão (lock otimista, duplicidade semântica) → 409. */
 class ConflitoException extends ApiException

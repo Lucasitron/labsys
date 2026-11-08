@@ -10,7 +10,7 @@ use App\Http\Resources\Vendas\TagResource;
 use App\Models\Vendas\TagCliente;
 use App\Policies\VendasPolicy;
 use App\Shared\Auth\Caller;
-use App\Shared\Exceptions\ConflitoException;
+use App\Exceptions\ConflitoException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

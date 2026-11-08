@@ -11,8 +11,8 @@ use App\Models\Estoque\Item;
 use App\Models\Estoque\Localizacao;
 use App\Models\Estoque\SaidaEstoque;
 use App\Policies\EstoquePolicy;
-use App\Shared\Exceptions\ResourceNotFoundException;
-use App\Shared\Exceptions\SaldoInsuficienteException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\SaldoInsuficienteException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

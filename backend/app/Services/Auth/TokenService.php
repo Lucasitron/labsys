@@ -4,7 +4,7 @@ namespace App\Services\Auth;
 
 use App\Enums\Auth\Role;
 use App\Models\Auth\Login;
-use App\Shared\Exceptions\TokenInvalidException;
+use App\Exceptions\TokenInvalidException;
 use Carbon\Carbon;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;

@@ -6,8 +6,8 @@ use App\Models\Vendas\Encomenda;
 use App\Models\Vendas\RegistroMarketplace;
 use App\Policies\VendasPolicy;
 use App\Shared\Auth\Caller;
-use App\Shared\Exceptions\ConflitoException;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ConflitoException;
+use App\Exceptions\ResourceNotFoundException;
 
 /** Registro manual de vendas externas (regras só aqui). Escrita = Admin. */
 class MarketplaceService

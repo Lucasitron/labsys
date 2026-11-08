@@ -3,8 +3,8 @@
 namespace App\Services\Auth;
 
 use App\Models\Auth\TokenIntegracao;
-use App\Shared\Exceptions\ConfiguracaoInvalidaException;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ConfiguracaoInvalidaException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Str;
 
 /**

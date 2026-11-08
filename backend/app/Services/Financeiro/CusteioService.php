@@ -13,7 +13,7 @@ use App\Models\Financeiro\FechamentoEncomenda;
 use App\Models\Financeiro\HorasEncomenda;
 use App\Models\Financeiro\LancamentoFinanceiro;
 use App\Policies\FinanceiroPolicy;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 /**

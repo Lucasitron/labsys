@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\Auth\Role;
-use App\Shared\Exceptions\ForbiddenException;
+use App\Exceptions\ForbiddenException;
 
 /**
  * Autorização do Dashboard (rbac-matrix.md linha Dashboard).

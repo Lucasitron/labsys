@@ -8,7 +8,7 @@ use App\Models\Estoque\EntradaEstoque;
 use App\Models\Estoque\Fornecedor;
 use App\Models\Estoque\Item;
 use App\Policies\EstoquePolicy;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

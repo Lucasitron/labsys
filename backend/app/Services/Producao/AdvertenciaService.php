@@ -8,7 +8,7 @@ use App\Models\Producao\Inspecao5S;
 use App\Models\Producao\Parametro5S;
 use App\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 /**

@@ -8,7 +8,7 @@ use App\Models\Rh\Funcionario;
 use App\Policies\RhPolicy;
 use App\Services\Rh\RhPrincipal;
 use App\Rules\CpfRule;
-use App\Shared\Exceptions\ForbiddenException;
+use App\Exceptions\ForbiddenException;
 use Tests\TestCase;
 
 class RhPolicyTest extends TestCase

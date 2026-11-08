@@ -3,7 +3,7 @@
 namespace App\Services\Auth;
 
 use App\Models\Auth\ParametroSistema;
-use App\Shared\Exceptions\ConfiguracaoInvalidaException;
+use App\Exceptions\ConfiguracaoInvalidaException;
 
 /**
  * Parâmetros globais do sistema (KV auth.parametro_sistema). Só persiste

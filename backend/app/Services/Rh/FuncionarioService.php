@@ -14,8 +14,8 @@ use App\Models\Rh\HistoricoNivel;
 use App\Models\Rh\RegistroPontoDiario;
 use App\Policies\RhPolicy;
 use App\Services\Rh\RhPrincipal;
-use App\Shared\Exceptions\ForbiddenException;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\ResourceNotFoundException;
 use Carbon\CarbonImmutable;
 
 /**

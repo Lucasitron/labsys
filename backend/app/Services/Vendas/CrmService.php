@@ -7,7 +7,7 @@ use App\Models\Vendas\InteracaoCliente;
 use App\Models\Vendas\TarefaMarketing;
 use App\Policies\VendasPolicy;
 use App\Shared\Auth\Caller;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ResourceNotFoundException;
 
 /** CRM interno: interações (timeline) e tarefas de marketing (regras só aqui). */
 class CrmService

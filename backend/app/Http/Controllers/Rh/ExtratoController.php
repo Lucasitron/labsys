@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Rh\Concerns\ResolvesRhPrincipal;
 
 use App\Services\Rh\ExtratoService;
-use App\Shared\Exceptions\ForbiddenException;
+use App\Exceptions\ForbiddenException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

@@ -7,7 +7,7 @@ use App\Enums\Producao\TarefaStatus;
 use App\Models\Producao\Tarefa;
 use App\Policies\ProducaoPolicy;
 use App\Shared\Auth\Caller;
-use App\Shared\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ResourceNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 /**
