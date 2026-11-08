@@ -43,7 +43,7 @@ src/
 │   ├── types/        # tipos TypeScript
 │   └── utils/        # utilitários puros (formatação, validação)
 ├── routes/
-│   ├── (auth)/       # rotas de autenticação
+│   ├── auth/         # rotas de autenticação
 │   ├── (app)/        # rotas autenticadas
 │   └── +layout.svelte
 ├── app.html
