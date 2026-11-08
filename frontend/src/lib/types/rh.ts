@@ -1,3 +1,5 @@
+export type { Paged } from './pagination';
+
 export type PersonType = 'funcionario' | 'bolsista' | 'voluntario' | 'estagiario';
 
 export type PersonStatus = 'ativo' | 'inativo' | 'afastado';
@@ -27,11 +29,6 @@ export interface PageInfo {
 	pageSize: number;
 	totalItems: number;
 	totalPages: number;
-}
-
-export interface Paged<T> {
-	items: T[];
-	pagination: PageInfo;
 }
 
 export interface RhListParams {

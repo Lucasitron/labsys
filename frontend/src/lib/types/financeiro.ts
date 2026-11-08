@@ -1,6 +1,7 @@
 import type { Paginacao } from './pagination';
 
 export type { Paginacao };
+export type { Paged } from './pagination';
 
 export type TipoLancamento = 'Entrada' | 'Saída';
 export type LancamentoStatus = 'Pendente' | 'Pago' | 'Atrasado' | 'Cancelado';
@@ -18,11 +19,6 @@ export type RelatorioId =
 
 export type CategoriaTipo = 'Receita' | 'Despesa';
 export type NivelAcesso = 0 | 1 | 2 | 3;
-
-export interface Paged<T> {
-	items: T[];
-	pagination: Paginacao;
-}
 
 export interface CategoriaFinanceira {
 	id: string;

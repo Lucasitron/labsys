@@ -240,11 +240,6 @@ export interface Pagination {
 	totalPages: number;
 }
 
-export interface Paged<T> {
-	items: T[];
-	pagination: Pagination;
-}
-
 export interface ClientesResult {
 	clientes: Cliente[];
 	pagination: Pagination;
@@ -321,3 +316,5 @@ export interface ListTarefasParams {
 export interface ListSolicitacoesParams {
 	status?: SolicitacaoStatus;
 }
+
+export type { Paged } from './pagination';
