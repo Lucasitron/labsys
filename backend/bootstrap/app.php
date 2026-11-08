@@ -12,6 +12,8 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
+    // Listeners são registrados explicitamente em AppServiceProvider (28 binds).
+    // A descoberta automática os duplicaria (56 binds); por isso desativada.
     ->withEvents(false)
     ->withRouting(
         api: __DIR__.'/../routes/api.php',
