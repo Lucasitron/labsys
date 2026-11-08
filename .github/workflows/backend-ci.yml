@@ -32,5 +32,6 @@ jobs:
           extensions: mbstring, pdo_pgsql, bcmath, intl, zip
           tools: composer:v2
       - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: vendor/bin/pint --test
       - run: cp .env.example .env && php artisan key:generate
       - run: php artisan test --compact
