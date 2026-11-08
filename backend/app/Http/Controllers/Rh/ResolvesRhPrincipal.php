@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Rh\Concerns;
+namespace App\Http\Controllers\Rh;
 
 use App\Models\Auth\Login;
 use App\Services\Rh\RhPrincipal;

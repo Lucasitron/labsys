@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Rh;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Rh\Concerns\ResolvesRhPrincipal;
+use App\Http\Controllers\Rh\ResolvesRhPrincipal;
 
 use App\Enums\Rh\StatusApontamento;
 use App\Http\Requests\Rh\RegistrarApontamentoRequest;

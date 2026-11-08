@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Estoque;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Estoque\Concerns\ResolvesEstoquePrincipal;
+use App\Http\Controllers\Estoque\ResolvesEstoquePrincipal;
 
 use App\Enums\Estoque\Categoria;
 use App\Http\Requests\Estoque\ItemRequest;

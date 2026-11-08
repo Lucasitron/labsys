@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Estoque\Concerns;
+namespace App\Http\Controllers\Estoque;
 
 use App\Models\Auth\Login;
 use App\Services\Estoque\EstoquePrincipal;

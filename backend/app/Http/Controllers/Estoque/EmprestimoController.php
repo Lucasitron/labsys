@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Estoque;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Estoque\Concerns\ResolvesEstoquePrincipal;
+use App\Http\Controllers\Estoque\ResolvesEstoquePrincipal;
 
 use App\Http\Requests\Estoque\EmprestimoRequest;
 use App\Http\Resources\Estoque\EmprestimoResource;
