@@ -40,6 +40,13 @@ class NivelService
 
         return [
             'niveis' => $niveis,
+            'membros' => Funcionario::with('pessoa')->orderBy('id')->get()->map(fn (Funcionario $f) => [
+                'id' => (int) $f->getKey(),
+                'name' => (string) $f->pessoa->nome_completo,
+                'matricula' => (string) $f->pessoa->matricula,
+                'nivel' => strtolower($f->nivel_acesso->name),
+                'grupo' => $f->departamento,
+            ])->all(),
             'permissoes' => [
                 $permissao('pessoas', 'Pessoas', 'TOTAL', 'TOTAL', 'TOTAL', 'PROPRIO', 'NAO'),
                 $permissao('funcionarios', 'Funcionários e horas', 'TOTAL', 'PROPRIO', 'PROPRIO', 'PROPRIO', 'NAO'),

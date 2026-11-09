@@ -73,7 +73,7 @@ class PessoaService
                 );
             }
 
-            return $pessoa;
+            return $pessoa->load('funcionario');
         });
     }
 
@@ -95,6 +95,7 @@ class PessoaService
         $pageSize = min(max($pageSize, 1), self::PAGE_SIZE_MAX);
 
         $query = Pessoa::query()
+            ->with('funcionario')
             ->when($busca !== '', fn ($q) => $q->where(
                 fn ($w) => $w->where('nome_completo', 'ilike', "%{$busca}%")
                     ->orWhere('matricula', 'ilike', "%{$busca}%")
@@ -159,7 +160,7 @@ class PessoaService
 
     public function buscar(int $id, RhPrincipal $principal): Pessoa
     {
-        $pessoa = $this->obter($id);
+        $pessoa = $this->obter($id)->loadMissing('funcionario');
         RhPolicy::exigeAcessoAPessoa($principal, (int) $pessoa->getKey());
 
         return $pessoa;
@@ -251,7 +252,7 @@ class PessoaService
                 );
             }
 
-            return $pessoa->refresh();
+            return $pessoa->refresh()->load('funcionario');
         });
     }
 
