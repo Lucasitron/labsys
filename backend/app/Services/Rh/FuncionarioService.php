@@ -31,9 +31,22 @@ class FuncionarioService
         // Garante que a pessoa existe (404 antes do FK estourar).
         app(PessoaService::class)->obter((int) $dados['id_pessoa']);
 
+        $auth = app(AuthContract::class);
+        $idPessoa = (int) $dados['id_pessoa'];
+
+        // Admin nunca perde acesso ao ganhar vínculo: papel ativo ADMIN manda.
+        if ($auth->roleOf($idPessoa) === Role::ADMIN) {
+            $dados['nivel_acesso'] = NivelAcesso::ADMIN;
+        }
+
         $dados['nivel_acesso'] ??= NivelAcesso::BOLSISTA;
 
-        return Funcionario::create($dados);
+        $funcionario = Funcionario::create($dados);
+
+        // Fonte única de nível: espelha no RBAC do Auth (id_pessoa == id_user).
+        $auth->definirRole($idPessoa, Role::from($funcionario->nivel_acesso->value));
+
+        return $funcionario;
     }
 
     /** @return list<Funcionario> */
