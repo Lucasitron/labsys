@@ -38,9 +38,19 @@ class PessoaService
      * @param  array{nivel_acesso?:NivelAcesso,departamento?:string}  $vinculo
      * @param  array{criar?:bool,email?:?string,senha?:?string,nome_usuario?:?string,setor?:?string}  $acesso
      */
-    public function cadastrar(array $dados, array $vinculo = [], array $acesso = []): Pessoa
+    public function cadastrar(array $dados, RhPrincipal $principal, array $vinculo = [], array $acesso = []): Pessoa
     {
-        return DB::transaction(function () use ($dados, $vinculo, $acesso): Pessoa {
+        return DB::transaction(function () use ($dados, $principal, $vinculo, $acesso): Pessoa {
+            if ($vinculo['nivel_acesso'] ?? null) {
+                if (! $principal->isAdmin()) {
+                    throw new ForbiddenException('Alteração de nível restrita a Admin');
+                }
+            }
+
+            if ((bool) ($acesso['criar'] ?? false) && ! $principal->isAdmin()) {
+                throw new ForbiddenException('Provisionamento de acesso restrito a Admin');
+            }
+
             $this->exigeMatriculaLivre($dados['matricula']);
             $dados['cpf'] = $this->normalizarCpf($dados['cpf'] ?? null, null);
             $dados['status'] ??= PessoaStatus::ATIVO;

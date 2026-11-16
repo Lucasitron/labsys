@@ -42,7 +42,7 @@ class NivelController extends Controller
             'nivelAcesso' => $request->input('nivelAcesso') !== null
                 ? NivelAcesso::from((int) $request->input('nivelAcesso'))
                 : null,
-        ]);
+        ], $this->principal($request));
 
         return response()->json(
             (new FuncionarioResource($funcionario->load('pessoa')))->toArray($request),

@@ -67,7 +67,7 @@ class NivelService
     }
 
     /** Convite: pessoa (+funcionário); nível 4 nasce Recrutando. */
-    public function convidar(array $dados): Funcionario
+    public function convidar(array $dados, RhPrincipal $principal): Funcionario
     {
         $nivel = $dados['nivelAcesso'] ?? NivelAcesso::BOLSISTA;
 
@@ -76,7 +76,7 @@ class NivelService
             'matricula' => $dados['matricula'],
             'contato' => $dados['contato'] ?? null,
             'status' => $nivel === NivelAcesso::RECRUTANDO ? PessoaStatus::RECRUTANDO : PessoaStatus::ATIVO,
-        ]);
+        ], $principal);
 
         return $this->funcionarios->vincular([
             'id_pessoa' => (int) $pessoa->getKey(),

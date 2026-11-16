@@ -7,6 +7,7 @@ use App\Enums\Rh\PessoaStatus;
 use App\Models\Auth\Login;
 use App\Models\Rh\Pessoa;
 use App\Services\Rh\PessoaService;
+use App\Services\Rh\RhPrincipal;
 use Database\Seeders\AuthSeeder;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -70,6 +71,7 @@ class SeederTest extends TestCase
         // A primeira pessoa real com acesso deve ser provisionada sem colisão.
         $nova = app(PessoaService::class)->cadastrar(
             ['nome_completo' => 'Primeira Real', 'matricula' => 'MAT-1', 'status' => PessoaStatus::ATIVO],
+            RhPrincipal::from($admin),
             ['nivel_acesso' => NivelAcesso::BOLSISTA],
             ['criar' => true, 'email' => 'primeira@fablab.org', 'senha' => 'senha1234'],
         );
