@@ -407,6 +407,41 @@ describe('rh/api — níveis', () => {
 		expect(chamada(1).init['method']).toBe('PATCH');
 		expect(chamada(1).init['body']).toBe(JSON.stringify({ nivel: 1 }));
 	});
+
+	it('getNiveis mapeia membros (id string, nivel do union) e mantém niveis/matriz', async () => {
+		apiFetchMock.mockResolvedValue({
+			niveis: [{ id: 'admin', codigo: 0, label: 'Admin', total: 1 }],
+			membros: [
+				{ id: 1, name: 'Fulano', matricula: 'MAT-1', nivel: 'bolsista', grupo: 'ELETRONICA' },
+				{ id: '2', name: 'Ciclano', matricula: 'MAT-2', nivel: 'voluntario', grupo: null }
+			],
+			permissoes: [
+				{ id: 'pessoas', rotulo: 'Pessoas', admin: 'TOTAL', bolsista: 'TOTAL', voluntario: 'TOTAL', estagiario: 'PROPRIO', recrutando: 'NAO' }
+			]
+		});
+		const { getNiveis } = await freshNiveis();
+
+		const matriz = await getNiveis();
+		expect(matriz.niveis).toEqual(['admin']);
+		expect(matriz.modulos).toEqual(['pessoas']);
+		expect(matriz.membros).toEqual([
+			{ id: '1', name: 'Fulano', matricula: 'MAT-1', nivel: 'bolsista', grupo: 'ELETRONICA' },
+			{ id: '2', name: 'Ciclano', matricula: 'MAT-2', nivel: 'voluntario', grupo: undefined }
+		]);
+	});
+
+	it('getNiveis com membros ausente retorna membros: []', async () => {
+		apiFetchMock.mockResolvedValue({
+			niveis: [{ id: 'admin', codigo: 0, label: 'Admin', total: 1 }],
+			permissoes: [
+				{ id: 'pessoas', rotulo: 'Pessoas', admin: 'TOTAL', bolsista: 'TOTAL', voluntario: 'TOTAL', estagiario: 'PROPRIO', recrutando: 'NAO' }
+			]
+		});
+		const { getNiveis } = await freshNiveis();
+
+		const matriz = await getNiveis();
+		expect(matriz.membros).toEqual([]);
+	});
 });
 
 describe('rh/api — guardas de naming PT e R-5', () => {
