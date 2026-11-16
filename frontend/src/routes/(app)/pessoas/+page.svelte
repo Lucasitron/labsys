@@ -7,7 +7,7 @@
 	import { get } from 'svelte/store';
 	import { isAdmin } from '$lib/utils/permissions';
 	import { nivelMeta, personStatusMeta } from '$lib/utils/rh-status';
-	import { toUserMessage } from '$lib/utils/errors';
+	import { toUserMessage, apiErrorMessage } from '$lib/utils/errors';
 	import { toasts } from '$lib/stores/toast';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
@@ -22,7 +22,7 @@
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
 	import RowActions from '$lib/components/ui/RowActions.svelte';
 	import BulkActionsBar from '$lib/components/ui/BulkActionsBar.svelte';
-	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
+	
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 
@@ -187,7 +187,7 @@
 			alvoExclusao = [];
 			await invalidateAll();
 		} catch (err) {
-			toasts.danger(toUserMessage(err).message);
+			toasts.danger(apiErrorMessage(err, 'Não foi possível excluir. Tente novamente.'));
 		} finally {
 			ocupado = false;
 		}
@@ -569,20 +569,56 @@
 	</div>
 {/if}
 
-<ConfirmDialog
+<Modal
 	open={confirmarExclusao}
 	title={alvoExclusao.length === 1 ? 'Excluir pessoa' : `Excluir ${alvoExclusao.length} pessoas`}
-	message={alvoExclusao.length === 1
-		? 'Tem certeza que deseja excluir esta pessoa? Esta ação não pode ser desfeita.'
-		: `Tem certeza que deseja excluir ${alvoExclusao.length} pessoas? Esta ação não pode ser desfeita.`}
-	confirmLabel="Excluir"
-	loading={ocupado}
-	onCancel={() => {
-		confirmarExclusao = false;
-		alvoExclusao = [];
-	}}
-	onConfirm={() => void confirmarExcluir()}
-/>
+	onClose={!ocupado
+		? () => {
+				confirmarExclusao = false;
+				alvoExclusao = [];
+			}
+		: undefined}
+	width="sm"
+>
+	{#snippet children()}
+		<div class="flex items-start gap-3">
+			<span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-danger/10 text-danger">
+				<Icon name="warning" class="h-5 w-5" />
+			</span>
+			<div class="space-y-1.5">
+				<p class="text-sm leading-relaxed text-muted">
+					{alvoExclusao.length === 1
+						? 'Tem certeza que deseja excluir esta pessoa? Esta ação não pode ser desfeita.'
+						: `Tem certeza que deseja excluir ${alvoExclusao.length} pessoas? Esta ação não pode ser desfeita.`}
+				</p>
+				<p class="text-xs text-muted">
+					Pessoas com vínculo de funcionário ou processo seletivo não podem ser excluídas — nesse caso, desative o cadastro (`status = Inativo`).
+				</p>
+			</div>
+		</div>
+	{/snippet}
+	{#snippet footer()}
+		<button
+			type="button"
+			onclick={() => {
+				confirmarExclusao = false;
+				alvoExclusao = [];
+			}}
+			disabled={ocupado}
+			class="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-border/40 disabled:cursor-not-allowed disabled:opacity-50"
+		>
+			Cancelar
+		</button>
+		<button
+			type="button"
+			onclick={() => void confirmarExcluir()}
+			disabled={ocupado}
+			class="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-danger hover:bg-danger/80"
+		>
+			{ocupado ? 'Processando…' : 'Excluir'}
+		</button>
+	{/snippet}
+</Modal>
 
 <Modal
 	open={modalNivel}

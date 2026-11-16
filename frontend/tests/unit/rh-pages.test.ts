@@ -385,6 +385,31 @@ describe('rh-pages — lista de pessoas (server-side)', () => {
 		);
 		expect(mocks.invalidateAll).toHaveBeenCalled();
 	});
+
+	it('excluir com vínculo (409) exibe mensagem real da API no toast', async () => {
+		mocks.deletePessoa.mockRejectedValueOnce(
+			new mocks.ApiError(409, 'Pessoa possui vínculo de funcionário e não pode ser excluída: 8')
+		);
+		render(ListaPage, {
+			props: { data: { ...baseLista(), resultado: RESULTADO_CHEIO, error: null }, params: {} }
+		});
+
+		await fireEvent.click(screen.getAllByTestId('person-checkbox')[0]!);
+		expect(screen.getByTestId('bulk-bar')).toBeTruthy();
+
+		await fireEvent.click(screen.getByText('Excluir'));
+		expect(screen.getByText('Excluir pessoa')).toBeTruthy();
+
+		await fireEvent.click(screen.getAllByText('Excluir').at(-1)!);
+
+		await waitFor(() => expect(mocks.deletePessoa).toHaveBeenCalledTimes(1));
+		expect(mocks.deletePessoa).toHaveBeenCalledWith('p1');
+		await waitFor(() =>
+			expect(mocks.toastDanger).toHaveBeenCalledWith(
+				'Pessoa possui vínculo de funcionário e não pode ser excluída: 8'
+			)
+		);
+	});
 });
 
 describe('rh-pages — editar pessoa', () => {
