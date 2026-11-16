@@ -1,0 +1,26 @@
+# DESPACHO — Builder (Frontend) · RH — Bloco 2 (B2 Pessoas) · 21/09/2026
+
+> Implemente **rh-012..rh-016** de `.opencode/specs/frontend/features/rh/tasks.md` (ler o bloco B2 integral + mockup `docs/mokups/pessoas/requisitos.md` § testids).
+> **Princípio código mínimo: reuso > create; nada especulativo.**
+
+## Contexto
+- Branch `dev/frontend` — **NÃO rode git checkout/switch** (confirme; se não for, PARE e reporte)
+- Bloco 1 commitado (`4b33407`): `types/rh.ts`, `api/rh/{pessoas,processo-seletivo,horas,treinamentos,niveis}.ts`, `utils/rh-status.ts`, `ui/{TypeBadge,DonutChart,KanbanBoard}`, permissions helpers (`canEditRH`, `canSeeNiveis`, `canView`, guard helpers)
+- Reuso: UI kit (`PageHeader`, `SearchInput`, `Dropdown`?, `Chip`, `TableSkeleton`, `EmptyState`, `ErrorBanner`, `Pagination`, `StatusBadge`, `Tabs`, `RowActions`?, `BulkActionsBar`?, `ConfirmDialog`?, `RadioCards`?, modal padrão) — conferir o que existe em `frontend/src/lib/components/ui/` e **reusar nomes reais**; `utils/format.ts`; `stores/toast`
+- Padrão de referência: `routes/(app)/configuracoes/usuarios/+page.svelte` (URL-state, paginação, bulk) e `routes/(app)/estoque/itens/+page.svelte`
+- NÃO alterar specs/docs/`permissions.ts`; NÃO commitar; sem libs novas
+
+## Tasks
+- **rh-012** `src/routes/(app)/pessoas/+layout.ts` — `canView(user,'rh')` senão `redirect(302,'/dashboard?denied=...')` (padrão estoque — conferir); retorna `{ canEdit: canEditRH(user) }`; se path `/pessoas/niveis` e `!canSeeNiveis` → `redirect(303,'/pessoas')`. ssr=false/prerender=false; sem duplicar fetchMe.
+- **rh-013** `src/routes/(app)/pessoas/+page.svelte` (+`+page.ts` no mesmo task, se precisar de load) — URL `?search=&setor=&nivel=&status=&page=`; SearchInput debounce 300ms + 3 filtros (Status/Setor/Nível, AND) + Chips + "Limpar filtros"; tabela (Avatar+nome/email, matrícula mono, nível badge, grupo, StatusBadge, ações Ver/Editar/Excluir) + bulk (Alterar nível + Excluir com confirmação; **SEM Exportar CSV** — R-8); Pagination (10/25/50/100; última página válida ao excluir); `PageHeader` + "+ Novo cadastro" (hide se `!canEdit`); mobile <768 cards; linha → `/pessoas/{id}` (stopPropagation em checkbox/ações); TableSkeleton/Empty/Empty-filtrado/ErrorBanner+retry; grids sem checkbox/ações p/ RBAC. `data-testid="person-row/person-checkbox/select-all/bulk-bar"`. Documentar paginação client/server (D-2) no relatório.
+- **rh-014** `src/routes/(app)/pessoas/[id]/+page.svelte` (+loader) — voltar (preserva filtros) + "Editar" (`edit-person-button` → novo, hide se `!canEdit`) + ⋮; hero (Avatar, nome, matrícula mono, `grupo · nível · status`, StatusBadge grande + badge "Instrutor(a) · {qualificação}"); KPIs (**Horas mês via extrato backend** — nunca somar no client — Treinamentos média, Pendências, Projetos ativos); Tabs `?tab=` (visão-geral/horas/treinamentos/histórico, role=tablist): visão (`<dl>` specs + 6 chips qualificação + responsabilidades), horas (sub-tabs + tabela + motivo), treinamentos (trilhas + nota + guia), histórico-nível (timeline + autor + data); erro parcial por aba; 404 → EmptyState + voltar.
+- **rh-015** `src/routes/(app)/pessoas/novo/+page.svelte` — voltar; PageHeader; form em cards (Dados pessoais: Nome\*/Email\* 409-inline/Telefone/CPF/Data-nasc; Função: Tipo RadioCards Bolsista/Voluntário/Estagiário + checkbox "É instrutor(a)?" (`is-instrutor` → 6 chips qualificação) + Nível inicial\*/Grupo\*/Curso-turma; Credenciais: username do email + Senha\* + "Gerar"); footer Cancelar/"Salvar e adicionar outro"/"Salvar cadastro" (busy anti-duplo); `createPessoa` 🟡; sucesso → lista (ou reset); rota bloqueada p/ view-only/Recrutando (redirect `/pessoas`). `data-testid="person-name/person-email/is-instrutor/submit-person"`; validação inline pt-BR + `novalidate`; skeleton nos selects; erro topo em falha.
+- **rh-016** `src/routes/(app)/pessoas/[id]/editar/+page.svelte` — conforme mockup `pessoa-editar` (`edit-person`): voltar (`edit-back` → detalhe); PageHeader "Editar pessoa"; banner `edit-rbac-banner` quando `!canEdit` (sem ações); form (Nome\* `person-name`, Matrícula\* `person-matricula` **read-only**, Admissão `person-admission`, Email\* `person-email` 409-inline, Telefone `person-phone`; Nível `person-level`, Departamento `person-department`, Turno `person-shift`, Status `person-status`, `is-instrutor` → `person-qualification` chips; Credenciais = nota estática — link p/ Níveis); footer `person-cancel`/`person-save` → `updatePessoa` 🟡 → detalhe com refetch; skeleton campos / erro parcial por bloco / RBAC.
+
+## Regras
+1. Criar SÓ os arquivos acima (rotas `pessoas/**`).
+2. pt-BR; aria-label; data-testid kebab-case do mockup; sem any; Svelte 5 runes; tokens design-system; debounce 300ms + AbortController; Intl pt-BR; sem `{@html}`; sem console.log.
+3. Ao final: `npm run test` (regressão 300) + `npm run check` (0 errors; registrar warnings) + `npm run build`.
+
+## Relatório
+- branch; por task ✅/❌ + evidência; contrato 🟡/🔴; paginação (client/server); resultados test/check/build; desvios.

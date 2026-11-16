@@ -1,0 +1,640 @@
+{
+  "projeto": "FabLab",
+  "source_of_truth": ".opencode/specs/",
+  "arquitetura": {
+    "estrategia": "monolito-modular-mvc",
+    "linguagem": "PHP 8.3 + Laravel 12",
+    "banco": "PostgreSQL unico fablab com schema por modulo",
+    "deploy": "um backend/ (PHP-FPM/Nginx, porta 8080)",
+    "auth": "jwt-auth (guard jwt, claims id_user/role/setor/type)",
+    "removidos": "Eureka/Gateway/banco-por-servico + scaffold Java/Spring descartado (pivot PO 2026-10-06, nunca commitado)",
+    "referencia": ".opencode/specs/system/architecture.md",
+    "nota": "Chaves services/features com sufixo *-service sao IDs historicos de feature (dirs em specs/features/), nao unidades de deploy. Contratos (rotas PT, tabelas, regras, eventos, RBAC) reaproveitados; codigo reescrito em PHP/Laravel.",
+    "estrutura_2026_11_08": "layer-first (modulo como subpasta/namespace): app/Http/{Controllers,Requests,Resources}/<Modulo>, app/Models/<Modulo>, app/Services/<Modulo>, app/Enums/<Modulo>, app/Listeners/<Modulo>, app/Contracts, app/Events, app/Policies, app/Rules, app/Exceptions, routes/modules/*.php"
+  },
+  "services": {
+    "auth-service": "auth",
+    "rh-service": "rh",
+    "dashboard-service": "dashboard",
+    "estoque-service": "estoque",
+    "vendas-service": "vendas",
+    "financeiro-service": "financeiro",
+    "producao-service": "producao",
+    "notification-service": "notification"
+  },
+  "fases_pipeline": [
+    {
+      "fase": "orchestration",
+      "arteFato": ".opencode/specs/system/orchestration-plan.md",
+      "dono": "orchestrator"
+    },
+    {
+      "fase": "planner",
+      "arteFato": ".opencode/specs/features/<feature>/plan.md",
+      "dono": "planner"
+    },
+    {
+      "fase": "builder",
+      "arteFato": ".opencode/specs/features/<feature>/tasks.md",
+      "dono": "builder"
+    },
+    {
+      "fase": "validator",
+      "arteFato": ".opencode/specs/system/validator.md",
+      "dono": "validator"
+    },
+    {
+      "fase": "security",
+      "arteFato": ".opencode/specs/system/security.md",
+      "dono": "security"
+    }
+  ],
+  "features": {
+    "auth-service": {
+      "status": "SPEC_CADASTRADO",
+      "dir": ".opencode/specs/features/auth-service",
+      "seedDispatchPath": ".opencode/state/builder-dispatch-auth-seed.md",
+      "seedTaskStatus": "CONCLUIDA",
+      "seedTaskAt": "2026-09-24",
+      "seedNota": "CONCLUIDA: reconciliacao c/ canonico (d585125) + seed admin dev-only (8c2fd3a) + JsonAlias UI (a31388b), merge 4cb2778 em dev/backend (push ok). mvn test auth-service PASS 81/81. Drift vs canonico = 6 arquivos intencionais. Seed: admin@fablab.org/admin123 via AUTH_ROOT_*, tabela login vazia, dev-only.",
+      "usuariosTaskStatus": "CONCLUIDA_COM_RESSALVAS_RESOLVIDAS",
+      "usuariosTaskAt": "2026-09-24",
+      "usuariosDispatchPath": ".opencode/state/builder-dispatch-auth-usuarios.md",
+      "usuariosNota": "CONCLUIDA: 7 endpoints (PUT /auth/senha, CRUD usuarios+status, GET/PUT /api/permissoes) + V5 situacao + gateway rotas; mvn auth PASS 100/100; merge d385772 em dev/backend (push ok). RESSALVAS: (1) PUT matriz persiste em memoria (ConcurrentHashMap, perde no restart) — sem tabela por falta de spec; enforcement real (UserPermission) é persistente. (2) PUT /auth/senha nao revoga tokens anteriores. Ambas p/ fase security/PO.",
+      "configSistemaTaskStatus": "CONCLUIDA",
+      "configSistemaTaskAt": "2026-09-25",
+      "configNota": "Matriz persistente (V6) + revogacao na troca de senha (385c3fa/c899d56) + sistema+tokens Admin-only (00d4aae); mvn auth 120/120. Follow-up: registrarUsoPorHash sem chamadores (sem middleware de token no codigo); demais sessoes nao revogaveis no schema atual."
+    },
+    "rh-service": {
+      "status": "IMPLEMENTADO",
+      "dir": ".opencode/specs/features/rh-service",
+      "nota": "D-1..D-10+H2 (1eb2613; 100 testes verif. orquestrador; relatorio executor ausente)"
+    },
+    "dashboard-service": {
+      "status": "IMPLEMENTADO",
+      "dir": ".opencode/specs/features/dashboard-service",
+      "nota": "restricted por papel + vinculo PATCH /tasks (fd75c5a)"
+    },
+    "estoque-service": {
+      "status": "VALIDADO",
+      "dir": ".opencode/specs/features/estoque-service",
+      "builderDispatchPath": ".opencode/state/builder-dispatch-estoque.md",
+      "dispatchStatus": "DESPACHO_MATERIALIZADO",
+      "dispatchNota": "20/09 Builder autorizado PO. Despacho estoque-001..099 == tasks.md T1..T9 (1 secao == 1 task). Base dev/backend. Naming PT canonico (com/fablab/estoque/**, /api/estoque/**, porta 8083/Eureka/Rabbit, NUNCA /stock/** - Divida 2). Rotas gateway /api/estoque/** => estoque-service:8083 fora deste despacho (Builder nao toca gateway-service).",
+      "builderReportedStatus": "IMPLEMENTADO",
+      "builderReportedAt": "2026-09-20",
+      "validatorDispatchPath": ".opencode/state/validator-dispatch-estoque-backend.md",
+      "validationPending": false,
+      "validationVerdict": "APROVADO",
+      "validationAt": "2026-09-24",
+      "validationNota": "Validador independente em worktree /tmp (read-only, removida): mvn clean test PASS 69/69 + compile OK @aac1450. Naming PT conforme, RBAC ok, Dívida 1 §5.6 atendida, diff 104 arqs só em estoque-service/. Ressalva não-bloqueante: GET+POST /localizacoes excede criterio T8 (exigido pela Dívida 1). PENDENTE PO: branch feature/estoque-service resetada p/ dev/backend em 20/09 — tip aac1450 órfão; restauracao do ponteiro + rebase (base 7bc70f5 vs dev/backend 4cb2778) aguardam autorizacao. E-1..E-7 §6.2 seguem bloqueados até merge.",
+      "branchStatus": "RESTAURADA",
+      "branchTip": "381518f",
+      "branchNota": "24/09 PO autorizou: ponteiro restaurado aac1450 + merge dev/backend (381518f, limpo) + mvn 69/69 verde pos-merge + push origin OK. Merge p/ dentro de dev/backend ainda pendente (aguarda security ou kickoff §6.2).",
+      "followupE1E7": "CONCLUIDA (a9d7fe2; 79 testes; notas: E-1 sem semantica de status p/ entradas/saidas, E-4 pessoa como rotulo)",
+      "e4Nome": "CONCLUIDA (478e1b7; 83 testes; RH lookup fail-soft; sem migration)",
+      "e1StatusNota": "NAO_IMPLEMENTADO por regra minimal (front nao consome ?status= em entradas/saidas); PO pode reverter com ordem expressa"
+    },
+    "vendas-service": {
+      "status": "CONCLUIDA",
+      "dir": ".opencode/specs/features/vendas-service",
+      "nota": "93ac4db 19 testes; D-4 contrato minimo (confirmar aplicacao automatica); responsavel de Vendas indefinido -> decisoes Admin",
+      "d4Nota": "25/09 PO: Admin decide tudo (sem papel novo), sem auto-apply — codigo ja conforme (decidir @PreAuthorize ADMIN + check duplo + sem aplicacao). Zero codigo novo."
+    },
+    "financeiro-service": {
+      "status": "IMPLEMENTADO",
+      "dir": ".opencode/specs/features/financeiro-service",
+      "nota": "43b4100 33 testes; D-6 FORA_MVP"
+    },
+    "producao-service": {
+      "status": "IMPLEMENTADO",
+      "dir": ".opencode/specs/features/producao-service",
+      "nota": "b87ccdb 127 testes + dashboard restricted (fd75c5a); tasks_repoint REPORTADO_FOLLOWUP (contrato incompativel)"
+    },
+    "notification-service": {
+      "status": "IMPLEMENTADO",
+      "dir": ".opencode/specs/features/notification-service",
+      "d1d7": "CONCLUIDA (11095f8; 15 testes)"
+    }
+  },
+  "prioridades_execucao": [
+    "auth-service",
+    "rh-service",
+    "estoque-service",
+    "vendas-service",
+    "financeiro-service",
+    "producao-service",
+    "notification-service",
+    "dashboard-service"
+  ],
+  "regras_agentes": {
+    "exclusividade": {
+      "build": "SOMENTE o agente 'builder' builda (back e front); nenhum outro executa build",
+      "deploy": "SOMENTE o agente 'deployer' faz deploy/operacao no servidor",
+      "codigo_feature": "coder (backend) e frontend/coder (frontend); orquestrador NAO implementa",
+      "merge": "orchestrator"
+    },
+    "orchestrator": {
+      "acao": "coordena via state/orchestration.json e specs; NAO implementa; mantem a politica de modelos e escreve os relatorios MD por etapa em .opencode/reports/"
+    },
+    "planner": {
+      "acao": "gera plan.md+tasks.md por feature (modulo + peca MVC) com 'Decisoes de enxugamento' (codigo minimo)"
+    },
+    "coder": {
+      "acao": "escreve/ajusta codigo de feature no modulo alvo; nao builda, nao faz deploy"
+    },
+    "tester": {
+      "acao": "executa e confere testes (back: php artisan test; front: check+vitest) sem alterar codigo"
+    },
+    "validator": {
+      "acao": "revisa o codigo com contexto zero ANTES de concluir (4 eixos: persistencia, escalabilidade, arquitetura, funcionalidade); cobra codigo minimo; nunca gera/mergeia codigo"
+    },
+    "security": {
+      "acao": "audita seguranca nas tasks"
+    },
+    "contracts": {
+      "acao": "avalia/valida contratos back<->front (rotas, payloads, enums, status, RBAC) antes da entrega"
+    },
+    "builder": {
+      "acao": "UNICO responsavel por build (composer/npm/docker build); nao escreve codigo de feature; entrega o artefato tag ao deployer"
+    },
+    "deployer": {
+      "acao": "UNICO responsavel por deploy/operacao no Ubuntu Server via compose; nao altera codigo/specs/docs; nunca commita segredos"
+    },
+    "transversais": [
+      "Codigo minimo: reuse>create; plataforma>abstracao propria; sem codigo especulativo/de conveniencia",
+      "Nao resolver um problema criando outro: avaliar efeitos colaterais/persistencia/contrato antes de codar",
+      "Validator percorre o codigo nos 4 eixos antes de concluir a task",
+      "Frontend: sem residuos de construcao; mensagens padronizadas; telas nunca expoem codigo/banco",
+      "Nunca logar/commitar segredos; VITE_* so nao-sensiveis"
+    ],
+    "referencia": ".opencode/specs/system/agents-pipeline.md"
+  },
+  "politica_modelos": {
+    "regra_escrita_de_codigo": "padrao: beam free | alternativas: glm | big pickle",
+    "regra_teste_planner_validator_security": "deepseek | glm | big pickle",
+    "disponiveis": [
+      "opencode/deepseek-v4.1-flash-free",
+      "opencode/big-pickle",
+      "opencode/glm-5.3-flash-free",
+      "opencode/beam-free",
+      "opencode/longcat-2.5-preview-free",
+      "opencode/mimo-v2.6-flash-free"
+    ],
+    "descontinuados": [
+      "opencode/muse-spark-1.3-contributor-free (nao existe mais; era o modelo de todos os agentes -> 'Model not found')"
+    ],
+    "designacao": {
+      "orchestrator": "opencode/deepseek-v4.1-flash-free",
+      "planner": "opencode/deepseek-v4.1-flash-free",
+      "coder": "opencode/beam-free",
+      "tester": "opencode/deepseek-v4.1-flash-free",
+      "validator": "opencode/deepseek-v4.1-flash-free",
+      "security": "opencode/deepseek-v4.1-flash-free",
+      "contracts": "opencode/deepseek-v4.1-flash-free",
+      "builder": "opencode/deepseek-v4.1-flash-free",
+      "deployer": "opencode/deepseek-v4.1-flash-free",
+      "frontend/orchestrator": "opencode/deepseek-v4.1-flash-free",
+      "frontend/planner": "opencode/deepseek-v4.1-flash-free",
+      "frontend/coder": "opencode/beam-free",
+      "frontend/designer": "opencode/big-pickle",
+      "frontend/tester": "opencode/deepseek-v4.1-flash-free",
+      "frontend/validator": "opencode/deepseek-v4.1-flash-free",
+      "frontend/security": "opencode/deepseek-v4.1-flash-free",
+      "frontend/tracker": "opencode/deepseek-v4.1-flash-free"
+    },
+    "nota": "builder passou a significar BUILD (nao 'implementa'); frontend/builder renomeado para frontend/coder; criados tester (raiz+front) e contracts."
+  },
+  "relatorios": {
+    "pasta": ".opencode/reports/",
+    "convencao": "<NNNN>-<slug>.md",
+    "template": ".opencode/reports/_TEMPLATE.md",
+    "conteudo_obrigatorio": [
+      "Diario de bordo dos agentes (cada agente escreve o seu)",
+      "Ponderacao do orquestrador (aceito / rebatido / devolvido)",
+      "Checklist: concluido + falta concluir"
+    ],
+    "regras": "1 arquivo por etapa; resumo compacto tambem em resumo_cache; nunca colar segredos",
+    "ultimo": ".opencode/reports/0007-wip-rh-rbac.md"
+  },
+  "resumo_cache": "2026-11-16: WIP RH/RBAC 8d50487 reaplicado parcialmente e integrado em development/dev/backend/dev/frontend/refactor/remap-* @80dc8bb (local, sem push). Aceitos: invariante Admin total no RBAC (PUT ADMIN != Editar -> 422; leitura forca Editar), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, FuncionarioService::vincular espelha role e protege ADMIN, GET /rh/niveis com membros (front mapeia), 403 explicito (nao 500) para Admin sem vinculo validar horas. Rejeitados: hunks que permitiam Admin sem vinculo decidir certificados/validar horas com aprovador/validador nulo (mantem paridade Java/403 e vinculo do admin semeado). Corrigido extra: escalonamento de privilegio em POST /rh/pessoas (nivel/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444 passed + 4 skipped (2537 assertions), Pint OK (624), 223 rotas identicas; front check 0 erros/17 warnings, 569 testes (39 arquivos), build adapter-node OK. Pendencias: UI da linha Admin em /configuracoes/permissoes (422), paginacao de membros, a11y Chip, backlog de contrato front<->back, push/deploy aguardando PO/deployer. Contexto: remap fases 0-8 @894621d; legado Java removido; RH vinculo/acesso entregue (imagem 2026.10.17-3).",
+  "linha_do_tempo": {
+    "status_atual": ".opencode/specs/system/STATUS.md (Ponto 3 = 2026-11-16)",
+    "historico_congelado": ".opencode/backups/2026-10-19-pre-rewrite.tar.gz (checksum em .opencode/backups/MANIFEST.md)",
+    "docs_ativos": "docs/{README,contract.gap,GITFLOW}.md + docs/mokups/** ; historico em docs/_archive/2026-10-19/"
+  },
+  "features_futuras": {
+    "temAcesso": {
+      "descricao": "Omitir/esconder o campo Acesso (criar acesso) na edicao de pessoa quando ela JA possui login.",
+      "escopo": "frontend (+ eventual flag 'temAcesso' no payload de pessoa no back)",
+      "status": "PLANEJADA (nao implementar agora)"
+    }
+  },
+  "status_global": "MONOLITO_LARAVEL_LAYER_FIRST | WIP_RH_RBAC_REAPLICADO | BACK_444+4 | FRONT_569 | FRONT_CHECK_0_ERR | BUILD_ADAPTER_NODE_OK | ROTAS_223_INALTERADAS | DEVELOPMENT_80dc8bb | DEV_BACKEND_FRONTEND_80dc8bb | SEM_PUSH",
+  "migracao_monolito": {
+    "checklist": ".opencode/state/monolito-checklist.md",
+    "plan": ".opencode/specs/features/_migracao-monolito/plan.md",
+    "tasks": ".opencode/specs/features/_migracao-monolito/tasks.md",
+    "linguagem": "PHP 8.3 + Laravel 12 (pivot PO 2026-10-06; scaffold Java descartado, nunca commitado)",
+    "m0_shared_scaffold": "CONCLUIDO 2026-10-06 Laravel (scaffold 12.69 + Shared; T1-T2)",
+    "m1_auth": "CONCLUIDO 2026-10-06 Laravel (T3-T10; 104 passed +4 skip, 269 assertions, cobertura 94,7%, DoD 6/6; commitado em dev/backend)",
+    "m2_rh": "CONCLUIDO 2026-10-06 Laravel (R1-R13; 192 passed +4 skip, 610 assertions, cobertura 97,9%, auth sem regressao, DoD PASS; validado orquestrador via artisan test; commitado em dev/backend)",
+    "m3_estoque": "CONCLUIDO 2026-10-06 Laravel (E1-E13; 231 passed +4 skip, 814 assertions, cobertura 97,6%, Auth/Rh sem regressao, DoD 4/4; validado orquestrador via artisan test; commitado+pushed em dev/backend)",
+    "m4_vendas": "CONCLUIDO 2026-10-06 Laravel (V1-V13; 279 passed +4 skip, 1152 assertions, cobertura 96,5%, M0-M3 sem regressao, DoD 5/5; validado orquestrador via artisan test; commitado+pushed em dev/backend)",
+    "m5_financeiro": "CONCLUIDO 2026-10-07 Laravel (F1-F13; 325 passed +4 skip, 1546 assertions, cobertura 97,0%, M0-M4 sem regressao, DoD 4/4; validado orquestrador via artisan test; commitado+pushed em dev/backend)",
+    "m6_producao": "CONCLUIDO 2026-10-07 Laravel (P1-P17; 368 passed +4 skip, 2047 assertions, cobertura 96,8%, M0-M5 sem regressao, DoD 4/4; produtores reais producao.status/concluida; QR string sem GD; validado orquestrador via artisan test; commitado+pushed em dev/backend)",
+    "m7_notification": "CONCLUIDO 2026-10-07 Laravel (N1-N12; 401 passed +4 skip, 2270 assertions, cobertura 96,5%, M0-M6 sem regressao, DoD 4/4; 19 eventos, sem access.rfid; NotificationContract p/ M8; validado orquestrador via artisan test; commitado+pushed em dev/backend)",
+    "m8_dashboard": "CONCLUIDO 2026-10-07 Laravel (D1-D8; 412 passed +4 skip, 2385 assertions, cobertura global 96,6%, M0-M7 sem regressao, DoD + Gate FINAL 8/8 PASS; agregador via Contracts, sem persistencia; validado orquestrador via artisan test; commitado+pushed em dev/backend)",
+    "monolito_completo": "8/8 MODULOS em backend/ (PHP 8.3 + Laravel 12): shared, auth, rh, estoque, vendas, financeiro, producao, notification, dashboard; 220 rotas; 28 binds de evento; 7 schemas; suíte 412+4, cobertura 96,6%",
+    "infra_docker": "CONCLUIDA 2026-10-07 Deployer (5c2f62b, pushed): compose reescrito p/ monolito (postgres fablab + app + worker + scheduler; sem rabbitmq/eureka/gateway); backend/Dockerfile + entrypoint + .dockerignore + infra/.env.example; 3 overlays config OK; subida real pendente no server",
+    "deploy_server_2026_10_12": "FRONT EM PRODUCAO no server (Tailscale 100.91.193.84, user litro): artefato dev/frontend@69a4558 buildado no sandbox (adapter-node, VITE_API_BASE_URL=http://100.91.193.84:8081/api embutido) e enviado por rsync para /home/litro/.aplications/labsys/frontend/build; unit /etc/systemd/system/fablab-front.service corrigida (WorkingDirectory apontava p/ dir inexistente labsys-front -> labsys/frontend; ExecStart vite preview -> /usr/bin/node build, User=litro, PORT=4173, ORIGIN=http://100.91.193.84:4173); service active running 4173 (~77MB), curl / e /auth/login = 200. Causa raiz do 'Killed' no build do server: OOM (4GB c/ docker) -> estrategia build-no-sandbox + rsync. Backend ja rodava em 8081 (docker). Verdade de path: repo do front = ~/.aplications/labsys/frontend (monorepo), NAO labsys-front.",
+    "contract_review_2026_10_11": "CONCLUIDO: 33 bloqueantes + 14 divergencias + 6 cosmeticos; Lote 1 APLICADO (CF-BACK-01 em dev/backend 32c67fa + CF-FRONT-01..11 em dev/frontend b150e57); Lote 2 APLICADO em dev/frontend b6c47b5 (escritas 5S/producao, RH completo, financeiro resto, D08, refresh auto, coercoes; 540/540, build verde, check 0 erros); Lote 3 APLICADO em dev/frontend 69a4558 (gates 5S/treinamentos, Suspensa, filtros, adaptadores, chave 1x, RBAC fino; 540/540, build verde, check 0 erros; zero endpoint novo no back por falta de lastro); relatorios .opencode/state/contract-review-2026-10-11.md + contract-fix-lote3.md",
+    "remap_2026_11_08": {
+      "status": "CONCLUIDO",
+      "relatorio": ".opencode/reports/0006-remap-simplificacao.md",
+      "estrutura": "layer-first: app/Http/{Controllers,Requests,Resources}/<Modulo>, app/Models/<Modulo>, app/Services/<Modulo>, app/Enums/<Modulo>, app/Listeners/<Modulo>, app/Contracts, app/Events, app/Policies, app/Rules, app/Exceptions, routes/modules/*.php; app/Modules eliminado",
+      "fases": "0-8",
+      "backend": "433 passed + 4 skipped (2488 assertions); 223 rotas identicas; Pint OK",
+      "frontend": "563 testes (39 arquivos); check 0 erros/17 warnings; build adapter-node OK",
+      "branches": "development/dev-backend/dev-frontend/refactor-remap @894621d; sem push",
+      "wip": "8d50487 preservado em wip/backend-pre-remap; pendente reaplicar (RH/RBAC, CertificadosTest)",
+      "guardrails": "ArchitectureBoundaryTest, EventRegistrationTest, pint --test no backend-ci, PR template"
+    },
+    "wip_rh_rbac_2026_11_16": {
+      "status": "CONCLUIDO",
+      "relatorio": ".opencode/reports/0007-wip-rh-rbac.md",
+      "origem": "wip/backend-pre-remap 8d50487 (reaplicacao parcial consciente)",
+      "aceitos": "RbacService invariante Admin; PessoaResource idFuncionario/nivelAcesso/departamento; vincular espelha role; NivelService membros; PessoaService eager load; ApontamentoService 403 explicito",
+      "rejeitados": "permitir Admin sem vinculo decidir/validar com id_admin_aprovador/validador nulo (paridade Java + vinculo do seed)",
+      "seguranca": "POST /rh/pessoas: nivel e provisionamento de acesso agora Admin-only (corrige escalonamento pre-existente)",
+      "front": "getNiveis mapeia membros; /pessoas/novo Admin-only para nivel/acesso",
+      "backend": "444 passed + 4 skipped (2537 assertions); Pint OK; 223 rotas identicas",
+      "frontend": "569 testes (39 arquivos); check 0 erros/17 warnings; build adapter-node OK",
+      "branches": "development/dev-backend/dev-frontend/refactor-remap @80dc8bb; sem push",
+      "pendente": "UI linha Admin em /configuracoes/permissoes (422); paginacao de membros; a11y Chip"
+    }
+  },
+  "audit_sweep_2026_10_12": {
+    "documento": ".opencode/state/audit-sweep-2026-10-12.md",
+    "escopo": "varredura app inteira (back dev/backend 32c67fa + front dev/frontend 69a4558): rotas sem par, contratos mal resolvidos, codigo descartavel, fluxo de cadastro de pessoa + plano de refatoracao com pipelines back/front separados",
+    "numeros": "rotas back 220 (161 com par=73,2%, 59 orfas); chamadas front 166 (5 404 real, 29 gateadas); 26 fns-gate; indices de descarte ~55 score 3 + ~40 score 2",
+    "achados_criticos": [
+      "BUG: fila 'database' nunca processada (ProcessarPontoRfid $queue + worker sem --queue) -> ponto RFID nao grava",
+      "BUG: front do PS chama POST /rh/pessoas em vez de POST /rh/processo-seletivo (candidato nao entra no Kanban)",
+      "Risco: GET /producao/resumo e 404 mascarado por USE_PRODUCAO_MOCK=true hardcoded",
+      "Contrato: cadastro de pessoa fragmentado em 4 endpoints; toPayload descarta nivel/senha",
+      "Contrato: POST /rh/niveis/convites nao cria acesso; idUser manual sem FK/UNIQUE",
+      "VERIFICADO 2026-10-12: os achados 'Kanban vocabulario duplo' (B-03) e 'nivel serializado misto' (B-04) NAO sao defeitos"
+    ],
+    "cadastro_pessoa": "proposta: POST /rh/pessoas estendido (provisiona vinculo + acesso opcional, atomico); fonte unica de nivel (funcionario.nivel_acesso -> espelha user_permissions.role); PS via POST /rh/processo-seletivo; /configuracoes/usuarios rebaixado a situacao/convite; exige mudanca no back (AuthContract::provisionarAcesso + migracao login.id_user UNIQUE)",
+    "plano_fases": "0 contencao (bugs+fila+mock) | 1 contratos canonicos | 2 cadastro centralizado | 3 consistencia de rotas (>=90%) | 4 limpeza descartavel | 5 arquitetura (fronteira Auth/eventos)",
+    "status": "FASES 0-5 FECHADAS. Ciclos 1-7 (330e7dd..dfb4915) + Ciclo 8 backfill auth v9 (b7fd0b8) + docs infra (f5223d9) + .gitignore (69e68ee) + B-02 (f3172d3) aplicados/pushed em dev/backend; front d974fed..d9192c0 published. development@5b78cc8 integrada. Smoke E2E HTTP OK.",
+    "correcoes_aplicadas": [
+      "330e7dd fix(rh): ProcessarPontoRfid na fila padrao do worker + remove skeleton web (B-01, B-14)",
+      "186c79f refactor(backend): remove codigo morto tomadorPara + ShouldQueue inutil em 24 eventos (B-11, B-15)",
+      "db26a36 fix(estoque): valida filtro ?status= de emprestimos com Rule::in -> 422 (B-09)",
+      "8c499d3 feat(rh,auth): AuthContract::definirRole espelha nivel_acesso no RBAC do Auth (B-24)",
+      "23cef8b fix(api): padroniza erros de entrada para 422 (B-08) — InvalidArgumentException 400->422 + asserts/comentarios; suite 412",
+      "5d2c15e feat(rh,auth): cadastro centralizado — POST /rh/pessoas provisiona vinculo+acesso atomico (Fase 2); AuthContract::provisionarAcesso; UNIQUE(login.id_user); suite 415",
+      "dfb4915 feat(financeiro,estoque) custo de material (BOM) -> lancamento SAIDA automatico (B-10); EstoqueContract::custoConsumo; registrarMateriais idempotente; suite 417"
+    ],
+    "verificacao_backend": {
+      "confirmados_e_corrigidos": [
+        "B-01",
+        "B-09",
+        "B-11",
+        "B-14",
+        "B-15",
+        "B-24"
+      ],
+      "nao_sao_defeito": {
+        "B-03": "Vendas.StatusKanban casa com ck_encomenda_status_kanban; Producao.KanbanStatus tem adaptador rotuloVendas()",
+        "B-04": "enums int-backed usam ->name (correto/testado); ->value so em enums string-backed",
+        "B-06": "date-only usa toDateString; timestamps usam toIso8601String (intencional)",
+        "B-10": "id_referencia_externa e' gravado por LancamentoService; lacuna real e' feature de produto",
+        "B-13": "horas vs apontamentos-horas sao familias de rota distintas, ambas roteadas/testadas",
+        "B-16": "NAME nunca e' lido no app (dispatch por classe); duplicidade inocua",
+        "B-22": "registro de eventos central e' intencional/documentado em AppServiceProvider",
+        "B-23": "Financeiro escuta espelho do Estoque por decisao documentada"
+      },
+      "deferidos_por_motivo": {
+        "contrato_front": "B-05, B-07, B-08",
+        "codigo_morto_testado": "B-02, B-12, B-16",
+        "estilo_maximo_risco_beneficio": "B-17, B-18, B-19, B-20, B-21",
+        "feature_produto": "B-10"
+      }
+    },
+    "fase_2_cadastro": {
+      "status": "IMPLEMENTADO (ciclo 6, nao commitado) — 415 passed +3 testes PessoasTest",
+      "backend": [
+        "AuthContract::provisionarAcesso(idUser,email,Role,nomeUsuario?,senha?,setor?) -> cria login+user_permissions (convite quando sem senha); reusa UsuarioService::criar",
+        "PessoaService::cadastrar(dados, vinculo=[], acesso=[]): transacao unica (RH+Auth); cria funcionario via FuncionarioService::vincular e acesso via AuthContract",
+        "PessoaRequest: campos opcionais nivelAcesso/departamento/criarAcesso/email(required_if)/senha(min8)/nomeUsuario/setor",
+        "PessoaController::store mapeia vinculo+acesso",
+        "migration auth v9: UNIQUE(login.id_user) uk_login_id_user (requer backfill/dedup em dados legados)"
+      ],
+      "front_followup": [
+        "form unico /pessoas/novo (secoes Dados/Vinculo/Acesso) -> POST /rh/pessoas com nivelAcesso/criarAcesso/email/senha",
+        "PS: trocar createPessoa por POST /rh/processo-seletivo",
+        "/configuracoes/usuarios: rebaixar a gestao de acesso (novo -> /pessoas/novo)",
+        "mapPerson: nivel real do PessoaResource (hoje forca 'recrutando')",
+        "tratar 422 em todos os forms"
+      ]
+    },
+    "b10_material": {
+      "status": "CONCLUIDO (ciclo 7, dfb4915) — 417 passed +2 testes",
+      "decisoes": {
+        "fonte_custo": "ultimo preco de compra (estoque.entrada_estoque.valor_unitario); item sem entrada = custo 0",
+        "dono_calculo": "Financeiro CusteioService::registrarMateriais, chamado antes do custeio pelo ProducaoConcluidaListener (ordem deterministica)",
+        "categoria": "DESPESA 'Materiais de produção' criada sob demanda (firstOrCreate)",
+        "status_lancamento": "PENDENTE; idempotente por id_referencia_externa"
+      },
+      "arquivos": [
+        "EstoqueContract::custoConsumo + DefaultEstoqueContract + ItemService::custoConsumo (dono do custo)",
+        "CusteioService::registrarMateriais (dono do lancamento; cria SAIDA por referencia)",
+        "Financeiro\\ProducaoConcluidaListener: registrarMateriais antes de calcularDoEvento",
+        "FakeEstoqueContract (DashboardServiceTest) implementa custoConsumo"
+      ]
+    },
+    "migrations_validacao": {
+      "data": "2026-10-12",
+      "metodo": "migrate:fresh em banco scratch 'fablab_mig_check' (PG limpo 127.0.0.1:5433) + rollback step 1",
+      "resultado": "OK — schema sobe do zero; auth v9 cria uk_login_id_user; down remove o indice sem erro",
+      "obs": "fablab_testing (RefreshDatabase) ja validava; confirmado explicitamente em PG limpo separado"
+    },
+    "handoff_front": ".opencode/state/front-handoff-2026-10-12.md (422, payload /rh/pessoas Fase 2, UNIQUE id_user, ?status= B-09, RBAC B-24, lancamento BOM B-10, 404s producao)",
+    "integracao": {
+      "branch_alvo": "development",
+      "merge": "01963ad merge(backend): integra dev/backend na development (ciclos 1-7 + Fase 2 + B-10)",
+      "validacao": "backend/ identico a dev/backend apos merge; sem conflitos; pushed 91e44d7..01963ad"
+    },
+    "backfill_auth_v9": {
+      "ciclo": 8,
+      "commit": "b7fd0b8",
+      "artefatos": [
+        "LoginIdUserDedupService",
+        "migration auth_v9a_dedup",
+        "command auth:dedup-login-id-user",
+        "LoginIdUserDedupServiceTest"
+      ],
+      "doc": ".opencode/state/auth-v9-backfill-plan.md",
+      "validacao": "PG limpo mig_check: fresh ok, dry-run/apply ok, rollback step=2 ok; suite 419 passed +4 skipped",
+      "integracao": "development@5d3216c"
+    },
+    "infra_briefing_auth_v9": {
+      "doc": ".opencode/state/infra-briefing-auth-v9.md",
+      "deploy_model": "imagem unica ghcr.io/fablab/backend:TAG; compose postgres+app+worker+scheduler; entrypoint migrate --force (v9a->v9)"
+    },
+    "docs_infra_alinhados": {
+      "commit": "f5223d9",
+      "integracao": "development@d551e3a",
+      "arquivos": [
+        "README.md",
+        "backend/README.md",
+        "frontend/README.md",
+        "infra/docs/ARCHITECTURE.md",
+        "infra/docs/DEPLOY.md",
+        "infra/docs/RUNBOOK.md"
+      ],
+      "obs": "infra/docs casam o padrao docs/ do .gitignore (ja rastreados: updates versionam normalmente)"
+    },
+    "gitignore_docs": {
+      "commit": "69e68ee",
+      "obs": "docs/ -> /docs/ (ancora na raiz; infra/docs volta a ser rastreavel)"
+    },
+    "b02_queue_dead_code": {
+      "commit": "f3172d3",
+      "obs": "const QUEUE removida de 23 Events + 12 Listeners; teste ajustado; suite 419+4"
+    },
+    "deferidos_reevaluados": {
+      "doc": ".opencode/state/audit-sweep-2026-10-12.md#reavaliacao",
+      "resumo": "B-02 corrigido; B-12/B-16/B-17/B-18/B-19/B-20/B-21 mantidos (design/arquitetura); B-21 ja coberto"
+    },
+    "front_cycles_publicados": {
+      "commits": [
+        "d974fed",
+        "e6a09e4",
+        "3cdcbfa",
+        "d9192c0"
+      ],
+      "obs": "F-01/02/05/06/12, F-07..F-11, F-03/F-13/gates, handoff C4 (422,/rh/pessoas,/dashboard/resumo); testes 541; check 0 erros"
+    },
+    "fase_3_rotas": {
+      "doc": ".opencode/state/route-consistency-2026-10-12.md",
+      "resultado": "FECHADA por decisao: zero 404 real; 2 divergencias resolvidas no front; 5 documentadas (canonico PT + shims de compat); 59 rotas orfas mantidas como API publica (backlog de front)"
+    },
+    "smoke_e2e": {
+      "resultado": "OK",
+      "detalhe": "GET /up=200; login=200(token); 10 endpoints de modulo=200; POST /rh/pessoas (cadastro+acesso atomico)=201 e novo usuario loga=200; cleanup feito"
+    },
+    "b05_b07_final": {
+      "B-05": "MANTIDO (design: datas ja padronizadas; sem defeito)",
+      "B-07": "MANTIDO (RbacService::MATRIX e contrato consumido por getMatrix/AuthService:167)"
+    },
+    "imagem_docker_validada": {
+      "tag": "ghcr.io/fablab/backend:dev",
+      "sha": "8c12553c6dcb",
+      "tamanho": "1.03GB",
+      "resultado": "build OK + smoke OK (entrypoint migrate+seed+caches; /up=200; login=200; 6 endpoints=200; unauth=401)"
+    },
+    "achado_c01": {
+      "titulo": "1a pessoa com acesso colide com admin semeado (id_user=1)",
+      "severidade": "MEDIA (dev/seed; nao afeta prod real com AUTH_SEED_ENABLED=false)",
+      "status": "CORRIGIDO (opcao 1)",
+      "commit": "a39789a",
+      "integracao": "development@e9923d5",
+      "fix": "AuthSeeder cria rh.pessoa do admin (id == id_user); invariante pessoa.id==login.id_user honrada; teste de regressao em SeederTest",
+      "doc": ".opencode/state/audit-sweep-2026-10-12.md#achado-pós-pipeline"
+    },
+    "imagem_pos_c01": {
+      "sha": "61bc29716612",
+      "resultado": "rebuild OK + smoke OK: admin pessoa id=1 (ADMIN-ROOT) + login id_user=1; 1a pessoa com acesso=201 e loga=200"
+    },
+    "deploy": {
+      "alvo": "fablabserver (Tailscale 100.91.193.84) - overlay dev, projeto fablab-infra",
+      "resultado": "NO_AR (healthy)",
+      "imagem_sha": "61bc29716612",
+      "commit": "a39789a (development@e9923d5)",
+      "migrations": "2026_10_12_000000_auth_v9a + 2026_10_12_000001_auth_v9 aplicadas",
+      "constraint_uk_login_id_user": "PRESENTE",
+      "duplicados_id_user": "vazio",
+      "backup": "/home/litro/backup_pre_deploy_2026-10-12_1807.dump (225191 B)",
+      "rollback": "tags :prev (64dc0831c7a9/49a5d0dd51e3/47d5f7711f92) + up -d --no-build",
+      "verificado_independentemente": true,
+      "frontend": "PENDENTE (fora do escopo)"
+    },
+    "deploy_v2_fresh": {
+      "data": "2026-10-17",
+      "alvo": "fablabserver (Tailscale 100.91.193.84, user litro)",
+      "resultado": "OK (healthy) - stack recriada do zero",
+      "imagem": "ghcr.io/fablab/backend:2026.10.14-1 (sha e73d0546442b)",
+      "config": "canonica de development: infra/docker-compose.yml + dev.yml + server.yml (override de imagem + subrede 172.31.0.0/24); infra/.env com segredos reais (chmod 600)",
+      "banco": "FRESH (volume removido); 83 migracoes do zero; 7 schemas; seed admin pessoa id=1 (ADMIN-ROOT, id_user=1)",
+      "constraint_uk_login_id_user": "PRESENTE",
+      "backend": "app :8080 (healthy) + worker + scheduler; /up=200; login=200 (email/nomeUsuario+senha); /api/rh/pessoas=200; /api/estoque/itens=200; OPTIONS CORS=204 ACAO=*",
+      "frontend": "fablab-front (node:22-alpine) :3000; build adapter-node VITE_API_BASE_URL=http://100.91.193.84:8080/api (com /api - obrigatorio); GET / =200; login via browser OK (OPTIONS 204 ACAO=*, POST 200 ACAO=*)",
+      "portas": "app 8080, postgres 5432, front 3000",
+      "bloqueios_resolvidos": "root-cause host: (1) cadeia DOCKER-USER com -j DROP (hardening manual, ~/.bash_history 1709-1756) bloqueava ICC; (2) snap-docker com daemon corrompido (containers im-killable) + regras iptables orfas das subredes 172.20/172.18 -> resolvido com reboot + subrede limpa 172.31",
+      "backup_db": "/home/litro/backups/fablab_2026-10-14_141844.dump + /home/litro/backups/fablab_auth_java_*.dump",
+      "residuos": "systemd fablab-front.service antigo (port 4173) ainda ativo (requer sudo); containers Exited de outros projetos mantidos"
+    },
+    "front_fix_2026_10_17": {
+      "titulo": "403 de /rh/horas/disponiveis tratado como 'sem vinculo' (opcao B: front)",
+      "contexto": "endpoint 'proprias' do RH: usuario sem vinculo de funcionario recebe 403 por projeto (RhPolicy::exigeVinculoOuAdmin retorna 0 -> ForbiddenException; coberto por RhCoberturaTest assertForbidden). O admin semeado (ADMIN-ROOT) e' solto (sem rh.funcionario).",
+      "decisao": "NAO alterar back/seed; o front trata 403 como estado neutro (semVinculo=true); demais erros continuam propagando",
+      "commit": "2dff39e",
+      "branch": "dev/frontend (pushed origin)",
+      "arquivos": [
+        "frontend/src/lib/api/rh/horas.ts (getHorasDisponiveis)",
+        "frontend/src/lib/types/rh.ts (ExtratoMensalHoras.semVinculo)",
+        "frontend/src/routes/(app)/pessoas/registro-horas/+page.svelte",
+        "frontend/src/routes/(app)/pessoas/[id]/+page.svelte"
+      ],
+      "verificacao": "check 0 erros (17 warnings pre-existentes); 544 testes (37 files, +3); build adapter-node OK",
+      "deploy": "rebuild VITE_API_BASE_URL=http://100.91.193.84:8080/api + rsync ~/labsys-front/build + docker restart fablab-front; msg neutra presente em nodes/54 e nodes/49; front GET / =200, back /up =200"
+    },
+    "fix_pessoas_2026_10_17": {
+      "titulo": "Edicao de pessoas: 500 do backend + gate RBAC do front",
+      "sintomas": "usuario nao conseguia editar pessoas (500); bolsista com acesso nao podia incluir/editar",
+      "achados": {
+        "backend_500": "PUT /api/rh/pessoas/{id} -> 500 (SQLSTATE 23502: pessoa.status NOT NULL). PessoaController::dados() manda status=null quando ausente; PessoaService::atualizar nao tinha fallback (cadastrar tem ??= ATIVO)",
+        "front_rbac": "pessoas/+layout.ts usava canEditRH (so Admin), pois user.roles/user.responsibilities nunca sao populados (mapMeToUser so seta id/username/name/role/email; /auth/me so devolve permissions). Spec RBAC (rh-service/requirements.md) permite POST/GET/PUT /pessoas a Admin+Bolsista+Voluntario(+Estagiario proprio); back ja seguia (RhPolicy::podeVerTodos)",
+        "front_status": "STATUS_PARA_INT.afastado=null -> omitia status -> 500. Back: 0 ATIVO,1 INATIVO,2 RECRUTANDO (nao ha AFASTADO); 'afastado' do front == RECRUTANDO do back"
+      },
+      "fix_backend": {
+        "commit": "f43606c (dev/backend, pushed)",
+        "arquivo": "app/Modules/Rh/Services/PessoaService.php::atualizar",
+        "mudanca": "unset de status quando null antes do fill (preserva status atual)",
+        "teste": "PessoasTest::test_atualizar_sem_status_preserva_status_anterior; suite 421 passed + 4 skipped"
+      },
+      "fix_frontend": {
+        "commit": "af93f65 (dev/frontend, pushed)",
+        "arquivos": [
+          "routes/(app)/pessoas/+layout.ts (canEdit(user,'rh') = roles 0,1,2)",
+          "lib/api/rh/pessoas.ts (STATUS_PARA_INT.afastado=2)"
+        ],
+        "testes": "549 passed (37 files), check 0 erros (17 warnings pre-existentes), build adapter-node OK"
+      },
+      "deploy": {
+        "backend": "imagem ghcr.io/fablab/backend:2026.10.17-1 (build no sandbox + save/gzip/ssh/docker load); server.yml retagueado; compose up -d --no-build; /up=200",
+        "frontend": "rebuild VITE_API_BASE_URL=...:8080/api + rsync + docker restart fablab-front; GET / =200",
+        "e2e": "PUT sem status=200 (era 500); criado bolsista (pessoa id=4, role 1) que EDITA pessoa 1=200 e CRIA pessoa=201 (removida depois)"
+      },
+      "dado_removido": "pessoa id=5 (Criado Pelo Bolsista) excluida; pessoa id=3 (Teste QA) excluida",
+      "dado_teste_permanece": "pessoa id=4 'Bolsista Teste' (login bolsista.teste/bolsista123, role 1) mantido para homologar o gate no UI; remover quando o PO quiser",
+      "pendencia_conhecida": "RESOLVIDA em 2026-10-17 por fix_vinculo_acesso_2026_10_17 (backend 16ccba8 + front 12d8f77)."
+    },
+    "fix_vinculo_acesso_2026_10_17": {
+      "titulo": "PUT /rh/pessoas passa a persistir vinculo (nivel/departamento) + acesso; admin semeado ganha vinculo de funcionario",
+      "decisao_po": "Opcao 1 — dar vinculo de funcionario ao admin semeado (nivel ADMIN, depto Administrativo), em vez de tornar rh.historico_nivel.id_admin_alterou nullable ou tratar so no front.",
+      "causa_raiz": "PessoaController::update descartava vinculo()/acesso() (o store ja usava). Alem disso, FuncionarioService::alterarNivel exige autor com vinculo de funcionario (rh.historico_nivel.id_admin_alterou e' NOT NULL FK->rh.funcionario) e nenhum Admin tinha vinculo.",
+      "backend": {
+        "commit": "16ccba8 (dev/backend, pushed)",
+        "arquivos": [
+          "app/Modules/Rh/Http/Controllers/PessoaController.php (update repassa vinculo()+acesso(), paridade com store)",
+          "app/Modules/Rh/Services/PessoaService.php::atualizar(id,dados,principal,vinculo=[],acesso=[]) — DB::transaction; nivel Admin-only (vincular ou alterarNivel: historico+evento+espelho RBAC); departamento; acesso Admin-only via AuthContract::provisionarAcesso (Role::from(nivel))",
+          "database/seeders/AuthSeeder.php (cria rh.funcionario do admin idempotente: nivel ADMIN, departamento Administrativo)"
+        ],
+        "testes": "PessoasTest +4 (nivel 200 + funcionario.nivel_acesso + historico_nivel + user_permissions espelhado; departamento; bolsista nao-admin com nivelAcesso -> 403; provisionar acesso via PUT + duplicado -> 422); SeederTest +1 (funcionario admin). Suite: 426 passed + 4 skipped (2448 assertions)."
+      },
+      "frontend": {
+        "commit": "12d8f77 (dev/frontend, pushed)",
+        "arquivos": [
+          "routes/(app)/pessoas/[id]/editar/+page.svelte (envia 'nivel' apenas se isAdmin; select de nivel disabled + dica p/ nao-admin)"
+        ],
+        "testes": "551 passed (37 files), check 0 erros (17 warnings pre-existentes), build adapter-node OK"
+      },
+      "deploy": {
+        "imagem": "ghcr.io/fablab/backend:2026.10.17-2 (build sandbox + save/gzip/ssh/docker load; server.yml retagueado; compose up -d --no-build); /up=200; front GET /=200",
+        "frontend": "rebuild VITE_API_BASE_URL=http://100.91.193.84:8080/api + rsync ~/labsys-front/build + docker restart fablab-front",
+        "backfill_admin": "AuthSeeder faz bail se auth.login nao esta vazia -> na DB ja populada o funcionario do admin foi criado por INSERT manual (rh.funcionario id=3: id_pessoa=1, nivel_acesso=0, departamento='Administrativo'). Em deploy fresh o seeder ja cobre."
+      },
+      "e2e_servidor": [
+        "ADMIN PUT /rh/pessoas/4 {nivelAcesso:2} -> 200; rh.funcionario id2 nivel=2; auth.user_permissions id_user=4 role=2; rh.historico_nivel (id_funcionario=2, antigo=1, novo=2, id_admin_alterou=3)",
+        "BOLSISTA (role 1) PUT /rh/pessoas/4 {nivelAcesso:1} -> 403 'Alteracao de nivel restrita a Admin'",
+        "ADMIN PUT {departamento:'Depto Teste'} -> 200, persistido (revert via API com '' NAO zera: helper vinculo() filtra string vazia)",
+        "ADMIN POST /rh/pessoas {nomeCompleto,matricula} -> 201/200; depois PUT {criarAcesso:true,email,senha} -> 200, auth.login + user_permissions criados (Role Bolsista)",
+        "BOLSISTA PUT campos normais (sem nivel) -> 200 (gate do front nao envia nivel)"
+      ],
+      "estado_db_final": "rh.funcionario: id1=pessoa2(Bolsista,Administrativo), id2=pessoa4(Bolsista), id3=pessoa1(ADMIN,Administrativo); auth.user_permissions: id_user1->0, id_user2->1, id_user4->1; rh.historico_nivel: 0 linhas (historico de teste removido)",
+      "dados_teste_removidos": "pessoa temp de provisionamento de acesso (id=6) + login/permissions removidos; departamento de teste e contato revertidos",
+      "dado_teste_permanece": "pessoa id=4 'Bolsista Teste' (login bolsista.teste/bolsista123, role 1) mantido para homologar o gate no UI",
+      "observacao": "revert de departamento via API nao zera (string vazia filtrada em PessoaController::vinculo()); se o PO quiser limpar departamento, tratar no back (permitir '' ou null explicito)."
+    },
+    "departamento_acesso_ui_2026_10_17": {
+      "titulo": "Revert/limpeza de departamento + provisionar acesso na edicao (Admin)",
+      "pedido_po": "Adicionar o campo 'criar acesso' na tela de editar pessoa e permitir limpar o departamento.",
+      "causa_limpar_departamento": "PessoaController::vinculo() usava array_filter(fn($v)=>$v!==null); o middleware ConvertEmptyStringsToNull transforma ''->null e a chave era removida, entao o back nunca via a intencao de limpar. O front tambem nao enviava departamento vazio.",
+      "backend": {
+        "commit": "f2fbe84 (dev/backend, pushed)",
+        "arquivos": [
+          "app/Modules/Rh/Http/Controllers/PessoaController.php::vinculo (nivel so com filled(); departamento entra se a chave estiver presente, '' == limpar)",
+          "app/Modules/Rh/Services/PessoaService.php::atualizar (array_key_exists('departamento'): '' limpa; vazio sem vinculo nao cria funcionario)",
+          "app/Modules/Rh/Services/PessoaService.php::cadastrar (departamento em branco normalizado p/ null: POST com '' nao cria vinculo)"
+        ],
+        "testes": "PessoasTest +3 (limpar departamento; vazio sem vinculo nao cria; POST vazio nao cria). Suite 429 passed + 4 skipped."
+      },
+      "frontend": {
+        "commit": "1e16bfc (dev/frontend, pushed)",
+        "arquivos": [
+          "lib/api/rh/pessoas.ts::toPayload (envia departamento quando definido, mesmo vazio)",
+          "routes/(app)/pessoas/[id]/editar/+page.svelte (department sempre enviado; secao 'Acesso' Admin-only com criarAcesso/email/senha + mostrar/gerar; 422 tratado inline; rodape atualizado)"
+        ],
+        "testes": "556 passed (37 files), check 0 erros (17 warnings pre-existentes), build adapter-node OK"
+      },
+      "deploy": {
+        "imagem": "ghcr.io/fablab/backend:2026.10.17-3 (server.yml retagueado; compose up -d --no-build; /up=200)",
+        "frontend": "rebuild VITE_API_BASE_URL=...:8080/api + rsync + docker restart fablab-front; GET /=200"
+      },
+      "e2e_servidor": [
+        "pessoa 4 PUT departamento 'Eletronica' -> 200 persistido; PUT departamento '' -> 200 LIMPO",
+        "POST /pessoas com departamento '' -> 0 vinculos criados (nao cria funcionario)",
+        "PUT nivelAcesso:0 + departamento 'Software' -> 200; funcionario nivel=0, depto=Software (filled('nivelAcesso') honra o 0/ADMIN)",
+        "PUT departamento '' -> 200 limpo",
+        "PUT criarAcesso:true + email + senha -> 200, auth.login+user_permissions criados; repetido -> 422 'Ja existe acesso cadastrado para esta pessoa'"
+      ],
+      "estado_db_final": "rh.funcionario id1=pessoa2(Bolsista,Administrativo), id2=pessoa4(Bolsista,''), id3=pessoa1(ADMIN,Administrativo); auth.user_permissions 1->0,2->1,4->1; historico_nivel 0",
+      "dados_teste_removidos": "pessoa temp id=7 (Temp Rev) + login/permissions/vinculo removidos"
+    }
+  },
+  "proximos_passos": [
+    "WIP RH/RBAC 8d50487 reaplicado e integrado 2026-11-16 @80dc8bb (reports/0007). Pendente: ocultar/desabilitar linha Admin em /configuracoes/permissoes (422 na UI) e avaliar paginacao/limite de NivelService::matriz.",
+    "Contratos: divergencias preexistentes front<->back (/stock vs /estoque, kanban PATCH vs PUT, /producao/mesas vs /projetos-mesa, /producao/5s/setores vs /producao/setores, /rh/people vs /rh/pessoas, endpoints 5S/resumo, unread/count) — backlog de contrato.",
+    "Front: migrar 14 blocos manuais de URLSearchParams para buildQuery; avaliar knip/ts-prune.",
+    "Back: avaliar PHPStan/Larastan nivel 5 (tooling da Fase 8).",
+    "Push/deploy do remap + WIP RH/RBAC: aguardando PO; deploy exclusivo do deployer.",
+    "DEPLOY FRESH OK em fablabserver (2026-10-17): back :8080 + front :3000, imagem 2026.10.14-1, banco do zero (83 migrations, seed admin). Acesso: http://100.91.193.84:3000 (front) / :8080 (API)",
+    "Frontend: DEPLOYADO (fablab-front :3000, API :8080). No ar: 403 'sem vinculo' neutro (2dff39e); pessoas editavel Admin/Bolsista/Voluntario (af93f65); PUT /pessoas persiste vinculo/departamento/acesso, nivel Admin-only, limpar departamento com '' e provisionar acesso na edicao (back 16ccba8+f2fbe84 / front 12d8f77+1e16bfc). Backend imagem 2026.10.17-3. Admin semeado com vinculo (id=3). Pendente: desabilitar systemd fablab-front.service antigo (4173, requer sudo) e homologar checklist do front-handoff-2026-10-12.md",
+    "Investigar instabilidade Tailscale (relay sao) com fablabserver durante o deploy",
+    "FRONT: executar checklist do front-handoff-2026-10-12.md",
+    "Security phase por modulo (quando PO quiser)",
+    "Backend varredura: 7 ciclos aplicados e pushed. Proximo: front coordenar 422 + novo payload /rh/pessoas + 404s de producao",
+    "Ciclo 7 (B-10): custo de material via BOM -> lancamento financeiro automatico (definir evento/dono do calculo)",
+    "Backend: correcoes da varredura Ciclo 1+2 aplicadas (dev/backend 186c79f). Proximos itens de back sao contrato/produto (ver verificacao no doc de varredura); integrar/merge dev/backend quando PO pedir.",
+    "Contract-fix Lote 2 (divergencias: escritas 5S/producao, RH completo, financeiro resto, marketplace/tags, refresh automatico, searchPeople) — despachar quando PO pedir",
+    "Contract-fix Lote 3 (endpoints inexistentes no back: pendencias/penalidades/ranking-5s, chamados, concluir-inspecao, perfil, lancamento-:id — construir ou gatear)",
+    "Pos-monolito (PO decide ordem): security phase nos 8 modulos; deployer p/ subida (infra POSTGRES_DB=fablab + segredos reais); front repoint fetchUnreadCount + expurgo cache rh-cert-*; decisoes pendentes (QR PNG, {done:false}->400?, escrita B/V em vendas, alerta access.rfid, escrita fornecedores)",
+    "Infra: alinhar POSTGRES_DB=fablab no compose + segredos reais (APP_KEY, JWT_SECRET>=32)",
+    "Security phase (quando PO quiser; manual)",
+    "Tasks dono real PATCH /tasks (follow-up incompativel, parado)",
+    "Middleware ultimoUso (quando backend definir uso de token)",
+    "E-1 ?status= entradas/saidas (reverter apenas com ordem expressa)",
+    "Usar agente deployer p/ subida e operacao no server"
+  ],
+  "contract_gap_fila": {
+    "base_documento": "docs/contract.gap.md",
+    "atualizado_em": "2026-09-25",
+    "s60_seed_admin": "CONCLUIDA",
+    "gateway_rotas": "COMPLETO (usuarios, permissoes, configuracoes adicionadas; resto ja existia)",
+    "estoque_validacao": "APROVADA + mergeada; E-1..E-7 CONCLUIDOS",
+    "s61_configuracoes": "CONCLUIDA (usuarios/permissoes/senha + sistema/tokens; ressalvas zeradas)",
+    "s63_notificacoes": "CONCLUIDA D-1..D-7",
+    "s64_rh": "CONCLUIDA D-1..D-10+H2",
+    "s65_producao_dashboard": "CONCLUIDA (repoint REPORTADO_FOLLOWUP)",
+    "s66_vendas": "CONCLUIDA (Admin decide, sem auto-apply; zero codigo)",
+    "s67_financeiro": "CONCLUIDA",
+    "config_sistema_tokens": "CONCLUIDA (era novo escopo)",
+    "e4_nome": "CONCLUIDA (478e1b7)",
+    "monolito_modular_mvc": "PIPELINE_ALINHADO 2026-10-06: arquitetura=monolito-modular-mvc (um backend/ :8080, Postgres fablab c/ schema por modulo); mover-nao-reescrever; chaves *-service preservadas como IDs historicos."
+  }
+}

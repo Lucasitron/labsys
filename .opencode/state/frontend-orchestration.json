@@ -1,0 +1,353 @@
+{
+  "version": "1.0.0",
+  "projeto": "fablab-frontend",
+  "createdAt": "2026-09-19T00:00:00Z",
+  "updatedAt": "2026-09-24T00:00:00Z",
+  "nota_agentes_2026_10_19": "Agentes reconfigurados (back e front): modelos validos deepseek/big-pickle/glm/beam (muse-spark removido); frontend/builder -> frontend/coder; criados frontend/tester e contracts; build = responsabilidade exclusiva do agente builder (raiz) e deploy = deployer (raiz). Ver .opencode/specs/system/agents-pipeline.md e .opencode/state/orchestration.json (regras_agentes/politica_modelos).",
+  "status_global": "SYSTEM_SPECS_PRONTO | DESIGN_SYSTEM | 9_FEATURES_DEFINIDAS | 7_AGENTES | ESTADO_ORQUESTRADO | 9_MOCKUPS_APROVADOS | PRODUCAO_MOCKUP_V2 | CONFIGURACOES_MOCKUP_GERADO | PRODUCAO_SPEC_PLAN_TASKS_V2 | CONFIGURACOES_SPEC_PLAN_TASKS | GITFLOW_DEV_FRONTEND_MIGRADO | TRACKER_CRIADO | CHECKLIST_IMPLEMENTACAO_GERADO | AUTH_BUILDER_CONCLUIDO | AUTH_VALIDATOR_APROVADO | AUTH_SECURITY_APROVADO_RESSALVAS | REVISAO_HUMANA_CONCLUIDA | DASHBOARD_SPEC_PLAN_TASKS | DASHBOARD_BUILDER_CONCLUIDO | DASHBOARD_VALIDATOR_APROVADO_RESSALVAS | DASHBOARD_SECURITY_APROVADO_RESSALVAS | PRODUCAO_BLOCO1_CONCLUIDO | PRODUCAO_BLOCO2_CONCLUIDO | PRODUCAO_BLOCO3_CONCLUIDO | PRODUCAO_BLOCO4_CONCLUIDO | PRODUCAO_BLOCO5_CONCLUIDO | PRODUCAO_BLOCO6_CONCLUIDO | PRODUCAO_VALIDATOR_APROVADO_RESSALVAS | PRODUCAO_SECURITY_APROVADO_RESSALVAS | PRODUCAO_CONCLUIDA | CONFIGURACOES_BLOCO1_CONCLUIDO | CONFIGURACOES_BLOCO2_CONCLUIDO | CONFIGURACOES_BLOCO3_CONCLUIDO | CONFIGURACOES_BLOCO4_CORRECOES | CONFIGURACOES_VALIDATOR_APROVADO_RESSALVAS | CONFIGURACOES_SECURITY_APROVADO_RESSALVAS | CONFIGURACOES_CONCLUIDA | ESTOQUE_SPEC_PLAN_TASKS | ESTOQUE_BLOCO1_CONCLUIDO | ESTOQUE_BLOCO2_CONCLUIDO | ESTOQUE_BLOCO3_CONCLUIDO | ESTOQUE_BLOCO4_CONCLUIDO | ESTOQUE_BLOCO5_CONCLUIDO | ESTOQUE_BLOCO6_CORRECOES | ESTOQUE_VALIDATOR_APROVADO_RESSALVAS | ESTOQUE_SECURITY_APROVADO_RESSALVAS | ESTOQUE_CONCLUIDA | CODIGO_MINIMO_NAS_SPECS | NOTIFICACOES_PLAN_TASKS | NOTIFICACOES_BLOCO1_CONCLUIDO | NOTIFICACOES_BLOCO2_CONCLUIDO | NOTIFICACOES_BLOCO34_CONCLUIDO | NOTIFICACOES_BLOCO5_CONCLUIDO | NOTIFICACOES_BLOCO6_CORRECOES | NOTIFICACOES_VALIDATOR_APROVADO_RESSALVAS | NOTIFICACOES_SECURITY_APROVADO_RESSALVAS | NOTIFICACOES_CONCLUIDA | RH_PLAN_TASKS | RH_BLOCO1_CONCLUIDO | RH_BLOCO2_CONCLUIDO | RH_BLOCO3_CONCLUIDO | RH_BLOCO4_CONCLUIDO | RH_BLOCO5_CONCLUIDO | RH_BLOCO6_CONCLUIDO | RH_BLOCO7_CORRECOES | RH_VALIDATOR_APROVADO_RESSALVAS | RH_SECURITY_APROVADO_RESSALVAS | RH_CONCLUIDA | CONTRACT_GAP_ATUALIZADO_S6 | SEED_ADMIN_SOLICITADO | VENDAS_PLANEJAMENTO | VENDAS_PLAN_TASKS | VENDAS_BLOCO1_CONCLUIDO | VENDAS_BLOCO2_CONCLUIDO | VENDAS_BLOCO3_CONCLUIDO | VENDAS_BLOCO4_CONCLUIDO | VENDAS_BLOCO5_CONCLUIDO | VENDAS_BLOCO67_CONCLUIDO | VENDAS_BLOCO8_CORRECOES | VENDAS_VALIDATOR_APROVADO_RESSALVAS | VENDAS_SECURITY_REPROVADA_CORRIGIDA | VENDAS_CONCLUIDA | FINANCEIRO_PLAN_TASKS | FINANCEIRO_BLOCO1_CONCLUIDO | FINANCEIRO_BLOCO2_CONCLUIDO | FINANCEIRO_BLOCO34_CONCLUIDO | FINANCEIRO_BLOCO56_CONCLUIDO | FINANCEIRO_BLOCO78_CONCLUIDO | FINANCEIRO_BLOCO9_CORRECOES | FINANCEIRO_VALIDATOR_APROVADO_RESSALVAS | FINANCEIRO_SECURITY_APROVADO_RESSALVAS | FINANCEIRO_CONCLUIDA | SPA_9_FEATURES_CONCLUIDO",
+  "currentFeature": "financeiro",
+  "humanReview": {
+    "startedAt": "2026-09-19T08:40:00Z",
+    "checklist": ".opencode/state/design-checklist.md",
+    "status": "CONCLUIDA",
+    "items": {
+      "auth": "APROVADO",
+      "dashboard": "APROVADO",
+      "estoque": "APROVADO",
+      "rh": "APROVADO",
+      "vendas": "APROVADO",
+      "financeiro": "APROVADO",
+      "producao": "APROVADO",
+      "notificacoes": "APROVADO",
+      "configuracoes": "APROVADO"
+    }
+  },
+  "features": [
+    {
+      "name": "auth",
+      "status": "CONCLUIDA",
+      "dependsOn": [],
+      "specPath": ".opencode/specs/frontend/features/auth/",
+      "mockups": [
+        "/docs/mokups/login/"
+      ],
+      "requirementState": "DEFINIDA",
+      "designReady": true,
+      "mockupPath": "docs/mokups/login/",
+      "tasks": [
+        {
+          "resumo": "7 tasks atômicas (auth-001..auth-007) materializadas em tasks.md — IMPLEMENTADAS 20/09 (auth-001..auth-006 pelo Builder; auth-007 infra de testes resolvida no Orchestrator: vite.config.js com alias svelte client + inline deps + defineConfig vitest/config)",
+          "specPath": ".opencode/specs/frontend/features/auth/"
+        }
+      ],
+      "validation": {
+        "validator": {
+          "status": "APROVADA",
+          "quando": "2026-09-20",
+          "resumo": "Checklist plan.md §5 10/10 (2 itens com conferencia visual pendente: responsividade 360-1920 e render real). 0 violações. npm run test 7 files/63 tests verdes; svelte-check sem erros novos (baseline estoque 12/15/7 preservado). Nota §8.4 (logout boot por falha de rede) confirmada. Pontos de atencao: link esqueci-senha sem tabindex=-1 em loading; sem smoke test visual; uso de sanitizeRedirect no guard usa url.pathname (perde query)."
+        },
+        "security": {
+          "status": "APROVADA_COM_RESSALVAS",
+          "quando": "2026-09-20",
+          "resumo": "Checklist plan.md §6 8/8. 0 riscos Altos. Medio: fallback `http://localhost:8080` em prod quando VITE_API_BASE_URL ausente (expor token na rede) — garantir https/env no build. Baixos (hardening): fetchMe sem guarda token? (Bearer null defense-in-depth); restore() aceita token truthy adulterado; duplicacao logica 401/redirect em dashboard.ts e request.ts (sem sanitizer); regex sanitizeRedirect sem \\u007f/C1. CSRF N/A confirmado (Bearer+JSON, zero cookies). Nada alem de token+payload de usuario persistido; zero console.log; zero segredos hardcoded."
+        }
+      },
+      "blockedReason": null,
+      "nota": "PLAN/TASKS MATERIALIZADOS 20/09 (gap analysis vs código real branch feature/frontend-login, commits b600fc9/159de98): plan.md com estado real arquivo a arquivo + 4 gaps (G-1 interceptor global 401 em client.ts; G-2 ?redirect não consumido no login; G-3 rota forgot-password inexistente; G-4 zero testes de auth) + 7 tasks auth-001..auth-007 (1 arquivo=1 task) + checklists Validator/Security. Maioria da feature já aderente: contratos, store, estados, a11y, RBAC público, guard (app), timeout 15s. Conflito único em arquivo compartilhado: client.ts (dashboard/estoque/rh consomem; handlers 401 ad-hoc mantidos). Proxima etapa: Builder auth-001..007 apos revisao humana do mockup, depois Validator+Security."
+    },
+    {
+      "name": "dashboard",
+      "status": "CONCLUIDA",
+      "dependsOn": [
+        "auth"
+      ],
+      "specPath": ".opencode/specs/frontend/features/dashboard/",
+      "mockups": [
+        "/docs/mokups/dashboard/"
+      ],
+      "requirementState": "DEFINIDA",
+      "designReady": true,
+      "mockupPath": "docs/mokups/dashboard/",
+      "tasks": [
+        {
+          "resumo": "9 tasks dash-001..dash-009 IMPLEMENTADAS 20/09 (Builder) — 95/95 testes (63+32) e svelte-check no baseline",
+          "specPath": ".opencode/specs/frontend/features/dashboard/"
+        }
+      ],
+      "validation": {
+        "validator": {
+          "status": "APROVADA_COM_RESSALVAS",
+          "quando": "2026-09-20",
+          "resumo": "Plan §5 11/11. Handler 401 único, RBAC hide real (ausência do DOM testada), states skeleton/empty/erro, polling com fake timers, refetch visibilitychange, donuts spec. Ressalvas visuais menores: donut vazio sem text-muted; loading sem skeleton do greeting; KPI restrito mostra badge RESP em vez de ERRO no erro; n/total do MachinesChart sem formatNumber; newline final; render real 360-1920 ⚠️ sem navegador."
+        },
+        "security": {
+          "status": "APROVADA_COM_RESSALVAS",
+          "quando": "2026-09-20",
+          "resumo": "Plan §6. 0 Alto. 2 Médios de CONTRATO BACKEND (sinalizar backend/PO): (1) dashboard-service deve filtrar campos restricted (loansOpen/machines*) por papel — spec interna inconsistente (requirements.md:92 'filtra' vs tasks.md:165 'front'); (2) producao-service precisa PATCH /tasks/{id} com validação de vínculo (tarefa atribuída ao autenticado). 1 Médio pré-existente (VITE_API_BASE_URL https em prod). 2 Baixos: id concatenado em URL sem sanitização (origem backend, ids opacos); refresh bootstrap de polling em aba oculta (aceito por design). Bearer condicional sem Bearer null, XSS zero, sem segredos."
+        }
+      },
+      "blockedReason": null,
+      "nota": "PLAN/TASKS 20/09 (reconciliado b5fde2c + auth 5b68329, mockup APROVADO): 9 gaps — G-1 handler 401 local em dashboard.ts redundante (redirect hardcoded não sanitizado); G-2 load bloqueante (skeleton nunca na entrada); G-3 sem refetch summary em visibilitychange; G-4 Greeting empty diverge; G-5..G-9 zero testes (api, polling, KpiGrid-RBAC, MyTasks, página). 9 tasks dash-001..009 (API→routes→component→tests). NÃO toca menu.ts/permissions.ts (donos producao/configuracoes). stores/notifications.ts criado pelo dashboard — feature notificacoes futura deve REUTILIZAR. Validator/Security checklists no plan.md §5/§6."
+    },
+    {
+      "name": "estoque",
+      "status": "CONCLUIDA",
+      "dependsOn": [
+        "auth"
+      ],
+      "specPath": ".opencode/specs/frontend/features/estoque/",
+      "mockups": [
+        "/docs/mokups/estoque/"
+      ],
+      "requirementState": "DEFINIDA",
+      "designReady": true,
+      "mockupPath": "docs/mokups/estoque/",
+      "tasks": [
+        {
+          "resumo": "36 tasks atômicas (est-001..est-036) — CONCLUÍDAS 21/09 em 6 blocos: 1 (est-001..011 DTOs reais + API PT /api/estoque/** + RBAC responsável) · 2 (est-012..019 telas existentes) · 3 (est-020..026 rotas novas editar/detalhes/empréstimos) · 4 (est-027..031 fornecedores/localizações/BOM) · 5 (est-032..036 testes; e2e skip) · 6 (correções Validator/Security + código mínimo)",
+          "specPath": ".opencode/specs/frontend/features/estoque/"
+        }
+      ],
+      "validation": {
+        "validator": "APROVADA COM RESSALVAS (21/09) — 14 itens do DoD; M-1 registrarConsumo sem id (corrigido C1) · M-2 idFornecedor texto livre (corrigido C2) · B-1..B-10 menores (incl. 404 não diferenciado em itens/[id] — aceito). 252 testes verdes; check 0 errors/16 warnings/7 files; build ok",
+        "security": "APROVADA COM RESSALVAS (21/09) — 0 Alto. M-1 CSV injection export BOM (corrigido C3) · M-2 export itens depende do backend (fila PO) · M-3 guarda canSeeLoans em empréstimos (corrigido C4) · M-4 mensagens cruas → fila backend; B-1 upload CSV (corrigido C5) · B-2 prazo ≥ hoje (corrigido C6) · B-3 searchPeople dump → fila backend (D-4); I-1..I-5 corrigidos C7..C11 (PUT sem body, dead code −147 linhas, sanitizeRedirect, filename). Saldo net −122 linhas",
+        "correcoes": "commit f8ae34c (bloco 6) — 252 testes verdes; check 0/16/7; build ok"
+      },
+      "blockedReason": null,
+      "nota": "CONCLUÍDA 21/09 (commits f7b3be5 · 192004c · f16d0c7 · f300d83 · d512324 · f8ae34c). API 100% PT /api/estoque/** (0 /stock/ em paths); 10 rotas + emprestimos/[id]/devolucao; RBAC responsável por estoque (isResponsavelEstoque/canEdit ampliado/VIEW_RULES [0..3]) + guarda canSeeLoans em empréstimos; Recrutando barrado. Dívidas backend/PO: R-9 (listas globais de entradas/saídas/empréstimos por status), R-8 (listagem de BOM por projeto), D-2 (responsável na escrita aceito pelo backend), D-4 (pessoa em EmprestimoResponse p/ eliminar searchPeople dump), escape CSV no export de itens, mensagens de erro não-técnicas, RESTRICoes RBAC em GET /estoque/emprestimos/**. Baseline check zerado (era 12 erros) ao migrar DTOs. SPEC AGENTS atualizadas 21/09: Princípio Código Mínimo em todas as specs (builder/planner/validator/security/orchestrator/tracker/designer)."
+    },
+    {
+      "status": "CONCLUIDA",
+      "dependsOn": [
+        "auth"
+      ],
+      "specPath": ".opencode/specs/frontend/features/rh/",
+      "mockups": [
+        "/docs/mokups/pessoas/"
+      ],
+      "requirementState": "DEFINIDA",
+      "designReady": true,
+      "mockupPath": "docs/mokups/pessoas/",
+      "tasks": [
+        {
+          "resumo": "30 tasks atômicas (rh-001..rh-030) 21-23/09 — 7 blocos: B1 Fundação (types PT + 5 APIs /api/rh/** + rh-status + 3 UI + RBAC) · B2 Pessoas CRUD · B3 Kanban PS (Tutor) + registro-horas (extrato backend) · B4 Treinamentos (second sidebar + 5 telas, Instrutor) · B5 Níveis Admin + menu · B6 Testes (81 casos) · B7 correções Validator/Security",
+          "specPath": ".opencode/specs/frontend/features/rh/"
+        }
+      ],
+      "validation": {
+        "validator": "APROVADA COM RESSALVAS (23/09) — 30 tasks; 0 Alta. M1 DELETE inline (corrigido C2) · M2 próprio-registro só em horas (mitigado C6 detalhe; lista p/ backend D-3/D-7) · M3 toast agenda (corrigido C3) · B1 isProprioRegistro morto (consumido em C6) · B2 pageSize na URL (aceito, mockup RF-P1). 381 testes verdes; check 0/16/7; build ok",
+        "security": "APROVADA COM RESSALVAS (23/09) — 2 Alto + 5 Médio + 7 Baixo + 4 Info. H1 admin oferecido a não-admin (corrigido C1, 4 pontos) · H2 escrita client-only → backend obrigatório (fila) · M1 personId por URL (mitigado C6; isolamento p/ backend) · M2 filtro client removível (backend deriva do token; fila) · M3 goto guards (aceito, padrão ssr=false) · M4 dados sensíveis (mitigado C6; resto backend) · M5 CPF (mantido mockup-spec; fila D-2) · B1 hints crus (corrigido C4, 13 pontos) · B2 DELETE inline (corrigido C2) · B3 legado horas (corrigido C7, -34 linhas) · B4 link Níveis (corrigido C5) · B5/B6/B7/I3 fila/aceitos. Sem @html/console/any; RBAC hide confirmado",
+        "correcoes": "commit ff0843d (bloco 7) — 381 testes verdes; check 0/16/7; build ok"
+      },
+      "blockedReason": null,
+      "nota": "CONCLUÍDA 23/09 (commits 4b33407 · 9d76271 · 642a856 · b8c4a8c · 607084e · 4406cb0 · ff0843d). 12 rotas /pessoas/** + submenu menu.ts (Níveis canSee: isAdmin). Reuso: PeoplePicker, DonutChart/kit, format, stores; zero soma horas client (R-5); Tutor×Instrutor (Dívida 6); sem CSV (R-8); certificados sem telas (R-7, aguarda mockup+v0.2.0). Fila backend/PO: D-1 naming PT/EN · D-2 abas+vínculo users · D-3 🔴 enforcement server-side + próprio-registro · D-4 🔴 PS · D-5 🔴/🟡 horas (disponíveis/apontamentos/extrato) · D-6 🟡 certificados · D-7 token→pessoa · D-8 🔴 níveis · D-9 🔴 treinamentos/agenda/integrações · D-10 erros não-técnicos · DELETE /api/rh/pessoas/{id} confirmar · H2 autorizar cada escrita · B6 recalcular hours · B5 migrar searchPeople. Endpoints quase todos 🔴 (só detalhe/criar/editar pessoa e validar-apontamento têm lastro 🟡).",
+      "name": "rh"
+    },
+    {
+      "name": "vendas",
+      "status": "CONCLUIDA",
+      "dependsOn": [
+        "auth"
+      ],
+      "specPath": ".opencode/specs/frontend/features/vendas/",
+      "mockups": [
+        "/docs/mokups/vendas/"
+      ],
+      "requirementState": "DEFINIDA",
+      "designReady": true,
+      "mockupPath": "docs/mokups/vendas/",
+      "tasks": [
+        {
+          "resumo": "32 tasks atômicas (vnd-001..vnd-032) 23/09 — 8 blocos: B1 Fundação (types PT + 7 APIs /api/vendas/** + status/format + Timeline/MoneyInput + RBAC criador) · B2 Clientes · B3 Orçamentos · B4 Encomendas (Kanban reusado, dona única) · B5 Marketplace/Marketing/Solicitações · B6+B7 Menu + 70 testes · B8 correções (H1-H4/M1-M7/B1-B6 + M-1/B-2..B-4)",
+          "specPath": ".opencode/specs/frontend/features/vendas/"
+        }
+      ],
+      "validation": {
+        "validator": "APROVADA COM RESSALVAS (23/09) — 32 tasks; 0 Alta. M-1 campo modal stale (corrigido C15) · B-1 ?editar= orçamento (documentado) · B-2 count Kanban (corrigido C16) · B-3 testid coluna (corrigido C16) · B-4 Timeline sintética (título Resumo, C17). 451 testes; check 0/17/8; build ok",
+        "security": "REPROVADA → CORRIGIDA no bloco 8 (23/09): H1 gates mover/avançar/converter (C1) · H2 gate mudarStatus (C2) · H3 máscara documento (C3) · H4 gate bulk-tag (C4) · M1 re-check handlers + 403 (C5) · M2 toUserMessage 8pts (C6) · M3 canSee solicitacoes (C7) · M4 busca mínima (C12) · M5 layout sem canEdit morto (C8) · M6 204 em apiFetch (C9, suíte cheia verde) · M7 409 com refetch (C10) · B1-B6 (C11-C14). Condicionante externa: backend negar não-criador com 403 (fila). Sem @html/console/any",
+        "correcoes": "commit 481ef8b (bloco 8) — 451/451 testes (suíte cheia); check 0/17/8; build ok"
+      },
+      "blockedReason": null,
+      "nota": "CONCLUÍDA 23/09 (commits ed7dbcd · 7e3eb8b · 0a00ccf · 83ff024 · 3ad1396 · 7beb58b · 481ef8b). 11 rotas /vendas/** + submenu menu.ts. Reuso: KanbanBoard (sem edição), PeoplePicker→buscas, format, stores; KPIs/totais servidos (R-7); sem CSV; sem /vendas/interacoes; Kanban dona única (Produção linka). Fila backend/PO: D-1 🔴 vendas-service + gateway /api/vendas/** · D-2 shapes/counts/duplicar/bulk-tag · D-3 🔴 enforcement criador+Admin + responsável Vendas · D-4 🟡 solicitações · D-5 item_orcamento · D-6 export · D-7 CPF/CNPJ LGPD · D-8 erros · D-9 lock Kanban · 403 por criador (condicionante Security)."
+    },
+    {
+      "name": "financeiro",
+      "status": "CONCLUIDA",
+      "dependsOn": [
+        "auth"
+      ],
+      "specPath": ".opencode/specs/frontend/features/financeiro/",
+      "mockups": [
+        "/docs/mokups/financeiro/"
+      ],
+      "requirementState": "DEFINIDA",
+      "designReady": true,
+      "mockupPath": "docs/mokups/financeiro/",
+      "tasks": [
+        {
+          "resumo": "23 tasks atômicas (fin-001..fin-023) 23-24/09 — 9 blocos: B1 Fundação (types PT + 6 APIs /api/financeiro/** + status/format + guarda Admin) · B2 Lançamentos+Resumo · B3+B4 Contas derivadas + Doações · B5+B6 Custeio + Relatórios · B7+B8 Menu + 73 testes · B9 correções (modal unificado -386 linhas, periodo allowlist, encode ids, bulk allSettled)",
+          "specPath": ".opencode/specs/frontend/features/financeiro/"
+        }
+      ],
+      "validation": {
+        "validator": "APROVADA COM RESSALVAS (24/09) — 23 tasks; 0 Alta. R-M1 modal duplicado (corrigido C1, extração -386 linhas) · R-M2 filtros client (documentado D-8) · R-B1 label card (corrigido C6) · R-B2 série (D-2 backend) · R-B3 testid (aceito, auditado via testes) · R-B4 pageSize fixo (travado no plan). 524 testes; check 0/17/8; build ok",
+        "security": "APROVADA COM RESSALVAS (24/09) — 0 Alto/Médio; 4 Baixos (B1 periodo allowlist C2 · B2 encode ids C3 · B3 bulk allSettled C4 · B4 tipo fixo C5 via C1) + 6 Info (I1 modal unificado C1; I2-I6 aceitos). Sem @html/console/any; RBAC hide-total confirmado; pai basta p/ submenu",
+        "correcoes": "commit 0d3203b (bloco 9) — 524/524 testes; check 0/17/8; build ok"
+      },
+      "blockedReason": null,
+      "nota": "CONCLUÍDA 24/09 (commits 2e78ed8 · 4ccc9e3 · b9a6eb0 · 49cbfb2 · 06aa0f6 · 0d3203b). 7 rotas /financeiro/** Admin-only + submenu menu.ts. Reuso total: kit + vendas-format + format; zero UI novo; permissions.ts intacto; zero soma/cálculo client (R-7); sem Exportar (R-9/D-6); contas derivadas. Fila backend/PO: D-1 🔴 service+gateway · D-2 shapes/séries · D-3 🔴 @PreAuthorize 0 · D-4 filtros+periodo · D-5 congelamento/auditoria · D-6 PDF fora MVP · D-7 erros · D-8 vencimento/origem."
+    },
+    {
+      "name": "producao",
+      "status": "CONCLUIDA",
+      "dependsOn": [
+        "auth"
+      ],
+      "specPath": ".opencode/specs/frontend/features/producao/",
+      "mockups": [
+        "/docs/mokups/producao/"
+      ],
+      "requirementState": "DEFINIDA_V2",
+      "designReady": true,
+      "mockupPath": "docs/mokups/producao/",
+      "tasks": [
+        {
+          "resumo": "42 tasks atômicas (prd-001..prd-042) materializadas em tasks.md — CONCLUÍDAS 20/09 em 6 blocos: 1 (prd-001..003 types+utils+client) · 2 (prd-004..015 API layer 12 módulos+mock) · 3 (prd-016..024 CartaoBadge+8 modais) · 4 (prd-025..027 menu+RBAC+layout) · 5 (prd-028..039 12 telas) · 6 (prd-040..042 testes; e2e skip sem Playwright) + bloco 7 (correções das ressalvas Validator/Security)",
+          "specPath": ".opencode/specs/frontend/features/producao/"
+        }
+      ],
+      "validation": {
+        "validator": "APROVADA COM RESSALVAS (20/09) — 9/9 itens do checklist; 12 telas 1:1 com o mockup; A1/A2/A3/A4/A5 conformes; 0 bloqueantes. Ressalvas corrigidas no bloco 7: (1) sidebar ignorava RBAC por-recurso; (2) canSee5S liberava Estagiário; (3) 'edita se atribuído' nunca exercitado; (4) advertências não Admin-only; (5) resumo mockado sem aviso visual",
+        "security": "APROVADA COM RESSALVAS (20/09) — 0 Alto; M-1 botão Auditar sem gate canAuditar5S (corrigido); B-2 canSeeAdvertencias permissivo (corrigido Admin-only); B-3 URL de documento sem validação de scheme (corrigido http/https); B-4 filtros de advertências sem allowlist (corrigido). Info: token em localStorage (I-5, base pré-existente), fallback API_BASE localhost em prod (I-6), IDs opacos em URL (I-7), canSee5S exclui role 4 com grant (I-8, intencional)",
+        "correcoes": "commit 45546ca (bloco 7) — 150 testes verdes; svelte-check baseline 12/15/7"
+      },
+      "blockedReason": null,
+      "nota": "CONCLUÍDA 20/09 (commits c4406f4 · 84b643a · a011991 · 7bc70f5 · 6863ce3 · a6633ef · 45546ca). Spec v2 (requirements/plan/tasks 42 tasks) + mockup v2 (12 telas, 24 modais) + decisões A1-A5. RBAC final conforme requirements §RBAC: Estagiário(3)/Recrutando(4) HIDE no 5S; advertências Admin-only; edição por atribuição (isResponsavelAtribuido) em Tarefas/Setores/Máquinas[id]/Projetos[id]. 150 testes verdes; check baseline. Endpoints 🟡 (gateway não expõe /api/producao/**): telas exibem erro amigável/nota de contrato pendente; resumo com mock local (USE_PRODUCAO_MOCK) + banner. Dívidas p/ fila backend/PO: expor /api/producao/** no gateway; PATCH /tasks/{id} vínculo; POST documentos/materiais/saida; coluna kanban e checklist de tarefa no contrato; nota/cartão 5S recalculados no backend. ConflictMap C1-C5 liberado: menu.ts/permissions.ts agora podem ser tocados por CONFIGURACOES (próxima)."
+    },
+    {
+      "name": "notificacoes",
+      "status": "CONCLUIDA",
+      "dependsOn": [
+        "auth"
+      ],
+      "specPath": ".opencode/specs/frontend/features/notificacoes/",
+      "mockups": [
+        "/docs/mokups/dashboard/",
+        "/docs/mokups/notificacoes/"
+      ],
+      "requirementState": "DEFINIDA",
+      "designReady": true,
+      "mockupPath": "docs/mokups/notificacoes/",
+      "tasks": [
+        {
+          "resumo": "16 tasks atômicas (not-001..not-016) materializadas 21/09 pelo Planner — 5 blocos: B1 Fundação (types DTO + api/notifications + reuso store) · B2 Lista central /notificacoes (filtros ?page&type&status) · B3 Admin (preferencias/history) · B4 Menu/Badge (bell + item Notificações) · B5 Testes (unit)",
+          "specPath": ".opencode/specs/frontend/features/notificacoes/"
+        }
+      ],
+      "validation": {
+        "validator": "APROVADA COM RESSALVAS (21/09) — 16 tasks; 1 ALTA (A1 contador mark-all restaurava valor obsoleto do store — corrigido C1) · M1 testes guarda/RBAC ausentes (corrigido C6) · M2 paginação client-side do histórico (documentado D-4) · B1 ICON_STYLES ×3 (corrigido C2) · B2 Tone duplicado (aceito, padrão do projeto) · B3 re-export morto (corrigido C3) · B4 testid notifications-retry (corrigido C4) · B5 history unknown (corrigido C5) · B6 helper de teste (justificado). 300 testes verdes; check 0 errors/16 warnings/7 files; build ok",
+        "security": "APROVADA COM RESSALVAS (21/09) — 0 Alto. M1 API Admin-only sem guarda client-side → fila backend D-3 (@PreAuthorize; defense-in-depth complementar) · B1 err.message cru → fila backend D-5 (padrão app-wide) · B2 ICON_STYLES ×3 (corrigido C2) · B3 fallback TYPE_META (corrigido C7). RBAC hide confirmado (menu/children via canSee: isAdmin, ausência de DOM); sem {@html}/console.log/any; token só em header; query só com params não nulos",
+        "correcoes": "commit e2f2471 (bloco 6) — 300 testes verdes; check 0/16/7; build ok"
+      },
+      "blockedReason": null,
+      "nota": "CONCLUÍDA 21/09 (commits d62efee · 18714ee · ebfdcd8 · 65c158b · e2f2471). 16 tasks em 5 blocos + correções. Rotas /(app)/notificacoes (+ preferencias/historico Admin). Reuso: stores/notifications.ts (polling 60s), api/dashboard.fetchUnreadCount, relativeTime, UI kit; submenu no menu.ts (children Admin via canSee: isAdmin). Guarda 303 client-side; URL-state ?page&type&status. Fila backend/PO: D-1 shape UnreadCount/paginado, D-2 isolamento JWT em GET /notifications, D-3 🔴 @PreAuthorize Admin em preferences/history (+ guarda client-side opcional), D-4 params do history + lista completa p/ paginação client-side, D-5 mensagens não-técnicas, D-6 link? scheme, D-7 shape HistoryPayload. 6 endpoints 🟡."
+    },
+    {
+      "name": "configuracoes",
+      "status": "CONCLUIDA",
+      "dependsOn": [
+        "auth"
+      ],
+      "specPath": ".opencode/specs/frontend/features/configuracoes/",
+      "mockups": [
+        "/docs/mokups/configuracoes/"
+      ],
+      "requirementState": "DEFINIDA",
+      "designReady": true,
+      "mockupPath": "docs/mokups/configuracoes/",
+      "tasks": [
+        {
+          "resumo": "21 tasks atômicas (cfg-001..cfg-021) materializadas em tasks.md — CONCLUÍDAS 21/09 em 4 blocos: 1 (cfg-001..010 types+API+RBAC+componentes) · 2 (cfg-011..019 guarda+4 telas) · 3 (cfg-020 testes; cfg-021 e2e SKIP sem Playwright) · 4 (correções Validator/Security)",
+          "specPath": ".opencode/specs/frontend/features/configuracoes/"
+        }
+      ],
+      "validation": {
+        "validator": "APROVADA COM RESSALVAS (21/09) — 14/14 itens do DoD (item 5 'estados' parcial por natureza: Perfil/Permissões não têm empty natural, conforme mockup). 4 rotas + guarda Admin (redirect 303 /perfil), sidebar hide (menu.ts canSee: isAdmin), matriz via GET /permissoes com dirty/reset, URL-state de usuários, perfil com alterar senha, sistema com cadência 5S+tokens. 162 testes verdes; check 12/15/7 (zero em configuracoes). Ressalvas R1(MÉDIA, empty literal) · R2 KPIs/reenviar convite · R3 sistema restaurar padrão/chave única · R4 avatar/sessões · R5 Escape (corrigido) · R6 debounce 300 (corrigido) · R7 isAdmin via layout (corrigido)",
+        "security": "APROVADA COM RESSALVAS (21/09) — 0 Alto. M1 guarda Admin client-side burlável via localStorage + backend inexistente (enforcement @PreAuthorize Admin em todos os endpoints é obrigatório pré-release; matriz .opencode/specs/system/rbac-matrix.md) · M2 enforcement server-side inexistente p/ todas as operações (contrato 🟡) · B1 DEFAULT_MATRIZ divergente (corrigido p/ rbac-matrix.md) · B2 logo-url sem referrerpolicy (corrigido no-referrer+lazy) · B3 mensagens de erro brutas (backend/PO) · I1 token nunca exibido/persistido (bom; contrato deve definir chave única) · I2 hasPermissao deny-by-default sem escalada · I3 getPerfil engolia erro (corrigido: fallback só NetworkError/5xx)",
+        "correcoes": "commit 78b6516 (bloco 4) — 162 testes verdes; svelte-check baseline 12/15/7"
+      },
+      "blockedReason": null,
+      "nota": "CONCLUÍDA 21/09 (commits d06833d · d9d0875 · ee895ae · 78b6516). 21 tasks (cfg-001..021). RBAC hide-não-disable: /configuracoes/perfil p/ todos autenticados; /usuarios · /permissoes · /sistema Admin-only (guarda +layout.ts redirect 303 + sidebar canSee:isAdmin). Matriz RBAC vem de GET /api/permissoes (fonte única de utils/permissions.ts); NUNCA calculada no client. Endpoints 🟡 (13 chamadas TODO contrato): GET/PUT /configuracoes/perfil, PUT /auth/senha, GET/POST/PUT/PATCH /usuarios*, GET/PUT /permissoes*, GET/PUT /configuracoes/sistema, GET/POST/DELETE /configuracoes/tokens. ConflictMap C1/C2 (menu.ts/permissions.ts) agora liberados — próxima feature que os toque deve ser sequencial. Dívidas backend/PO: implementar endpoints com @PreAuthorize Admin + derivar perfil do JWT (M1/M2); validar PUT /permissoes contra baseline oficial; mensagens de erro genéricas; contrato do token (chave exibida 1x); KPIs de usuários no Paginado."
+    }
+  ],
+  "agentes": [
+    {
+      "nome": "orchestrator",
+      "mode": "primary",
+      "arquivo": ".opencode/agents/frontend/orchestrator.md"
+    },
+    {
+      "nome": "planner",
+      "mode": "primary",
+      "arquivo": ".opencode/agents/frontend/planner.md"
+    },
+    {
+      "nome": "builder",
+      "mode": "subagent",
+      "arquivo": ".opencode/agents/frontend/builder.md"
+    },
+    {
+      "nome": "validator",
+      "mode": "subagent",
+      "arquivo": ".opencode/agents/frontend/validator.md"
+    },
+    {
+      "nome": "security",
+      "mode": "subagent",
+      "arquivo": ".opencode/agents/frontend/security.md"
+    },
+    {
+      "nome": "designer",
+      "mode": "primary",
+      "arquivo": ".opencode/agents/frontend/designer.md",
+      "papel": "Gera mockup/modelo (design.system + docs/mokups/<modulo>/) antes de permitir implementação"
+    },
+    {
+      "nome": "tracker",
+      "mode": "all",
+      "arquivo": ".opencode/agents/frontend/tracker.md",
+      "papel": "Acompanha o avanço do desenvolvimento (checklist vivo em .opencode/state/implementation-checklist.md) e atua como consultor do pipeline com os prompts de kickoff (docs/prompts/*) no escopo. Read-only em docs/ e frontend/; edita somente .opencode/state/**"
+    }
+  ],
+  "regras_globais": [
+    "Frontend NUNCA fala direto com microsserviço — sempre via API Gateway",
+    "SPA withouth SSR/SSG? não: SPA (ssr=false); front é SPA estático serviço por Nginx",
+    "RBAC: HIDE não disable; RBAC-inert admin-only routes com route guard"
+  ],
+  "proximos_passos": [
+    "MERGE+RELEASE 24/09: dev/frontend + dev/backend integrados na development (3df1c38 · 91e44d7) e development na main (634d559); remote main tinha PR antigo c00d4e2 ('connect module create' — adicionou package.json/package-lock.json na RAIZ + API/config/env.js) integrado via pull --no-rebase (ebb86b9). Pushes OK: main (c00d4e2..ebb86b9), development (3d98694..91e44d7), dev/frontend (nova), dev/backend (up-to-date). Todas as branches ahead=0/behind=0. DECISÃO PO PENDENTE: remover package.json/package-lock.json da raiz (esqueleto legado API/) num commit futuro ou manter — registrado no checklist (tracker). .opencode/ + package-lock.json (raiz) fora do GitHub por decisão do humano.",
+    "CONTRACT.GAP ATUALIZADO 23/09 (§6.0–§6.5 + checklist §7 + status §1 estoque-service) — pedido explícito do humano (prevalece sobre congelamento docs/**). ATENÇÃO: docs/ é gitignored (não versionado) → atualização é LOCAL; compartilhar §6 com o backend fora do git (cópia do arquivo). Inclui seed admin admin@fablab.org/admin123 (dev-only). Nenhum código backend tocado.",
+    "GITFLOW 20/09: frontend migrado p/ dev/frontend (19385cc login · b5fde2c app shell+dashboard · e56ea03 estoque+UI kit) — feature/frontend-login DELETADA; docs/GITFLOW.md atualizado (padrão dev/frontend/<feature>, migração CONCLUÍDA, pendências anotadas)",
+    "CHECKLIST_IMPLEMENTACAO gerado 20/09 (.opencode/state/implementation-checklist.md): 9 features auditadas vs código real — auth 🟡(Builder 7 tasks) · dashboard 🟡(sem plan/tasks) · estoque 🟡(telas do mockup pendentes) · rh 🔴 · vendas 🔴(spec desatualizada) · financeiro 🔴 · producao 🔴(42 tasks) · notificacoes 🟡(faltam telas) · configuracoes 🔴(21 tasks). Validator/Security nunca executados em nenhuma feature",
+    "TRACKER criado 20/09 (.opencode/agents/frontend/tracker.md, mode all): acompanha avanço + consultor com prompts de kickoff (docs/prompts/*) no escopo; mantém implementation-checklist.md",
+    "DESPACHO PLANNER AUTH EXECUTADO 20/09: gap analysis vs código real (feature/frontend-login) concluído — plan.md (estado real + 4 gaps G-1..G-4 + checklists Validator/Security) e tasks.md (7 tasks auth-001..auth-007) em .opencode/specs/frontend/features/auth/; feature auth → PLANEJADA",
+    "DESPACHO PLANNER EXECUTADO 20/09: materializados Produção v2 (requirements/plan/tasks 42 tasks · 12 telas) + Configurações (requirements/plan/tasks 21 tasks · 4 telas) em .opencode/specs/frontend/features/ … — ver planner-dispatch.md §5",
+    "REVISAO HUMANA 1 a 1 dos 12 mockups (inclui PRODUCAO v2 e CONFIGURACOES) — checklist .opencode/state/design-checklist.md",
+    "contract.gap: materializar endpoints ASSUMIDOS (Producao: /projetos/{id}/documentos, /projetos/{id}/materiais, /projetos/{id}/materiais/saida; Configuracoes: /usuarios, /permissoes, /configuracoes/sistema; nota 5S validada no backend) → docs/contract.gap.md §5.5",
+    "Builder após aprovação humana: executar prd-001..prd-003 (types+API) como primeiro bloco (paraleável entre Prod e Config nas camadas types/api, EXCETO menu.ts/permissions.ts)",
+    "AUTH (frontend) CONCLUÍDA 20/09: Builder implementou auth-001..auth-007; auth-007 (testes de componente) exigiu infra: vite.config.js com alias svelte→index-client + server.deps.inline + defineConfig de vitest/config (sem @types/node; svelteTesting removido p/ manter tipo-check no baseline). 63/63 testes verdes, check 12/15/7 (baseline estoque, zero novos). Validator APROVADA (10/10) e Security APROVADA COM RESSALVAS (1 Médio: env VITE_API_BASE_URL em prod; 4 baixos hardening). Falta: COMMITAR auth em dev/frontend (client.ts, +page.svelte, login-form.svelte, forgot-password/, 4 testes, vite.config.js) + atualizar implementation-checklist.md",
+    "REVISAO HUMANA CONCLUÍDA 20/09: humano aprovou TODOS os 9 mockups (auth→configuracoes) em modo interativo (design-checklist.md + estado atualizados) — Builder LIBERADO para todas as features",
+    "DASHBOARD plan/tasks MATERIALIZADOS 20/09 (despacho Planner, .opencode/state/planner-dispatch-dashboard.md): 9 gaps → 9 tasks dash-001..009 (G-1 dashboard.ts handler 401 duplicado; G-2 load bloqueante; G-3 refetch visibilitychange; G-4 Greeting empty; G-5..G-9 testes). Feature → PLANEJADA",
+    "DASHBOARD CONCLUÍDA 20/09: Builder (stand-in general, visto que subagentes custom ainda retornam 'Model not found: claude-sonnet-4-5/' na sessão atual — o registro de modelos em memória não recarrega mesmo após restart; usar nova conversa para agentes custom) → dash-001..009 implementados; 95/95 testes; svelte-check baseline. Validator APROVADA COM RESSALVAS (11/11, visuais menores) e Security APROVADA COM RESSALVAS (2 Médios contrato backend). Falta: COMMITAR dashboard em dev/frontend (dashboard.ts, +page.ts, +page.svelte, Greeting.svelte + 5 testes) + registrar nos contract.gap do backend",
+    "CONTRATO BACKEND (Security dashboard, sinalizar p/ fila backend/PO): (1) dashboard-service filtrar campos restricted no GET /api/dashboard/summary por papel (spec interna inconsistente); (2) producao-service implementar PATCH /api/tasks/{id} com validação de vínculo (só tarefa atribuída ao autenticado conclui). Materializar em docs/contract.gap.md (função do backend/PO, não do Orchestrator)",
+    "PRODUCAO CONCLUÍDA 20/09 — 7 commits em dev/frontend (c4406f4 · 84b643a · a011991 · 7bc70f5 · 6863ce3 · a6633ef · 45546ca): 42 tasks em 6 blocos + correções de ressalvas. 150 testes verdes; svelte-check baseline 12/15/7 (estoque/ui). Validator APROVADA COM RESSALVAS (9/9; correções aplicadas) · Security APROVADA COM RESSALVAS (0 Alto; M-1/B-2/B-3/B-4 corrigidos; I-5..I-8 info). Endpoints 🟡 pendentes de gateway (fila backend/PO: expor /api/producao/**, PATCH /tasks/{id} vínculo, documentos/materiais/saida, coluna kanban/checklist no contrato)",
+    "CONFIGURACOES CONCLUÍDA 21/09 — 4 commits em dev/frontend (d06833d · d9d0875 · ee895ae · 78b6516): 21 tasks em 3 blocos + correções. 162 testes; check 12/15/7; ConflictMap C1/C2 liberados.",
+    "ESTQ CONCLUÍDA 21/09 — 6 commits (f7b3be5 · 192004c · f16d0c7 · f300d83 · d512324 · f8ae34c): 36 tasks; API 100% PT /api/estoque/**; RBAC responsável + guarda canSeeLoans; 252 testes; check 0 errors (baseline era 12); build ok. Validator/AllowSecurity APROVADA COM RESSALVAS (0 Alto). Dívidas backend/PO: R-9, R-8, D-2, D-4, escape CSV export itens, mensagens genéricas.",
+    "PRINCÍPIO CÓDIGO MÍNIMO aplicado 21/09 em todas as specs de agentes (.opencode/agents/frontend/*.md) + briefings de despacho: reuso > create, plataforma > abstração, sem código especulativo; Validator/Security sinalizam código não pertinente p/ remoção.",
+    "Próxima feature (sem pausas): NOTIFICACOES — spec/plan/tasks pendentes (Planner); depois RH/Financeiro (spec ok, plan pendente) e VENDAS (spec desatualizada — limpar). NÃO tocar menu.ts/permissions.ts em duas features em paralelo",
+    "FILA BACKEND/PO (não bloqueia frontend): (1) todos os endpoints de configuracoes com @PreAuthorize Admin + perfil do JWT (M1/M2); (2) validar PUT /permissoes contra rbac-matrix.md; (3) mensagens de erro genéricas + code estruturado (B3); (4) contrato do token de integração (chave exibida 1x) + KPIs no Paginado de usuários; (5) producao: expor /api/producao/**, PATCH /tasks/{id} vínculo, documentos/materiais/saida, coluna kanban/checklist; (6) dashboard: filtrar campos restricted no summary",
+    "AGENTES: reiniciar opencode para carregar model opencode/big-pickle nos subagentes (builder/validator/security/designer/planner/tracker) — DESDE 20/09 reiniciado pelo humano; despachos podem usar os subagentes custom",
+    "Próxima feature após commit do auth: DASHBOARD (app shell/dashboard já parcialmente implementado em b5fde2c — falta plan/tasks e features dashboard: precisar Planner) ou revisão humana dos mockups (design-checklist.md) para destravar estoque/producao/configuracoes",
+    "Ressalvas Security a endereçar (não bloqueiam): garantir VITE_API_BASE_URL https em prod; guarda token? no fetchMe; centralizar sanitize/logout 401 em helper único (materializar como task em feature dona — estoque/dashboard)"
+  ]
+}
