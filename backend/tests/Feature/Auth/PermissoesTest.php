@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Enums\Auth\PermissaoNivel;
 use App\Enums\Auth\Role;
+use App\Models\Auth\PermissaoMatriz;
 use Tests\TestCase;
 
 class PermissoesTest extends TestCase
@@ -42,6 +44,36 @@ class PermissoesTest extends TestCase
 
         $this->putJson('/api/permissoes/rh/ADMIN', ['valor' => 'DESTRUIR'], $headers)
             ->assertStatus(422);
+    }
+
+    public function test_admin_nao_pode_ser_reduzido_na_matriz(): void
+    {
+        $admin = $this->criarAdmin();
+        $headers = $this->authHeader($admin);
+
+        $this->putJson('/api/permissoes/rh/ADMIN', ['valor' => 'VER'], $headers)
+            ->assertStatus(422);
+    }
+
+    public function test_celula_divergente_persistida_nao_reduz_admin_na_leitura(): void
+    {
+        $admin = $this->criarAdmin();
+        $headers = $this->authHeader($admin);
+
+        PermissaoMatriz::query()->where('modulo', 'rh')->where('role', Role::ADMIN->value)->delete();
+        PermissaoMatriz::create([
+            'modulo' => 'rh',
+            'role' => Role::ADMIN,
+            'nivel' => PermissaoNivel::NENHUM,
+        ]);
+
+        $depois = $this->getJson('/api/permissoes', $headers)->assertOk()->json();
+        $celula = array_values(array_filter(
+            $depois['matriz'],
+            fn (array $c) => $c['modulo'] === 'rh' && $c['nivel'] === 'ADMIN'
+        ))[0];
+
+        $this->assertSame('Editar', $celula['valor']);
     }
 
     public function test_permissoes_exige_admin(): void

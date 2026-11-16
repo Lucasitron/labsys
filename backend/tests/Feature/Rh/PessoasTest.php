@@ -366,4 +366,38 @@ class PessoasTest extends TestCase
 
         $this->assertDatabaseMissing('auth.login', ['email' => 'outro@fablab.org']);
     }
+
+    public function test_pessoa_com_vinculo_expoe_id_funcionario_nivel_e_departamento(): void
+    {
+        $admin = $this->criarAdminRh();
+        $headers = $this->authHeader($admin['login'], Role::ADMIN);
+
+        $res = $this->postJson('/api/rh/pessoas', [
+            'nomeCompleto' => 'Vinculo Teste',
+            'matricula' => 'MAT-VINCULO-TESTE',
+            'nivelAcesso' => Role::BOLSISTA->value,
+            'departamento' => 'ELETRONICA',
+        ], $headers)->assertCreated();
+
+        $idPessoa = (int) $res->json('id');
+        $idFuncionario = $res->json('idFuncionario');
+
+        $this->assertIsInt($idFuncionario);
+        $this->assertSame('BOLSISTA', $res->json('nivelAcesso'));
+        $this->assertSame('ELETRONICA', $res->json('departamento'));
+
+        $this->getJson('/api/rh/pessoas/'.$idPessoa, $headers)
+            ->assertOk()
+            ->assertJsonPath('idFuncionario', $idFuncionario)
+            ->assertJsonPath('nivelAcesso', 'BOLSISTA')
+            ->assertJsonPath('departamento', 'ELETRONICA');
+
+        $lista = $this->getJson('/api/rh/pessoas?search=MAT-VINCULO-TESTE', $headers)->assertOk();
+        $found = collect($lista->json('pessoas'))->firstWhere('id', $idPessoa);
+
+        $this->assertNotNull($found);
+        $this->assertSame($idFuncionario, $found['idFuncionario']);
+        $this->assertSame('BOLSISTA', $found['nivelAcesso']);
+        $this->assertSame('ELETRONICA', $found['departamento']);
+    }
 }
