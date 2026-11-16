@@ -23,6 +23,7 @@ class PessoaController extends Controller
     {
         $pessoa = $this->pessoas->cadastrar(
             $this->dados($request),
+            $this->principal($request),
             $this->vinculo($request),
             $this->acesso($request),
         );

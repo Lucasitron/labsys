@@ -400,4 +400,63 @@ class PessoasTest extends TestCase
         $this->assertSame('BOLSISTA', $found['nivelAcesso']);
         $this->assertSame('ELETRONICA', $found['departamento']);
     }
+
+    public function test_bolsista_cadastro_com_nivel_admin_retorna_403_e_nao_persiste(): void
+    {
+        $bolsista = $this->criarFuncionario(null, Role::BOLSISTA);
+        $headers = $this->authHeader($bolsista['login'], Role::BOLSISTA);
+
+        $this->postJson('/api/rh/pessoas', [
+            'nomeCompleto' => 'Escalada Admin',
+            'matricula' => 'MAT-BOLSISTA-NIVEL0',
+            'nivelAcesso' => 0,
+        ], $headers)->assertForbidden();
+
+        $this->assertDatabaseMissing('rh.pessoa', ['matricula' => 'MAT-BOLSISTA-NIVEL0']);
+    }
+
+    public function test_bolsista_cadastro_com_nivel_bolsista_retorna_403(): void
+    {
+        $bolsista = $this->criarFuncionario(null, Role::BOLSISTA);
+        $headers = $this->authHeader($bolsista['login'], Role::BOLSISTA);
+
+        $this->postJson('/api/rh/pessoas', [
+            'nomeCompleto' => 'Escalada Nivel',
+            'matricula' => 'MAT-BOLSISTA-NIVEL1',
+            'nivelAcesso' => 1,
+        ], $headers)->assertForbidden();
+    }
+
+    public function test_bolsista_cadastro_com_criar_acesso_retorna_403_e_sem_login(): void
+    {
+        $bolsista = $this->criarFuncionario(null, Role::BOLSISTA);
+        $headers = $this->authHeader($bolsista['login'], Role::BOLSISTA);
+
+        $this->postJson('/api/rh/pessoas', [
+            'nomeCompleto' => 'Escalada Acesso',
+            'matricula' => 'MAT-BOLSISTA-ACESSO',
+            'criarAcesso' => true,
+            'email' => 'bolsista-acesso@fablab.org',
+            'senha' => 'senha1234',
+        ], $headers)->assertForbidden();
+
+        $this->assertDatabaseMissing('auth.login', ['email' => 'bolsista-acesso@fablab.org']);
+    }
+
+    public function test_bolsista_cadastro_so_departamento_cria_funcionario_bolsista(): void
+    {
+        $bolsista = $this->criarFuncionario(null, Role::BOLSISTA);
+        $headers = $this->authHeader($bolsista['login'], Role::BOLSISTA);
+
+        $res = $this->postJson('/api/rh/pessoas', [
+            'nomeCompleto' => 'Vinculo Default',
+            'matricula' => 'MAT-BOLSISTA-DEPT',
+            'departamento' => 'ELETRONICA',
+        ], $headers)->assertCreated();
+
+        $this->assertDatabaseHas('rh.funcionario', [
+            'id_pessoa' => (int) $res->json('id'),
+            'nivel_acesso' => Role::BOLSISTA->value,
+        ]);
+    }
 }
