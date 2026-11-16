@@ -9,14 +9,14 @@
 - **Data:** 2026-11-16
 - **Referências:** `wip/backend-pre-remap` (`8d50487`), `remap.md`, `.opencode/specs/features/rh-service/*`,
   `.opencode/specs/frontend/features/rh/*`, `.opencode/state/orchestration.json`
-- **HEAD final integrado:** `80dc8bb` (`development`, `dev/backend`, `dev/frontend`,
-  `refactor/remap-backend`, `refactor/remap-frontend`)
+- **HEAD final integrado e enviado:** `a8da62e` (`development`, `dev/backend`, `dev/frontend`,
+  `refactor/remap-backend`, `refactor/remap-frontend`) — push em 2026-11-16
 
 ## Objetivo
 
 Reaplicar o WIP de RH/RBAC (`8d50487`) — criado antes do movimento layer-first — sobre a árvore
 atual, avaliando cada mudança contra o contrato público e corrigindo a cobertura/telas afetadas.
-Nada foi enviado ao remoto; deploy não executado.
+Integrado e enviado ao `origin` em `a8da62e` (2026-11-16); deploy não executado.
 
 ## Decisões do orquestrador
 
@@ -127,11 +127,14 @@ Nada foi enviado ao remoto; deploy não executado.
 - [ ] Desabilitar/ocultar a edição da linha **Admin** em `/configuracoes/permissoes` (hoje 422 na UI)
 - [ ] Avaliar paginação/limite de `NivelService::matriz` se o número de funcionários crescer
 - [ ] Corrigir a11y pré-existente de `Chip.svelte:18` (tabIndex) — fora do escopo
-- [ ] `git push` de `development`/`dev/*` — decisão do PO
+- [x] `git push` de `development`, `dev/backend`, `dev/frontend`, `refactor/remap-backend` e
+      `refactor/remap-frontend` @ `a8da62e` (2026-11-16)
+- [x] Artefatos do pipeline versionados em `a8da62e` (`.opencode/`, `.agents/`, `.claude/skills`,
+      `skills-lock.json`, `remap.md`); `node_modules`/`backups`/lock órfão/Firebase workflows fora
 - [ ] Deploy — exclusivo do `deployer`, quando o PO autorizar
 - [ ] Backlog de contrato front↔back (paths `/stock` vs `/estoque`, kanban `PATCH`/`PUT`, 5S etc.)
 
-## Evidências finais (HEAD `80dc8bb`)
+## Evidências finais (HEAD `a8da62e`)
 
 ```sh
 # backend
@@ -153,9 +156,10 @@ npm run build  # adapter-node OK (builder)
 - `grep -rn "App\\\\Modules" app routes bootstrap config database tests` → 0
 - `CertificadosTest::test_decidir_duas_vezes_e_corrida_por_horas` → verde sem edição
 - `PessoasTest` → 403 para nível/acesso por não-admin; 201 para só departamento
+- `git ls-remote --heads origin` → as 5 branches em `a8da62e`; `origin/development...development` = 0/0
 
 ## Resumo cache
 
 ```
-WIP_RH_RBAC_2026-11-16: reaplicado parcialmente em 80dc8bb. Aceitos: invariante Admin total (RBAC 422/leitura), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, vincular espelha role e protege ADMIN, /rh/niveis com membros (front mapeia), 403 explícito p/ Admin sem vínculo ao validar horas. Rejeitado: permitir admin sem vínculo decidir/validar com aprovador/validador nulo (mantém paridade Java/403 e vínculo do seed). Corrigido extra: escalonamento de privilégio em POST /rh/pessoas (nível/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444+4 (2537), front check 0/17, 569 testes, Pint OK, 223 rotas idênticas, build adapter-node OK. Sem push; deploy pendente. Pendências: UI da linha Admin em /configuracoes/permissoes (422), paginação de membros, a11y Chip, backlog de contrato.
+WIP_RH_RBAC_2026-11-16: reaplicado parcialmente em 80dc8bb, integrado e enviado @a8da62e. Aceitos: invariante Admin total (RBAC 422/leitura), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, vincular espelha role e protege ADMIN, /rh/niveis com membros (front mapeia), 403 explícito p/ Admin sem vínculo ao validar horas. Rejeitado: permitir admin sem vínculo decidir/validar com aprovador/validador nulo (mantém paridade Java/403 e vínculo do seed). Corrigido extra: escalonamento de privilégio em POST /rh/pessoas (nível/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444+4 (2537), front check 0/17, 569 testes, Pint OK, 223 rotas idênticas, build adapter-node OK. Push OK @a8da62e (5 branches, incluindo refactor/remap-backend e refactor/remap-frontend novas no origin); deploy pendente. Pendências: UI da linha Admin em /configuracoes/permissoes (422), paginação de membros, a11y Chip, backlog de contrato.
 ```

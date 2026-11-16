@@ -108,8 +108,12 @@
   `(method, uri, name, middleware)` vazio.
 - Frontend: `npm run check` **0 erros / 17 warnings**; **569 testes (39 arquivos)**; build
   `adapter-node` OK (5,9M).
-- Git integrado em `development`, `dev/backend`, `dev/frontend`, `refactor/remap-backend` e
-  `refactor/remap-frontend` @ **`80dc8bb`** (sem push).
+- Git integrado e **enviado ao origin** em `development`, `dev/backend`, `dev/frontend`,
+  `refactor/remap-backend` e `refactor/remap-frontend` @ **`a8da62e`** (push 2026-11-16).
+- Artefatos do pipeline versionados em `a8da62e`: `.opencode/` (specs, state, reports, agentes),
+  `.agents/` + `.claude/skills` + `skills-lock.json` e `remap.md`. Fora do repo (por `.gitignore`):
+  `.opencode/node_modules`, `.opencode/backups`, lock órfão da raiz e workflows Firebase de outro
+  projeto.
 - WIP original `8d50487` avaliado: hunks que permitiam Admin sem vínculo decidir/validar foram
   rejeitados (auditoria nula/paridade Java); o restante foi reaplicado.
 
@@ -117,7 +121,7 @@
 - Ocultar/desabilitar a linha **Admin** em `/configuracoes/permissoes` (hoje recebe 422 na UI).
 - Avaliar paginação/limite de `NivelService::matriz` se a base de funcionários crescer.
 - Migrar 14 `URLSearchParams` manuais; tooling `knip`/PHPStan nível 5; backlog de contrato.
-- `git push` e deploy: aguardam decisão do PO / `deployer`.
+- Deploy: exclusivo do `deployer`, aguardando autorização do PO.
 
 ### Relatório
 `.opencode/reports/0007-wip-rh-rbac.md`

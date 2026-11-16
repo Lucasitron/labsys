@@ -217,9 +217,9 @@
     "regras": "1 arquivo por etapa; resumo compacto tambem em resumo_cache; nunca colar segredos",
     "ultimo": ".opencode/reports/0007-wip-rh-rbac.md"
   },
-  "resumo_cache": "2026-11-16: WIP RH/RBAC 8d50487 reaplicado parcialmente e integrado em development/dev/backend/dev/frontend/refactor/remap-* @80dc8bb (local, sem push). Aceitos: invariante Admin total no RBAC (PUT ADMIN != Editar -> 422; leitura forca Editar), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, FuncionarioService::vincular espelha role e protege ADMIN, GET /rh/niveis com membros (front mapeia), 403 explicito (nao 500) para Admin sem vinculo validar horas. Rejeitados: hunks que permitiam Admin sem vinculo decidir certificados/validar horas com aprovador/validador nulo (mantem paridade Java/403 e vinculo do admin semeado). Corrigido extra: escalonamento de privilegio em POST /rh/pessoas (nivel/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444 passed + 4 skipped (2537 assertions), Pint OK (624), 223 rotas identicas; front check 0 erros/17 warnings, 569 testes (39 arquivos), build adapter-node OK. Pendencias: UI da linha Admin em /configuracoes/permissoes (422), paginacao de membros, a11y Chip, backlog de contrato front<->back, push/deploy aguardando PO/deployer. Contexto: remap fases 0-8 @894621d; legado Java removido; RH vinculo/acesso entregue (imagem 2026.10.17-3).",
+  "resumo_cache": "2026-11-16: WIP RH/RBAC 8d50487 reaplicado parcialmente e integrado em development/dev/backend/dev/frontend/refactor/remap-* @80dc8bb (local, sem push). Aceitos: invariante Admin total no RBAC (PUT ADMIN != Editar -> 422; leitura forca Editar), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, FuncionarioService::vincular espelha role e protege ADMIN, GET /rh/niveis com membros (front mapeia), 403 explicito (nao 500) para Admin sem vinculo validar horas. Rejeitados: hunks que permitiam Admin sem vinculo decidir certificados/validar horas com aprovador/validador nulo (mantem paridade Java/403 e vinculo do admin semeado). Corrigido extra: escalonamento de privilegio em POST /rh/pessoas (nivel/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444 passed + 4 skipped (2537 assertions), Pint OK (624), 223 rotas identicas; front check 0 erros/17 warnings, 569 testes (39 arquivos), build adapter-node OK. Pendencias: UI da linha Admin em /configuracoes/permissoes (422), paginacao de membros, a11y Chip, backlog de contrato front<->back, deploy aguardando deployer. Contexto: remap fases 0-8 @894621d; legado Java removido; RH vinculo/acesso entregue (imagem 2026.10.17-3).",
   "linha_do_tempo": {
-    "status_atual": ".opencode/specs/system/STATUS.md (Ponto 3 = 2026-11-16)",
+    "status_atual": ".opencode/specs/system/STATUS.md (Ponto 3 = 2026-11-16; push a8da62e)",
     "historico_congelado": ".opencode/backups/2026-10-19-pre-rewrite.tar.gz (checksum em .opencode/backups/MANIFEST.md)",
     "docs_ativos": "docs/{README,contract.gap,GITFLOW}.md + docs/mokups/** ; historico em docs/_archive/2026-10-19/"
   },
@@ -230,7 +230,7 @@
       "status": "PLANEJADA (nao implementar agora)"
     }
   },
-  "status_global": "MONOLITO_LARAVEL_LAYER_FIRST | WIP_RH_RBAC_REAPLICADO | BACK_444+4 | FRONT_569 | FRONT_CHECK_0_ERR | BUILD_ADAPTER_NODE_OK | ROTAS_223_INALTERADAS | DEVELOPMENT_80dc8bb | DEV_BACKEND_FRONTEND_80dc8bb | SEM_PUSH",
+  "status_global": "MONOLITO_LARAVEL_LAYER_FIRST | WIP_RH_RBAC_REAPLICADO | BACK_444+4 | FRONT_569 | FRONT_CHECK_0_ERR | BUILD_ADAPTER_NODE_OK | ROTAS_223_INALTERADAS | DEVELOPMENT_a8da62e | DEV_BACKEND_FRONTEND_a8da62e | PUSH_OK_a8da62e",
   "migracao_monolito": {
     "checklist": ".opencode/state/monolito-checklist.md",
     "plan": ".opencode/specs/features/_migracao-monolito/plan.md",
@@ -270,8 +270,16 @@
       "front": "getNiveis mapeia membros; /pessoas/novo Admin-only para nivel/acesso",
       "backend": "444 passed + 4 skipped (2537 assertions); Pint OK; 223 rotas identicas",
       "frontend": "569 testes (39 arquivos); check 0 erros/17 warnings; build adapter-node OK",
-      "branches": "development/dev-backend/dev-frontend/refactor-remap @80dc8bb; sem push",
-      "pendente": "UI linha Admin em /configuracoes/permissoes (422); paginacao de membros; a11y Chip"
+      "branches": "development/dev-backend/dev-frontend/refactor-remap-backend/refactor-remap-frontend @a8da62e (push OK 2026-11-16)",
+      "pendente": "UI linha Admin em /configuracoes/permissoes (422); paginacao de membros; a11y Chip",
+      "push": {
+        "status": "CONCLUIDO",
+        "data": "2026-11-16",
+        "head": "a8da62e",
+        "remoto": "origin git@github.com:Lucasitron/labsys.git",
+        "branches": "development, dev/backend, dev/frontend, refactor/remap-frontend (novo), refactor/remap-backend (novo)",
+        "deploy": "pendente (exclusivo do deployer, aguardando PO)"
+      }
     }
   },
   "audit_sweep_2026_10_12": {
@@ -602,7 +610,7 @@
     "Contratos: divergencias preexistentes front<->back (/stock vs /estoque, kanban PATCH vs PUT, /producao/mesas vs /projetos-mesa, /producao/5s/setores vs /producao/setores, /rh/people vs /rh/pessoas, endpoints 5S/resumo, unread/count) — backlog de contrato.",
     "Front: migrar 14 blocos manuais de URLSearchParams para buildQuery; avaliar knip/ts-prune.",
     "Back: avaliar PHPStan/Larastan nivel 5 (tooling da Fase 8).",
-    "Push/deploy do remap + WIP RH/RBAC: aguardando PO; deploy exclusivo do deployer.",
+    "PUSH OK 2026-11-16: development/dev-backend/dev-frontend/refactor-remap-backend/refactor-remap-frontend @a8da62e no origin. Deploy pendente (deployer).",
     "DEPLOY FRESH OK em fablabserver (2026-10-17): back :8080 + front :3000, imagem 2026.10.14-1, banco do zero (83 migrations, seed admin). Acesso: http://100.91.193.84:3000 (front) / :8080 (API)",
     "Frontend: DEPLOYADO (fablab-front :3000, API :8080). No ar: 403 'sem vinculo' neutro (2dff39e); pessoas editavel Admin/Bolsista/Voluntario (af93f65); PUT /pessoas persiste vinculo/departamento/acesso, nivel Admin-only, limpar departamento com '' e provisionar acesso na edicao (back 16ccba8+f2fbe84 / front 12d8f77+1e16bfc). Backend imagem 2026.10.17-3. Admin semeado com vinculo (id=3). Pendente: desabilitar systemd fablab-front.service antigo (4173, requer sudo) e homologar checklist do front-handoff-2026-10-12.md",
     "Investigar instabilidade Tailscale (relay sao) com fablabserver durante o deploy",
