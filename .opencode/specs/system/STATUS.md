@@ -133,9 +133,13 @@
 - Ocultar/desabilitar a linha **Admin** em `/configuracoes/permissoes` (hoje recebe 422 na UI).
 - Avaliar paginação/limite de `NivelService::matriz` se a base de funcionários crescer.
 - Migrar 14 `URLSearchParams` manuais; tooling `knip`/PHPStan nível 5; backlog de contrato.
-- Produção: `APP_ENV=local` e `AUTH_SEED_ENABLED=true` seguem ativos (só reportados; avaliar
-  `production`/`false`). `rh.funcionario` id=2 (vínculo do usuário de homologação desativado)
-  permanece — sem acesso efetivo. Disco em 87% (13G livres).
+- **Config final de produção:** `APP_ENV=production` e `AUTH_SEED_ENABLED=false` aplicados no
+  `infra/.env` do host (boot: `Nothing to migrate`; `AuthSeeder` faz bail pela flag, 0 registros;
+  `auth.login` 3→3, `rh.pessoa` 4→4). `APP_ENV` passou a ser dirigido por variável no overlay
+  (`chore(infra)` `2a4fc03`) para não regredir a `local` no próximo deploy.
+- `LOG_LEVEL=debug` em produção (herdado do overlay dev) deixa o log verboso — candidato a `info`.
+- `rh.funcionario` id=2 (vínculo do usuário de homologação desativado) permanece — sem acesso
+  efetivo. Disco em 87% (13G livres).
 
 ### Relatório
 `.opencode/reports/0007-wip-rh-rbac.md`

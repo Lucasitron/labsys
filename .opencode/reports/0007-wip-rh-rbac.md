@@ -155,7 +155,8 @@ Integrado, enviado ao `origin` em `a8da62e` e **deployado em produção** (tag `
 - [x] Higiene de produção: `APP_DEBUG=false`, `5432` fechado, prune de imagens, `build.prev` compactado
 - [x] Usuário de homologação desativado (pessoa INATIVO + login DESATIVADO)
 - [ ] Validação de UI pelo PO
-- [ ] Produção: avaliar `APP_ENV=production` e `AUTH_SEED_ENABLED=false`
+- [x] Produção: `APP_ENV=production` + `AUTH_SEED_ENABLED=false` (+ overlay versionado em `2a4fc03`)
+- [ ] Avaliar `LOG_LEVEL=info` em produção (hoje `debug`, herdado do overlay dev)
 - [ ] Backlog de contrato front↔back (paths `/stock` vs `/estoque`, kanban `PATCH`/`PUT`, 5S etc.)
 
 ## Deploy 2026-11-16 (tag `2026.11.16-1`)
@@ -193,6 +194,18 @@ Smokes reexecutados após a higiene: `/up` 200, front 200, login 200, `/rh/nivei
 `PUT /permissoes/rh/ADMIN=Ver` → 422, bolsista `nivelAcesso=0` → 403. Portas publicadas:
 `0.0.0.0:8080` e `0.0.0.0:3000` apenas.
 
+### Config final de produção (2026-11-16, tarde)
+
+| Item | Ação | Verificação |
+|---|---|---|
+| `APP_ENV` | `local` → `production` no `infra/.env` do host; overlay passou a usar `${APP_ENV:-local}` (o valor estava hardcoded) | `artisan about`: Environment **production**, Debug OFF, config/routes cached |
+| `AUTH_SEED_ENABLED` | `true` → `false` | `config('auth.seed.enabled')` = false; boot cita o `AuthSeeder` mas ele faz bail em 0 ms; `auth.login` 3→3 e `rh.pessoa` 4→4 |
+| Drift eliminado | `chore(infra)` `2a4fc03`: `infra/docker-compose.dev.yml` → `APP_ENV: "${APP_ENV:-local}"` | `compose config` resolve `production` com a variável e `local` sem ela |
+
+Recriados apenas app/worker/scheduler (postgres e front com o mesmo ID/`StartedAt`). Smokes após a
+mudança: `/up` 200, login 200, `/rh/niveis` 200 com `membros`, `PUT /permissoes/rh/ADMIN=Ver` 422,
+`GET :3000/` 200, rota inexistente 404 sem stack trace.
+
 ## Evidências finais (HEAD `a8da62e`)
 
 ```sh
@@ -220,5 +233,5 @@ npm run build  # adapter-node OK (builder)
 ## Resumo cache
 
 ```
-WIP_RH_RBAC_2026-11-16: reaplicado parcialmente em 80dc8bb, integrado e enviado @a8da62e. Aceitos: invariante Admin total (RBAC 422/leitura), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, vincular espelha role e protege ADMIN, /rh/niveis com membros (front mapeia), 403 explícito p/ Admin sem vínculo ao validar horas. Rejeitado: permitir admin sem vínculo decidir/validar com aprovador/validador nulo (mantém paridade Java/403 e vínculo do seed). Corrigido extra: escalonamento de privilégio em POST /rh/pessoas (nível/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444+4 (2537), front check 0/17, 569 testes, Pint OK, 223 rotas idênticas, build adapter-node OK. Push OK @a8da62e (5 branches); higiene OK (APP_DEBUG=false, 5432 fechado, disco 87%); deploy OK 2026-11-16 tag 2026.11.16-1 (imagem 5db66a9f5b4a) em fablabserver: app healthy :8080, worker/scheduler Up, front :3000, Nothing to migrate, smokes 200/422/403/204. Pendências: UI da linha Admin em /configuracoes/permissoes (422), paginação de membros, a11y Chip, backlog de contrato.
+WIP_RH_RBAC_2026-11-16: reaplicado parcialmente em 80dc8bb, integrado e enviado @a8da62e. Aceitos: invariante Admin total (RBAC 422/leitura), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, vincular espelha role e protege ADMIN, /rh/niveis com membros (front mapeia), 403 explícito p/ Admin sem vínculo ao validar horas. Rejeitado: permitir admin sem vínculo decidir/validar com aprovador/validador nulo (mantém paridade Java/403 e vínculo do seed). Corrigido extra: escalonamento de privilégio em POST /rh/pessoas (nível/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444+4 (2537), front check 0/17, 569 testes, Pint OK, 223 rotas idênticas, build adapter-node OK. Push OK @a8da62e (5 branches); higiene OK (APP_DEBUG=false, 5432 fechado, disco 87%); config prod OK (APP_ENV=production, seed off); deploy OK 2026-11-16 tag 2026.11.16-1 (imagem 5db66a9f5b4a) em fablabserver: app healthy :8080, worker/scheduler Up, front :3000, Nothing to migrate, smokes 200/422/403/204. Pendências: UI da linha Admin em /configuracoes/permissoes (422), paginação de membros, a11y Chip, backlog de contrato.
 ```
