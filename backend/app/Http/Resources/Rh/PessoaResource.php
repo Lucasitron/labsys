@@ -21,6 +21,9 @@ class PessoaResource extends JsonResource
             'turno' => $this->turno,
             'status' => $this->status->name,
             'cpf' => CpfRule::mascarar($this->cpf),
+            'idFuncionario' => $this->funcionario !== null ? (int) $this->funcionario->getKey() : null,
+            'nivelAcesso' => $this->funcionario?->nivel_acesso?->name,
+            'departamento' => $this->funcionario?->departamento,
         ];
     }
 }

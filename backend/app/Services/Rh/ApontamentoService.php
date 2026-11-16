@@ -68,17 +68,21 @@ class ApontamentoService
             throw new \InvalidArgumentException('Status deve ser VALIDADO ou REJEITADO');
         }
 
-        RhPolicy::exigeVinculoOuAdmin($principal);
+        $eu = RhPolicy::exigeVinculoOuAdmin($principal);
 
         if (! RhPolicy::podeValidarHoras($principal)) {
             throw new ForbiddenException('Apenas Admin ou tutor podem validar horas');
+        }
+
+        if ($eu === 0) {
+            throw new ForbiddenException('Operação restrita a usuários vinculados a um funcionário');
         }
 
         if ($status === StatusApontamento::REJEITADO && trim((string) $motivo) === '') {
             throw new \InvalidArgumentException('Motivo da rejeição é obrigatório');
         }
 
-        $admin = $this->funcionarios->obter($principal->idFuncionario);
+        $admin = $this->funcionarios->obter($eu);
 
         if ($status === StatusApontamento::VALIDADO) {
             $this->exigeCoerencia($apontamento);

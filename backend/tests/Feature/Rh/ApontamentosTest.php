@@ -164,4 +164,25 @@ class ApontamentosTest extends TestCase
             $this->authHeader($membro['login'], Role::BOLSISTA)
         )->assertForbidden();
     }
+
+    public function test_admin_sem_vinculo_recebe_403_ao_validar_apontamento(): void
+    {
+        $adminSemVinculo = $this->criarAdmin();
+        $membro = $this->criarFuncionario(null, Role::BOLSISTA);
+        $id = (int) $membro['funcionario']->getKey();
+
+        $apontamento = ApontamentoHoras::create([
+            'id_funcionario' => $id, 'tipo' => 'PROJETO',
+            'id_referencia' => 9, 'data' => '2026-08-09', 'horas_trabalhadas' => '2.00',
+            'status' => StatusApontamento::PENDENTE, 'consolidado' => false,
+        ]);
+
+        $this->putJson(
+            "/api/rh/apontamentos-horas/{$apontamento->getKey()}/validar",
+            ['status' => 'VALIDADO'],
+            $this->authHeader($adminSemVinculo, Role::ADMIN)
+        )
+            ->assertForbidden()
+            ->assertJsonPath('message', 'Operação restrita a usuários vinculados a um funcionário');
+    }
 }

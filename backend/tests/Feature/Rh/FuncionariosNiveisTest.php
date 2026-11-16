@@ -145,4 +145,76 @@ class FuncionariosNiveisTest extends TestCase
             $this->authHeader($outro['login'], Role::BOLSISTA)
         )->assertForbidden();
     }
+
+    public function test_vincular_preserva_admin_quando_login_ja_e_admin(): void
+    {
+        $adminRh = $this->criarAdminRh();
+        $headers = $this->authHeader($adminRh['login'], Role::ADMIN);
+
+        $loginAdmin = $this->criarLogin();
+        $this->comPermissao($loginAdmin, Role::ADMIN);
+        $pessoa = $this->criarPessoa(['id' => $loginAdmin->id_user]);
+
+        $this->postJson('/api/rh/funcionarios', [
+            'idPessoa' => $pessoa->getKey(),
+            'nivelAcesso' => Role::BOLSISTA->value,
+            'departamento' => 'ELETRONICA',
+        ], $headers)
+            ->assertCreated()
+            ->assertJsonPath('nivelAcesso', 'ADMIN');
+
+        $this->assertDatabaseHas('rh.funcionario', [
+            'id_pessoa' => (int) $pessoa->getKey(),
+            'nivel_acesso' => Role::ADMIN->value,
+        ]);
+        $this->assertDatabaseHas('auth.user_permissions', [
+            'id_user' => (int) $loginAdmin->id_user,
+            'role' => Role::ADMIN->value,
+            'active' => true,
+        ]);
+    }
+
+    public function test_vincular_sem_login_nao_cria_user_permission_orfa(): void
+    {
+        $adminRh = $this->criarAdminRh();
+        $headers = $this->authHeader($adminRh['login'], Role::ADMIN);
+
+        $pessoa = $this->criarPessoa();
+
+        $this->postJson('/api/rh/funcionarios', [
+            'idPessoa' => $pessoa->getKey(),
+            'nivelAcesso' => Role::VOLUNTARIO->value,
+            'departamento' => 'MECANICA',
+        ], $headers)
+            ->assertCreated()
+            ->assertJsonPath('nivelAcesso', 'VOLUNTARIO');
+
+        $this->assertDatabaseHas('rh.funcionario', [
+            'id_pessoa' => (int) $pessoa->getKey(),
+            'nivel_acesso' => Role::VOLUNTARIO->value,
+        ]);
+        $this->assertDatabaseMissing('auth.user_permissions', [
+            'id_user' => (int) $pessoa->getKey(),
+        ]);
+    }
+
+    public function test_matriz_de_niveis_expoe_membros_com_campos(): void
+    {
+        $adminRh = $this->criarAdminRh();
+        $membro = $this->criarFuncionario(null, Role::BOLSISTA);
+        $headers = $this->authHeader($adminRh['login'], Role::ADMIN);
+
+        $res = $this->getJson('/api/rh/niveis', $headers)
+            ->assertOk()
+            ->assertJsonStructure(['niveis', 'membros', 'permissoes'])
+            ->assertJsonStructure(['membros' => [['id', 'name', 'matricula', 'nivel', 'grupo']]]);
+
+        $found = collect($res->json('membros'))->firstWhere('id', (int) $membro['funcionario']->getKey());
+
+        $this->assertNotNull($found);
+        $this->assertSame($membro['pessoa']->nome_completo, $found['name']);
+        $this->assertSame($membro['pessoa']->matricula, $found['matricula']);
+        $this->assertSame('bolsista', $found['nivel']);
+        $this->assertSame($membro['funcionario']->departamento, $found['grupo']);
+    }
 }

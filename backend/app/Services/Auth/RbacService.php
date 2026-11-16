@@ -90,6 +90,11 @@ class RbacService
             throw new PermissaoInvalidaException($e->getMessage());
         }
 
+        // Admin mantém acesso total: a célula persistida nunca reduz o papel.
+        if ($role === Role::ADMIN && $valor !== PermissaoNivel::EDITAR) {
+            throw new PermissaoInvalidaException('Admin mantém acesso total (Editar) em todos os módulos');
+        }
+
         PermissaoMatriz::query()->updateOrCreate(
             ['modulo' => $modulo->value, 'role' => $role->value],
             ['nivel' => $valor->value]
@@ -120,6 +125,11 @@ class RbacService
                 continue;
             }
             $cells[$modulo->value][$row->role->value] = $row->nivel;
+        }
+
+        // Admin sempre com acesso total, ignorando célula persistida divergente.
+        foreach (Modulo::cases() as $modulo) {
+            $cells[$modulo->value][Role::ADMIN->value] = PermissaoNivel::EDITAR;
         }
 
         return $cells;
