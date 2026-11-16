@@ -4,6 +4,7 @@ import { auth } from '$lib/stores/auth';
 import { page as rhPage, applyRhUrl, resetRhPage } from './rh-page-state.svelte.js';
 import ListaPage from '../../src/routes/(app)/pessoas/+page.svelte';
 import EditarPage from '../../src/routes/(app)/pessoas/[id]/editar/+page.svelte';
+import NovoPage from '../../src/routes/(app)/pessoas/novo/+page.svelte';
 import TreinDetPage from '../../src/routes/(app)/pessoas/treinamentos/[id]/+page.svelte';
 import HorasPage from '../../src/routes/(app)/pessoas/registro-horas/+page.svelte';
 import PsPage from '../../src/routes/(app)/pessoas/processo-seletivo/+page.svelte';
@@ -537,6 +538,66 @@ describe('rh-pages — editar pessoa', () => {
 				expect.objectContaining({ department: '' })
 			)
 		);
+	});
+});
+
+describe('rh-pages — novo cadastro pessoa', () => {
+	beforeEach(() => {
+		auth.set({ user: null, token: null, isAuthenticated: false });
+	});
+
+	it('não-admin (role 1): select de nível desabilitado e sem checkbox de acesso', async () => {
+		auth.set({ user: { ...ADMIN, id: 'u1', role: 1 }, token: 'tk', isAuthenticated: true });
+		render(NovoPage, { props: { data: { canEdit: true } } });
+
+		await waitFor(() => expect(screen.getByTestId('person-name')).toBeTruthy());
+		const nivel = document.querySelector('#novo-nivel') as HTMLSelectElement;
+		expect(nivel).toBeTruthy();
+		expect(nivel.disabled).toBe(true);
+		expect(screen.queryByTestId('novo-criar-acesso')).toBeNull();
+	});
+
+	it('admin: select de nível habilitado e checkbox de acesso visível', async () => {
+		auth.set({ user: ADMIN, token: 'tk', isAuthenticated: true });
+		render(NovoPage, { props: { data: { canEdit: true } } });
+
+		await waitFor(() => expect(screen.getByTestId('person-name')).toBeTruthy());
+		const nivel = document.querySelector('#novo-nivel') as HTMLSelectElement;
+		expect(nivel.disabled).toBe(false);
+		expect(screen.getByTestId('novo-criar-acesso')).toBeTruthy();
+	});
+
+	it('admin cadastra: payload inclui nivelAcesso quando selecionado', async () => {
+		auth.set({ user: ADMIN, token: 'tk', isAuthenticated: true });
+		mocks.createPessoa.mockResolvedValueOnce(PESSOA_DETALHE);
+		render(NovoPage, { props: { data: { canEdit: true } } });
+
+		await waitFor(() => expect(screen.getByTestId('person-name')).toBeTruthy());
+		await fireEvent.input(screen.getByTestId('person-name'), { target: { value: 'João Silva' } });
+		await fireEvent.input(screen.getByTestId('person-matricula'), { target: { value: 'M1' } });
+		const nivel = document.querySelector('#novo-nivel') as HTMLSelectElement;
+		await fireEvent.change(nivel, { target: { value: 'bolsista' } });
+		await fireEvent.click(screen.getByTestId('submit-person'));
+
+		await waitFor(() => expect(mocks.createPessoa).toHaveBeenCalled());
+		const [payload] = mocks.createPessoa.mock.calls[0]!;
+		expect(payload).toMatchObject({ name: 'João Silva', matricula: 'M1', nivelAcesso: 'bolsista' });
+	});
+
+	it('não-admin cadastra: payload não inclui nivelAcesso nem criarAcesso', async () => {
+		auth.set({ user: { ...ADMIN, id: 'u1', role: 1 }, token: 'tk', isAuthenticated: true });
+		mocks.createPessoa.mockResolvedValueOnce(PESSOA_DETALHE);
+		render(NovoPage, { props: { data: { canEdit: true } } });
+
+		await waitFor(() => expect(screen.getByTestId('person-name')).toBeTruthy());
+		await fireEvent.input(screen.getByTestId('person-name'), { target: { value: 'Maria Souza' } });
+		await fireEvent.input(screen.getByTestId('person-matricula'), { target: { value: 'M2' } });
+		await fireEvent.click(screen.getByTestId('submit-person'));
+
+		await waitFor(() => expect(mocks.createPessoa).toHaveBeenCalled());
+		const [payload] = mocks.createPessoa.mock.calls[0]!;
+		expect(payload).not.toHaveProperty('nivelAcesso');
+		expect(payload).not.toHaveProperty('criarAcesso');
 	});
 });
 
