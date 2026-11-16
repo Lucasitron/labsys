@@ -7,6 +7,7 @@ use App\Enums\Auth\Role;
 use App\Enums\Rh\NivelAcesso;
 use App\Enums\Rh\PessoaStatus;
 use App\Enums\Rh\StatusApontamento;
+use App\Exceptions\ConflitoException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Models\Rh\ApontamentoHoras;
@@ -330,11 +331,11 @@ class PessoaService
         $pessoa = $this->obter($id);
 
         if (Funcionario::where('id_pessoa', $id)->exists()) {
-            throw new \InvalidArgumentException("Pessoa possui vínculo de funcionário e não pode ser excluída: {$id}");
+            throw new ConflitoException("Pessoa possui vínculo de funcionário e não pode ser excluída: {$id}");
         }
 
         if (ProcessoSeletivo::where('id_candidato', $id)->exists()) {
-            throw new \InvalidArgumentException("Pessoa possui processo seletivo e não pode ser excluída: {$id}");
+            throw new ConflitoException("Pessoa possui processo seletivo e não pode ser excluída: {$id}");
         }
 
         $pessoa->delete();

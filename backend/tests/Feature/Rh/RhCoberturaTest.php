@@ -54,9 +54,9 @@ class RhCoberturaTest extends TestCase
             'idTutor' => $tutor['funcionario']->getKey(),
         ], $headers)->assertCreated();
 
-        // Pessoa com processo não exclui (422); detalhe de pessoa sem vínculo degrada.
+        // Pessoa com processo não exclui (409); detalhe de pessoa sem vínculo degrada.
         $pessoaId = Pessoa::where('matricula', 'MAT-DEL')->firstOrFail()->getKey();
-        $this->deleteJson("/api/rh/pessoas/{$pessoaId}", [], $headers)->assertStatus(422);
+        $this->deleteJson("/api/rh/pessoas/{$pessoaId}", [], $headers)->assertStatus(409);
 
         $solta = $this->criarPessoa();
         $this->getJson('/api/rh/pessoas/'.$solta->getKey().'/detalhe', $headers)

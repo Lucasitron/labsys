@@ -4,11 +4,13 @@ namespace Tests\Feature\Rh;
 
 use App\Enums\Auth\Role;
 use App\Enums\Rh\PessoaStatus;
+use App\Enums\Rh\StatusProcesso;
 use App\Models\Auth\Login;
 use App\Models\Auth\UserPermission;
 use App\Models\Rh\Funcionario;
 use App\Models\Rh\HistoricoNivel;
 use App\Models\Rh\Pessoa;
+use App\Models\Rh\ProcessoSeletivo;
 use Tests\TestCase;
 
 class PessoasTest extends TestCase
@@ -99,14 +101,37 @@ class PessoasTest extends TestCase
                 'pendencias', 'horasPorStatus', 'avaliacoes', 'historicoNivel',
             ]);
 
-        // Com vínculo: excluir dá 422.
-        $this->deleteJson('/api/rh/pessoas/'.$membro['pessoa']->getKey(), [], $headers)->assertStatus(422);
+        // Com vínculo: excluir dá 409.
+        $this->deleteJson('/api/rh/pessoas/'.$membro['pessoa']->getKey(), [], $headers)
+            ->assertStatus(409)
+            ->assertJsonPath('message', fn ($m) => str_starts_with($m, 'Pessoa possui vínculo de funcionário e não pode ser excluída:'));
 
         // Sem vínculo: exclui.
         $solta = $this->criarPessoa();
         $this->deleteJson('/api/rh/pessoas/'.$solta->getKey(), [], $headers)
             ->assertOk()
             ->assertJson(['excluido' => true]);
+    }
+
+    public function test_excluir_com_processo_seletivo_retorna_409(): void
+    {
+        $admin = $this->criarAdminRh();
+        $headers = $this->authHeader($admin['login'], Role::ADMIN);
+
+        $pessoa = $this->criarPessoa();
+        $tutor = $this->criarFuncionario(null, Role::BOLSISTA);
+        $this->criarTutor($tutor['funcionario']);
+
+        ProcessoSeletivo::create([
+            'id_candidato' => $pessoa->getKey(),
+            'id_tutor' => $tutor['funcionario']->getKey(),
+            'status_processo' => StatusProcesso::INSCRITO,
+            'data_inscricao' => now()->toDateString(),
+        ]);
+
+        $this->deleteJson('/api/rh/pessoas/'.$pessoa->getKey(), [], $headers)
+            ->assertStatus(409)
+            ->assertJsonPath('message', fn ($m) => str_starts_with($m, 'Pessoa possui processo seletivo e não pode ser excluída:'));
     }
 
     public function test_cadastro_com_vinculo_e_acesso_provisiona_login_papel_e_funcionario(): void
