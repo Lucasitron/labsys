@@ -230,7 +230,7 @@
       "status": "PLANEJADA (nao implementar agora)"
     }
   },
-  "status_global": "MONOLITO_LARAVEL_LAYER_FIRST | WIP_RH_RBAC_REAPLICADO | BACK_444+4 | FRONT_569 | FRONT_CHECK_0_ERR | BUILD_ADAPTER_NODE_OK | ROTAS_223_INALTERADAS | DEVELOPMENT_a8da62e | DEV_BACKEND_FRONTEND_a8da62e | PUSH_OK_a8da62e",
+  "status_global": "MONOLITO_LARAVEL_LAYER_FIRST | WIP_RH_RBAC_REAPLICADO | BACK_444+4 | FRONT_569 | FRONT_CHECK_0_ERR | BUILD_ADAPTER_NODE_OK | ROTAS_223_INALTERADAS | DEVELOPMENT_a8da62e | DEV_BACKEND_FRONTEND_a8da62e | PUSH_OK_a8da62e | DEPLOY_OK_2026.11.16-1",
   "migracao_monolito": {
     "checklist": ".opencode/state/monolito-checklist.md",
     "plan": ".opencode/specs/features/_migracao-monolito/plan.md",
@@ -278,7 +278,28 @@
         "head": "a8da62e",
         "remoto": "origin git@github.com:Lucasitron/labsys.git",
         "branches": "development, dev/backend, dev/frontend, refactor/remap-frontend (novo), refactor/remap-backend (novo)",
-        "deploy": "pendente (exclusivo do deployer, aguardando PO)"
+        "deploy": "CONCLUIDO 2026-11-16 (deployer)"
+      },
+      "deploy_2026_11_16": {
+        "status": "CONCLUIDO",
+        "alvo": "fablabserver (Tailscale 100.91.193.84, user litro), projeto fablab-infra",
+        "tag": "2026.11.16-1",
+        "imagem": "ghcr.io/fablab/backend:2026.11.16-1 sha256:5db66a9f5b4a2c340311150f4a08774009716a970a98b37797e3199c0d409316",
+        "anterior": "2026.10.17-3 sha256:ee84b14b4727 (preservada p/ rollback)",
+        "backend": "app healthy :8080 (/up 200), worker/scheduler Up recriados; Nothing to migrate; caches OK",
+        "frontend": "fablab-front :3000; build novo em /home/litro/labsys-front/build (build.prev-20261017 preservado); VITE_API_BASE_URL=http://100.91.193.84:8080/api embutido",
+        "backup": "/home/litro/backups/fablab_pre_2026-11-16.dump 228762 B (pg_dump -Fc, 77 TABLE DATA)",
+        "smoke": {
+          "login_admin": "200",
+          "rh_niveis": "200 com membros",
+          "rh_pessoas": "200 com nivelAcesso+idFuncionario",
+          "put_permissoes_rh_ADMIN_Ver": "422 (invariante Admin total; DB permaneceu EDITAR)",
+          "bolsista_post_pessoas_nivel0": "403 'Alteração de nível restrita a Admin' (nada criado)",
+          "cors_preflight": "204 ACAO=*",
+          "front_get": "200; chunk referencia 100.91.193.84:8080/api"
+        },
+        "rollback_pronto": "tag anterior 2026.10.17-3 + build.prev-20261017 + server.yml.bak-20261116 + dump",
+        "pendencias_prod": "APP_DEBUG=true no infra/.env; 5432 publicado via dev.yml; disco 89%; remover build.prev apos validacao"
       }
     }
   },
@@ -610,7 +631,7 @@
     "Contratos: divergencias preexistentes front<->back (/stock vs /estoque, kanban PATCH vs PUT, /producao/mesas vs /projetos-mesa, /producao/5s/setores vs /producao/setores, /rh/people vs /rh/pessoas, endpoints 5S/resumo, unread/count) — backlog de contrato.",
     "Front: migrar 14 blocos manuais de URLSearchParams para buildQuery; avaliar knip/ts-prune.",
     "Back: avaliar PHPStan/Larastan nivel 5 (tooling da Fase 8).",
-    "PUSH OK 2026-11-16: development/dev-backend/dev-frontend/refactor-remap-backend/refactor-remap-frontend @a8da62e no origin. Deploy pendente (deployer).",
+    "PUSH OK 2026-11-16 @a8da62e e DEPLOY OK 2026-11-16 tag 2026.11.16-1 (fablabserver: app :8080 healthy, front :3000). Pendente: validacao de UI pelo PO; APP_DEBUG=false; fechar 5432; prune de imagens (disco 89%).",
     "DEPLOY FRESH OK em fablabserver (2026-10-17): back :8080 + front :3000, imagem 2026.10.14-1, banco do zero (83 migrations, seed admin). Acesso: http://100.91.193.84:3000 (front) / :8080 (API)",
     "Frontend: DEPLOYADO (fablab-front :3000, API :8080). No ar: 403 'sem vinculo' neutro (2dff39e); pessoas editavel Admin/Bolsista/Voluntario (af93f65); PUT /pessoas persiste vinculo/departamento/acesso, nivel Admin-only, limpar departamento com '' e provisionar acesso na edicao (back 16ccba8+f2fbe84 / front 12d8f77+1e16bfc). Backend imagem 2026.10.17-3. Admin semeado com vinculo (id=3). Pendente: desabilitar systemd fablab-front.service antigo (4173, requer sudo) e homologar checklist do front-handoff-2026-10-12.md",
     "Investigar instabilidade Tailscale (relay sao) com fablabserver durante o deploy",

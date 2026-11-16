@@ -16,7 +16,8 @@
 
 Reaplicar o WIP de RH/RBAC (`8d50487`) — criado antes do movimento layer-first — sobre a árvore
 atual, avaliando cada mudança contra o contrato público e corrigindo a cobertura/telas afetadas.
-Integrado e enviado ao `origin` em `a8da62e` (2026-11-16); deploy não executado.
+Integrado, enviado ao `origin` em `a8da62e` e **deployado em produção** (tag `2026.11.16-1`,
+2026-11-16) pelo `deployer`.
 
 ## Decisões do orquestrador
 
@@ -77,6 +78,25 @@ Integrado e enviado ao `origin` em `a8da62e` (2026-11-16); deploy não executado
 - `rm -rf build && npm run build` no `frontend/` @ `80dc8bb`: **exit 0**, vite 19.81s,
   adapter-node `✔ done`, `build/` 5,9M (client 3,8M / server 2,1M), handler importável e
   SSR `GET /` → 200. Único warning: a11y pré-existente em `Chip.svelte`. Nenhum arquivo alterado.
+- **Artefatos de deploy (`2026.11.16-1`, @ `c388c13`):** imagem `ghcr.io/fablab/backend:2026.11.16-1`
+  (`5db66a9f5b4a`, 1,03 GB) com `docker save | gzip` → `fablab-backend-2026.11.16-1.tar.gz`
+  (239M, sha256 `8945fb85…`); front com `VITE_API_BASE_URL=http://100.91.193.84:8080/api` embutido
+  (`build/` 5,9M, 776 arquivos) → `fablab-front-build-2026.11.16-1.tar.gz` (1,8M, sha256 `b9e8b2a1…`).
+  Smoke da imagem: PHP 8.3.35; `artisan --version` exige `JWT_SECRET` em runtime (fail-fast
+  esperado, `.env` fora da imagem).
+
+### deployer
+
+- **Deploy OK** em `fablabserver` (`100.91.193.84`, user `litro`, projeto `fablab-infra`), rollback
+  não necessário:
+  - `docker load` da imagem nova (id `5db66a9f5b4a` conferido), `server.yml` retagueado
+    (`2026.10.17-3` → `2026.11.16-1`, backup `.bak-20261116`), `up -d --no-build`: `app` healthy,
+    `worker`/`scheduler` recriados, Postgres intocado.
+  - `/up` 200; log do app sem stack trace; **"Nothing to migrate"** (sem migração nova).
+  - Front: build extraído em `build.new` e trocado atomicamente em `/home/litro/labsys-front/build`;
+    `build.prev-20261017` preservado; `docker restart fablab-front`; `GET :3000/` 200 e chunk
+    servido com `100.91.193.84:8080/api`.
+  - Backup prévio: `/home/litro/backups/fablab_pre_2026-11-16.dump` (228.762 B, 77 TABLE DATA).
 
 ### orchestrator — validação direta
 
@@ -131,8 +151,30 @@ Integrado e enviado ao `origin` em `a8da62e` (2026-11-16); deploy não executado
       `refactor/remap-frontend` @ `a8da62e` (2026-11-16)
 - [x] Artefatos do pipeline versionados em `a8da62e` (`.opencode/`, `.agents/`, `.claude/skills`,
       `skills-lock.json`, `remap.md`); `node_modules`/`backups`/lock órfão/Firebase workflows fora
-- [ ] Deploy — exclusivo do `deployer`, quando o PO autorizar
+- [x] Deploy `2026.11.16-1` no `fablabserver` (2026-11-16) — **DEPLOY OK**
+- [ ] Validação de UI pelo PO; remover `build.prev-20261017` depois
+- [ ] Produção: `APP_DEBUG=false`, fechar `5432`, podar imagens antigas (disco 89%)
 - [ ] Backlog de contrato front↔back (paths `/stock` vs `/estoque`, kanban `PATCH`/`PUT`, 5S etc.)
+
+## Deploy 2026-11-16 (tag `2026.11.16-1`)
+
+```
+imagem   ghcr.io/fablab/backend:2026.11.16-1  sha256:5db66a9f5b4a…  (anterior 2026.10.17-3)
+backend  app healthy :8080 (/up 200) · worker Up · scheduler Up · "Nothing to migrate"
+front    fablab-front :3000 · GET / 200 · build com VITE_API_BASE_URL=…:8080/api
+backup   /home/litro/backups/fablab_pre_2026-11-16.dump (228.762 B)
+rollback tag 2026.10.17-3 + build.prev-20261017 + docker-compose.server.yml.bak-20261116
+```
+
+| Smoke | Resultado |
+|---|---|
+| `POST /api/auth/login` (admin) | 200 (claims `ADMIN`, `id_user:1`) |
+| `GET /api/rh/niveis` | 200 com `membros` |
+| `GET /api/rh/pessoas` | 200 com `idFuncionario` + `nivelAcesso` |
+| `PUT /api/permissoes/rh/ADMIN {"valor":"Ver"}` | **422** (invariante; DB segue `EDITAR`) |
+| `POST /api/rh/pessoas` Bolsista `nivelAcesso=0` | **403** (nada criado) |
+| `OPTIONS` preflight de `:3000` | 204, `Access-Control-Allow-Origin: *` |
+| `GET :3000/` | 200 |
 
 ## Evidências finais (HEAD `a8da62e`)
 
@@ -161,5 +203,5 @@ npm run build  # adapter-node OK (builder)
 ## Resumo cache
 
 ```
-WIP_RH_RBAC_2026-11-16: reaplicado parcialmente em 80dc8bb, integrado e enviado @a8da62e. Aceitos: invariante Admin total (RBAC 422/leitura), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, vincular espelha role e protege ADMIN, /rh/niveis com membros (front mapeia), 403 explícito p/ Admin sem vínculo ao validar horas. Rejeitado: permitir admin sem vínculo decidir/validar com aprovador/validador nulo (mantém paridade Java/403 e vínculo do seed). Corrigido extra: escalonamento de privilégio em POST /rh/pessoas (nível/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444+4 (2537), front check 0/17, 569 testes, Pint OK, 223 rotas idênticas, build adapter-node OK. Push OK @a8da62e (5 branches, incluindo refactor/remap-backend e refactor/remap-frontend novas no origin); deploy pendente. Pendências: UI da linha Admin em /configuracoes/permissoes (422), paginação de membros, a11y Chip, backlog de contrato.
+WIP_RH_RBAC_2026-11-16: reaplicado parcialmente em 80dc8bb, integrado e enviado @a8da62e. Aceitos: invariante Admin total (RBAC 422/leitura), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, vincular espelha role e protege ADMIN, /rh/niveis com membros (front mapeia), 403 explícito p/ Admin sem vínculo ao validar horas. Rejeitado: permitir admin sem vínculo decidir/validar com aprovador/validador nulo (mantém paridade Java/403 e vínculo do seed). Corrigido extra: escalonamento de privilégio em POST /rh/pessoas (nível/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444+4 (2537), front check 0/17, 569 testes, Pint OK, 223 rotas idênticas, build adapter-node OK. Push OK @a8da62e (5 branches); deploy OK 2026-11-16 tag 2026.11.16-1 (imagem 5db66a9f5b4a) em fablabserver: app healthy :8080, worker/scheduler Up, front :3000, Nothing to migrate, smokes 200/422/403/204. Pendências: UI da linha Admin em /configuracoes/permissoes (422), paginação de membros, a11y Chip, backlog de contrato.
 ```

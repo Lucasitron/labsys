@@ -116,12 +116,20 @@
   projeto.
 - WIP original `8d50487` avaliado: hunks que permitiam Admin sem vínculo decidir/validar foram
   rejeitados (auditoria nula/paridade Java); o restante foi reaplicado.
+- **Deploy 2026-11-16 (tag `2026.11.16-1`, imagem `5db66a9f5b4a`)** em `fablabserver`
+  (`100.91.193.84`): app healthy em `:8080`, worker/scheduler Up, front `:3000`. `Nothing to
+  migrate`; backup prévio `/home/litro/backups/fablab_pre_2026-11-16.dump` (228.762 B). Smoke:
+  login 200, `/rh/niveis` com `membros`, `/rh/pessoas` com `nivelAcesso`/`idFuncionario`,
+  `PUT /permissoes/rh/ADMIN=Ver` → 422, Bolsista criando com `nivelAcesso=0` → 403, CORS 204.
+  Rollback pronto (imagem anterior, `build.prev-20261017`, `.bak` do `server.yml`).
 
 ### Pendências
 - Ocultar/desabilitar a linha **Admin** em `/configuracoes/permissoes` (hoje recebe 422 na UI).
 - Avaliar paginação/limite de `NivelService::matriz` se a base de funcionários crescer.
 - Migrar 14 `URLSearchParams` manuais; tooling `knip`/PHPStan nível 5; backlog de contrato.
-- Deploy: exclusivo do `deployer`, aguardando autorização do PO.
+- Produção (pré-existentes, herdadas): `APP_DEBUG=true` no `infra/.env`; Postgres `5432` publicado
+  pelo `dev.yml`; disco em 89% (podar tags antigas liberaria ~3 GB); remover `build.prev-20261017`
+  após o PO validar.
 
 ### Relatório
 `.opencode/reports/0007-wip-rh-rbac.md`
