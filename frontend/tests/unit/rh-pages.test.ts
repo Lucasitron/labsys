@@ -548,7 +548,7 @@ describe('rh-pages — novo cadastro pessoa', () => {
 
 	it('não-admin (role 1): select de nível desabilitado e sem checkbox de acesso', async () => {
 		auth.set({ user: { ...ADMIN, id: 'u1', role: 1 }, token: 'tk', isAuthenticated: true });
-		render(NovoPage, { props: { data: { canEdit: true } } });
+		render(NovoPage, { props: { data: { user: { ...ADMIN, id: 'u1', role: 1 }, canEdit: true }, params: {} } });
 
 		await waitFor(() => expect(screen.getByTestId('person-name')).toBeTruthy());
 		const nivel = document.querySelector('#novo-nivel') as HTMLSelectElement;
@@ -559,7 +559,7 @@ describe('rh-pages — novo cadastro pessoa', () => {
 
 	it('admin: select de nível habilitado e checkbox de acesso visível', async () => {
 		auth.set({ user: ADMIN, token: 'tk', isAuthenticated: true });
-		render(NovoPage, { props: { data: { canEdit: true } } });
+		render(NovoPage, { props: { data: { user: ADMIN, canEdit: true }, params: {} } });
 
 		await waitFor(() => expect(screen.getByTestId('person-name')).toBeTruthy());
 		const nivel = document.querySelector('#novo-nivel') as HTMLSelectElement;
@@ -570,7 +570,7 @@ describe('rh-pages — novo cadastro pessoa', () => {
 	it('admin cadastra: payload inclui nivelAcesso quando selecionado', async () => {
 		auth.set({ user: ADMIN, token: 'tk', isAuthenticated: true });
 		mocks.createPessoa.mockResolvedValueOnce(PESSOA_DETALHE);
-		render(NovoPage, { props: { data: { canEdit: true } } });
+		render(NovoPage, { props: { data: { user: ADMIN, canEdit: true }, params: {} } });
 
 		await waitFor(() => expect(screen.getByTestId('person-name')).toBeTruthy());
 		await fireEvent.input(screen.getByTestId('person-name'), { target: { value: 'João Silva' } });
@@ -587,7 +587,7 @@ describe('rh-pages — novo cadastro pessoa', () => {
 	it('não-admin cadastra: payload não inclui nivelAcesso nem criarAcesso', async () => {
 		auth.set({ user: { ...ADMIN, id: 'u1', role: 1 }, token: 'tk', isAuthenticated: true });
 		mocks.createPessoa.mockResolvedValueOnce(PESSOA_DETALHE);
-		render(NovoPage, { props: { data: { canEdit: true } } });
+		render(NovoPage, { props: { data: { user: { ...ADMIN, id: 'u1', role: 1 }, canEdit: true }, params: {} } });
 
 		await waitFor(() => expect(screen.getByTestId('person-name')).toBeTruthy());
 		await fireEvent.input(screen.getByTestId('person-name'), { target: { value: 'Maria Souza' } });
