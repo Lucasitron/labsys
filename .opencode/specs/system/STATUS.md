@@ -121,15 +121,21 @@
   migrate`; backup prévio `/home/litro/backups/fablab_pre_2026-11-16.dump` (228.762 B). Smoke:
   login 200, `/rh/niveis` com `membros`, `/rh/pessoas` com `nivelAcesso`/`idFuncionario`,
   `PUT /permissoes/rh/ADMIN=Ver` → 422, Bolsista criando com `nivelAcesso=0` → 403, CORS 204.
-  Rollback pronto (imagem anterior, `build.prev-20261017`, `.bak` do `server.yml`).
+  Rollback pronto (imagem anterior `2026.10.17-3`, tar do build anterior, `.bak` do `server.yml`).
+- **Higiene de produção 2026-11-16:** `APP_DEBUG=false` (`artisan about` = Debug OFF; 404 genérico sem
+  stack trace); Postgres `5432` despublishado (`ports: !reset []` no `server.yml`; sem listener,
+  `nc` externo CLOSED, app segue via `fablab-net`); imagens antigas podadas (26→21, +2,07 GB,
+  disco 89%→**87%**, 13G livres; preservadas `2026.11.16-1` e `2026.10.17-3`); `build.prev-20261017`
+  compactado (`fablab-front-build-20261017.tar.gz`, 1,8M) e removido; usuário de homologação
+  desativado (pessoa INATIVO, login DESATIVADO, permissão inativa — `DELETE` bloqueado por vínculo).
 
 ### Pendências
 - Ocultar/desabilitar a linha **Admin** em `/configuracoes/permissoes` (hoje recebe 422 na UI).
 - Avaliar paginação/limite de `NivelService::matriz` se a base de funcionários crescer.
 - Migrar 14 `URLSearchParams` manuais; tooling `knip`/PHPStan nível 5; backlog de contrato.
-- Produção (pré-existentes, herdadas): `APP_DEBUG=true` no `infra/.env`; Postgres `5432` publicado
-  pelo `dev.yml`; disco em 89% (podar tags antigas liberaria ~3 GB); remover `build.prev-20261017`
-  após o PO validar.
+- Produção: `APP_ENV=local` e `AUTH_SEED_ENABLED=true` seguem ativos (só reportados; avaliar
+  `production`/`false`). `rh.funcionario` id=2 (vínculo do usuário de homologação desativado)
+  permanece — sem acesso efetivo. Disco em 87% (13G livres).
 
 ### Relatório
 `.opencode/reports/0007-wip-rh-rbac.md`

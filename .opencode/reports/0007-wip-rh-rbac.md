@@ -152,8 +152,10 @@ Integrado, enviado ao `origin` em `a8da62e` e **deployado em produção** (tag `
 - [x] Artefatos do pipeline versionados em `a8da62e` (`.opencode/`, `.agents/`, `.claude/skills`,
       `skills-lock.json`, `remap.md`); `node_modules`/`backups`/lock órfão/Firebase workflows fora
 - [x] Deploy `2026.11.16-1` no `fablabserver` (2026-11-16) — **DEPLOY OK**
-- [ ] Validação de UI pelo PO; remover `build.prev-20261017` depois
-- [ ] Produção: `APP_DEBUG=false`, fechar `5432`, podar imagens antigas (disco 89%)
+- [x] Higiene de produção: `APP_DEBUG=false`, `5432` fechado, prune de imagens, `build.prev` compactado
+- [x] Usuário de homologação desativado (pessoa INATIVO + login DESATIVADO)
+- [ ] Validação de UI pelo PO
+- [ ] Produção: avaliar `APP_ENV=production` e `AUTH_SEED_ENABLED=false`
 - [ ] Backlog de contrato front↔back (paths `/stock` vs `/estoque`, kanban `PATCH`/`PUT`, 5S etc.)
 
 ## Deploy 2026-11-16 (tag `2026.11.16-1`)
@@ -175,6 +177,21 @@ rollback tag 2026.10.17-3 + build.prev-20261017 + docker-compose.server.yml.bak-
 | `POST /api/rh/pessoas` Bolsista `nivelAcesso=0` | **403** (nada criado) |
 | `OPTIONS` preflight de `:3000` | 204, `Access-Control-Allow-Origin: *` |
 | `GET :3000/` | 200 |
+
+## Higiene de produção 2026-11-16 (pós-deploy)
+
+| Item | Ação | Verificação |
+|---|---|---|
+| `APP_DEBUG` | `infra/.env`: `true` → `false` (`.bak`), `up -d --no-build` recriando app/worker/scheduler | `/up` 200; `artisan about` = **Debug OFF**; `GET /api/__nao_existe__` → 404 genérico, sem stack trace |
+| Postgres `5432` | `server.yml`: `postgres.ports: !reset []` (Compose 5.6.0), `up -d` só do postgres | `ss -ltn` sem 5432; `nc` externo **CLOSED**; app conecta via `fablab-net` (`172.31.0.3:5432`); volume `fablab-infra_postgres-data` preservado |
+| Imagens | `rmi` de `2026.10.14-1`, `.17-1`, `.17-2`, `fablab-infra-*` + `prune` de dangling (2,07 GB) | 26 → 21 imagens; disco **89% → 87%** (13G livres); preservadas `2026.11.16-1` e `2026.10.17-3` |
+| Front antigo | `build.prev-20261017` → `fablab-front-build-20261017.tar.gz` (1,8M, 791 entradas) e diretório removido (6,0M) | `tar -tzf` OK; `labsys-front` só com `build/` |
+| Usuário de homologação | `DELETE /api/rh/pessoas/4` → **422** (possui vínculo); fallback: `status=INATIVO`, login `DESATIVADO`, `user_permissions.active=false` | acesso revogado; restam `rh.funcionario` id=2 e linhas desativadas |
+| Backup | `/home/litro/backups/fablab_pre_cleanup_2026-11-16.dump` (224K) | `pg_restore -l` OK |
+
+Smokes reexecutados após a higiene: `/up` 200, front 200, login 200, `/rh/niveis` 200 com `membros`,
+`PUT /permissoes/rh/ADMIN=Ver` → 422, bolsista `nivelAcesso=0` → 403. Portas publicadas:
+`0.0.0.0:8080` e `0.0.0.0:3000` apenas.
 
 ## Evidências finais (HEAD `a8da62e`)
 
@@ -203,5 +220,5 @@ npm run build  # adapter-node OK (builder)
 ## Resumo cache
 
 ```
-WIP_RH_RBAC_2026-11-16: reaplicado parcialmente em 80dc8bb, integrado e enviado @a8da62e. Aceitos: invariante Admin total (RBAC 422/leitura), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, vincular espelha role e protege ADMIN, /rh/niveis com membros (front mapeia), 403 explícito p/ Admin sem vínculo ao validar horas. Rejeitado: permitir admin sem vínculo decidir/validar com aprovador/validador nulo (mantém paridade Java/403 e vínculo do seed). Corrigido extra: escalonamento de privilégio em POST /rh/pessoas (nível/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444+4 (2537), front check 0/17, 569 testes, Pint OK, 223 rotas idênticas, build adapter-node OK. Push OK @a8da62e (5 branches); deploy OK 2026-11-16 tag 2026.11.16-1 (imagem 5db66a9f5b4a) em fablabserver: app healthy :8080, worker/scheduler Up, front :3000, Nothing to migrate, smokes 200/422/403/204. Pendências: UI da linha Admin em /configuracoes/permissoes (422), paginação de membros, a11y Chip, backlog de contrato.
+WIP_RH_RBAC_2026-11-16: reaplicado parcialmente em 80dc8bb, integrado e enviado @a8da62e. Aceitos: invariante Admin total (RBAC 422/leitura), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, vincular espelha role e protege ADMIN, /rh/niveis com membros (front mapeia), 403 explícito p/ Admin sem vínculo ao validar horas. Rejeitado: permitir admin sem vínculo decidir/validar com aprovador/validador nulo (mantém paridade Java/403 e vínculo do seed). Corrigido extra: escalonamento de privilégio em POST /rh/pessoas (nível/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444+4 (2537), front check 0/17, 569 testes, Pint OK, 223 rotas idênticas, build adapter-node OK. Push OK @a8da62e (5 branches); higiene OK (APP_DEBUG=false, 5432 fechado, disco 87%); deploy OK 2026-11-16 tag 2026.11.16-1 (imagem 5db66a9f5b4a) em fablabserver: app healthy :8080, worker/scheduler Up, front :3000, Nothing to migrate, smokes 200/422/403/204. Pendências: UI da linha Admin em /configuracoes/permissoes (422), paginação de membros, a11y Chip, backlog de contrato.
 ```

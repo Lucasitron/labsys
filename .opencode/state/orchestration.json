@@ -230,7 +230,7 @@
       "status": "PLANEJADA (nao implementar agora)"
     }
   },
-  "status_global": "MONOLITO_LARAVEL_LAYER_FIRST | WIP_RH_RBAC_REAPLICADO | BACK_444+4 | FRONT_569 | FRONT_CHECK_0_ERR | BUILD_ADAPTER_NODE_OK | ROTAS_223_INALTERADAS | DEVELOPMENT_a8da62e | DEV_BACKEND_FRONTEND_a8da62e | PUSH_OK_a8da62e | DEPLOY_OK_2026.11.16-1",
+  "status_global": "MONOLITO_LARAVEL_LAYER_FIRST | WIP_RH_RBAC_REAPLICADO | BACK_444+4 | FRONT_569 | FRONT_CHECK_0_ERR | BUILD_ADAPTER_NODE_OK | ROTAS_223_INALTERADAS | DEVELOPMENT_a8da62e | DEV_BACKEND_FRONTEND_a8da62e | PUSH_OK_a8da62e | DEPLOY_OK_2026.11.16-1 | CLEANUP_OK",
   "migracao_monolito": {
     "checklist": ".opencode/state/monolito-checklist.md",
     "plan": ".opencode/specs/features/_migracao-monolito/plan.md",
@@ -300,6 +300,17 @@
         },
         "rollback_pronto": "tag anterior 2026.10.17-3 + build.prev-20261017 + server.yml.bak-20261116 + dump",
         "pendencias_prod": "APP_DEBUG=true no infra/.env; 5432 publicado via dev.yml; disco 89%; remover build.prev apos validacao"
+      },
+      "cleanup_2026_11_16": {
+        "status": "CONCLUIDO",
+        "app_debug": "false aplicado em infra/.env (.bak) + up -d; artisan about = Debug OFF; 404 generico sem stack trace",
+        "postgres_5432": "server.yml postgres ports: !reset [] (Compose 5.6.0); sem listener 5432; nc externo CLOSED; app conecta via fablab-net 172.31.0.3:5432; volume preservado",
+        "prune": "removidas 2026.10.14-1, 2026.10.17-1, 2026.10.17-2, fablab-infra-*; dangling 2.067GB; 26->21 imagens; disco 89%->87% (13G livres); preservadas 2026.11.16-1 e 2026.10.17-3",
+        "residuos_front": "build.prev-20261017 compactado em /home/litro/backups/fablab-front-build-20261017.tar.gz (1.8M, 791 entradas) e removido (6.0M)",
+        "usuario_homologacao": "DELETE /rh/pessoas/4 -> 422 (possui vinculo); fallback: pessoa INATIVO, login DESATIVADO, user_permissions active=false; restam rh.funcionario id=2 e linhas desativadas (sem acesso)",
+        "backup": "/home/litro/backups/fablab_pre_cleanup_2026-11-16.dump 224K, sha256 3fc5d915...",
+        "smokes": "/up 200, front 200, login 200, /rh/niveis 200 com membros, PUT permissoes ADMIN Ver 422, bolsista nivel0 403",
+        "flags": "APP_ENV=local e AUTH_SEED_ENABLED=true seguem em producao (apenas reportado)"
       }
     }
   },
@@ -631,7 +642,7 @@
     "Contratos: divergencias preexistentes front<->back (/stock vs /estoque, kanban PATCH vs PUT, /producao/mesas vs /projetos-mesa, /producao/5s/setores vs /producao/setores, /rh/people vs /rh/pessoas, endpoints 5S/resumo, unread/count) — backlog de contrato.",
     "Front: migrar 14 blocos manuais de URLSearchParams para buildQuery; avaliar knip/ts-prune.",
     "Back: avaliar PHPStan/Larastan nivel 5 (tooling da Fase 8).",
-    "PUSH OK 2026-11-16 @a8da62e e DEPLOY OK 2026-11-16 tag 2026.11.16-1 (fablabserver: app :8080 healthy, front :3000). Pendente: validacao de UI pelo PO; APP_DEBUG=false; fechar 5432; prune de imagens (disco 89%).",
+    "PUSH OK @a8da62e, DEPLOY OK 2026-11-16 (tag 2026.11.16-1) e HIGIENE OK: APP_DEBUG=false, 5432 fechado, disco 87%, usuario de homologacao desativado. Pendente: validar UI; avaliar APP_ENV=production e AUTH_SEED_ENABLED=false.",
     "DEPLOY FRESH OK em fablabserver (2026-10-17): back :8080 + front :3000, imagem 2026.10.14-1, banco do zero (83 migrations, seed admin). Acesso: http://100.91.193.84:3000 (front) / :8080 (API)",
     "Frontend: DEPLOYADO (fablab-front :3000, API :8080). No ar: 403 'sem vinculo' neutro (2dff39e); pessoas editavel Admin/Bolsista/Voluntario (af93f65); PUT /pessoas persiste vinculo/departamento/acesso, nivel Admin-only, limpar departamento com '' e provisionar acesso na edicao (back 16ccba8+f2fbe84 / front 12d8f77+1e16bfc). Backend imagem 2026.10.17-3. Admin semeado com vinculo (id=3). Pendente: desabilitar systemd fablab-front.service antigo (4173, requer sudo) e homologar checklist do front-handoff-2026-10-12.md",
     "Investigar instabilidade Tailscale (relay sao) com fablabserver durante o deploy",
