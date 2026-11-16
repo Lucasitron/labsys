@@ -12,7 +12,7 @@
 	import { toasts } from '$lib/stores/toast';
 	import { isEmail } from '$lib/utils/validation';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
+	
 	import ErrorBanner from '$lib/components/ui/ErrorBanner.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
@@ -119,17 +119,17 @@
 				...(admissao ? { dataAdmissao: admissao } : {}),
 				...(turno ? { turno } : {}),
 				status,
-				...(nivel ? { nivelAcesso: nivel } : {}),
+				...(isAdmin(usuarioLogado) && nivel ? { nivelAcesso: nivel } : {}),
 				...(departamento ? { departamento } : {}),
-				...(criarAcesso ? { criarAcesso: true, email: email.trim() } : {}),
-				...(criarAcesso && senha ? { senha } : {})
+				...(isAdmin(usuarioLogado) && criarAcesso ? { criarAcesso: true, email: email.trim() } : {}),
+				...(isAdmin(usuarioLogado) && criarAcesso && senha ? { senha } : {})
 			});
 			if (adicionarOutro) {
 				toasts.success('Pessoa cadastrada. Preencha o próximo cadastro.');
 				limpar();
 			} else {
 				toasts.success(
-					criarAcesso && !senha
+					isAdmin(usuarioLogado) && criarAcesso && !senha
 						? 'Pessoa cadastrada. Convite de acesso enviado.'
 						: 'Pessoa cadastrada com sucesso.'
 				);
@@ -254,18 +254,24 @@
 			<section class="rounded-xl border border-border bg-surface p-5" aria-label="Vínculo (RH)">
 				<h2 class="text-xs font-medium uppercase tracking-wide text-muted">Vínculo (opcional)</h2>
 				<p class="mt-1 text-xs text-muted">
-					Informe o nível para criar o vínculo de funcionário. Sem nível, nenhum vínculo é criado.
+					Somente Admin define o nível de acesso. Departamento continua livre. Sem nível, nenhum vínculo é criado.
 				</p>
 				<div class="mt-4 grid gap-4 sm:grid-cols-2">
 					<div>
-						<Select
+						<label for="novo-nivel" class={labelCls}>Nível de acesso</label>
+						<select
 							id="novo-nivel"
-							label="Nível de acesso"
-							options={NIVEL_OPCOES}
-							value={nivel}
-							placeholder="Selecione…"
-							onChange={(v) => (nivel = v as Nivel)}
-						/>
+							data-testid="novo-nivel"
+							bind:value={nivel}
+							disabled={!isAdmin(usuarioLogado)}
+							title={!isAdmin(usuarioLogado) ? 'Somente Admin altera o nível' : undefined}
+							class={inputCls}
+						>
+							<option value="" disabled>Selecione…</option>
+							{#each NIVEL_OPCOES as opt (opt.id)}
+								<option value={opt.id}>{opt.label}</option>
+							{/each}
+						</select>
 					</div>
 					<div>
 						<label for="novo-departamento" class={labelCls}>Departamento</label>
@@ -279,6 +285,7 @@
 				</div>
 			</section>
 
+			{#if isAdmin(usuarioLogado)}
 			<section class="rounded-xl border border-border bg-surface p-5" aria-label="Acesso (Auth)">
 				<h2 class="text-xs font-medium uppercase tracking-wide text-muted">Acesso (opcional)</h2>
 				<label class="mt-3 flex cursor-pointer items-center gap-2.5 text-sm text-ink">
@@ -345,6 +352,7 @@
 					</div>
 				{/if}
 			</section>
+		{/if}
 
 			<footer class="flex flex-wrap items-center gap-2">
 				<a
