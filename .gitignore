@@ -62,3 +62,8 @@ build/
 **/docker-compose.override.yml
 infra/.volumes/
 **/postgres-data/
+# ===== Artefatos locais de ferramenta (não versionados) =====
+# Lockfile órfão na raiz (não há package.json na raiz do monorepo).
+/package-lock.json
+# Workflows gerados pelo Firebase CLI para outro projeto (trancandae-cd59b).
+/.github/workflows/firebase-hosting-*.yml
