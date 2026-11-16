@@ -137,6 +137,11 @@
   `infra/.env` do host (boot: `Nothing to migrate`; `AuthSeeder` faz bail pela flag, 0 registros;
   `auth.login` 3→3, `rh.pessoa` 4→4). `APP_ENV` passou a ser dirigido por variável no overlay
   (`chore(infra)` `2a4fc03`) para não regredir a `local` no próximo deploy.
+- **Hotfix de contrato 2026-11-16 (`2026.11.16-2`, imagem `ea84de021b3f`):** `DELETE /rh/pessoas/{id}`
+  com vínculo/processo seletivo voltou a **409** (era 422; paridade Java `03c3bb1` —
+  `ConflitoException`), e o front passou a exibir a mensagem real do 409 e a orientar desativar
+  (`status = Inativo`). Deploy: app/worker/scheduler recriados, postgres/front preservados no passo
+  do backend; front com swap atômico (`build.prev-20261116`); smokes 409/404/200/422/403/204.
 - `LOG_LEVEL=debug` em produção (herdado do overlay dev) deixa o log verboso — candidato a `info`.
 - `rh.funcionario` id=2 (vínculo do usuário de homologação desativado) permanece — sem acesso
   efetivo. Disco em 87% (13G livres).

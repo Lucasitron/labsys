@@ -230,7 +230,7 @@
       "status": "PLANEJADA (nao implementar agora)"
     }
   },
-  "status_global": "MONOLITO_LARAVEL_LAYER_FIRST | WIP_RH_RBAC_REAPLICADO | BACK_444+4 | FRONT_569 | FRONT_CHECK_0_ERR | BUILD_ADAPTER_NODE_OK | ROTAS_223_INALTERADAS | DEVELOPMENT_a8da62e | DEV_BACKEND_FRONTEND_a8da62e | PUSH_OK_a8da62e | DEPLOY_OK_2026.11.16-1 | CLEANUP_OK | PROD_CONFIG_OK",
+  "status_global": "MONOLITO_LARAVEL_LAYER_FIRST | WIP_RH_RBAC_REAPLICADO | BACK_445+4 | FRONT_570 | FRONT_CHECK_0_ERR | BUILD_ADAPTER_NODE_OK | ROTAS_223_INALTERADAS | DEVELOPMENT_a8da62e | DEV_BACKEND_FRONTEND_a8da62e | PUSH_OK_a8da62e | DEPLOY_OK_2026.11.16-1 | CLEANUP_OK | PROD_CONFIG_OK | HOTFIX_409_DEPLOY_2026.11.16-2",
   "migracao_monolito": {
     "checklist": ".opencode/state/monolito-checklist.md",
     "plan": ".opencode/specs/features/_migracao-monolito/plan.md",
@@ -318,6 +318,16 @@
           "recriados": "app/worker/scheduler; postgres e front intocados",
           "risco_seguranca": "APP_KEY/JWT_SECRET vazaram no transcript do deployer; avaliar rotacao com PO"
         }
+      },
+      "hotfix_409_2026_11_16": {
+        "status": "CONCLUIDO",
+        "motivo": "PO reportou DELETE /api/rh/pessoas/8 -> 422; contrato Java (03c3bb1, ConflitoException) exige 409",
+        "backend": "PessoaService::excluir lanca ConflitoException (409) para vinculo e processo seletivo; testes 445+4 (2540 assertions); pint OK; 223 rotas",
+        "front": "confirmarExcluir usa apiErrorMessage (mensagem real do 409) + aviso no modal para desativar; 570 testes; check 0 erros",
+        "tag": "2026.11.16-2 (ea84de021b3f) em producao; server.yml retagueado (bak); postgres/front nao recriados no backend step",
+        "front_deploy": "swap atomico, build.prev-20261116 preservado; texto novo confirmado no node 48.BK-xQx1m.js servido",
+        "smoke": "DELETE pessoa 8 com vinculo -> 409 'Pessoa possui vinculo de funcionario e nao pode ser excluida: 8' (SQL: preservada); DELETE inexistente 404; /rh/niveis 200 com membros; permissoes ADMIN Ver 422; bolsista nivel0 403; /up e front 200; CORS 204",
+        "rollback": "imagem 2026.11.16-1 + server.yml.bak-20261116-2 + build.prev-20261116 + dump fablab_pre_2026-11-16-2.dump"
       }
     }
   },
@@ -649,7 +659,7 @@
     "Contratos: divergencias preexistentes front<->back (/stock vs /estoque, kanban PATCH vs PUT, /producao/mesas vs /projetos-mesa, /producao/5s/setores vs /producao/setores, /rh/people vs /rh/pessoas, endpoints 5S/resumo, unread/count) — backlog de contrato.",
     "Front: migrar 14 blocos manuais de URLSearchParams para buildQuery; avaliar knip/ts-prune.",
     "Back: avaliar PHPStan/Larastan nivel 5 (tooling da Fase 8).",
-    "PUSH OK @a8da62e, DEPLOY OK (tag 2026.11.16-1), HIGIENE OK e CONFIG PROD OK (APP_ENV=production, seed off, 5432 fechado, disco 87%). Pendente: validar UI; LOG_LEVEL=info; avaliar rotacao de APP_KEY/JWT_SECRET.",
+    "PUSH/DEPLOY/HIGIENE/CONFIG OK. Hotfix 409 deployado 2026-11-16 tag 2026.11.16-2 (DELETE pessoa com vinculo 409 + UX). Pendente: validar UI; LOG_LEVEL=info; rotacao de APP_KEY/JWT_SECRET.",
     "DEPLOY FRESH OK em fablabserver (2026-10-17): back :8080 + front :3000, imagem 2026.10.14-1, banco do zero (83 migrations, seed admin). Acesso: http://100.91.193.84:3000 (front) / :8080 (API)",
     "Frontend: DEPLOYADO (fablab-front :3000, API :8080). No ar: 403 'sem vinculo' neutro (2dff39e); pessoas editavel Admin/Bolsista/Voluntario (af93f65); PUT /pessoas persiste vinculo/departamento/acesso, nivel Admin-only, limpar departamento com '' e provisionar acesso na edicao (back 16ccba8+f2fbe84 / front 12d8f77+1e16bfc). Backend imagem 2026.10.17-3. Admin semeado com vinculo (id=3). Pendente: desabilitar systemd fablab-front.service antigo (4173, requer sudo) e homologar checklist do front-handoff-2026-10-12.md",
     "Investigar instabilidade Tailscale (relay sao) com fablabserver durante o deploy",

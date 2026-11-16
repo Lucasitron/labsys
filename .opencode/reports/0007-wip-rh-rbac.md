@@ -154,6 +154,7 @@ Integrado, enviado ao `origin` em `a8da62e` e **deployado em produção** (tag `
 - [x] Deploy `2026.11.16-1` no `fablabserver` (2026-11-16) — **DEPLOY OK**
 - [x] Higiene de produção: `APP_DEBUG=false`, `5432` fechado, prune de imagens, `build.prev` compactado
 - [x] Usuário de homologação desativado (pessoa INATIVO + login DESATIVADO)
+- [x] Hotfix `DELETE` pessoa com vínculo → 409 (paridade Java) + UX com mensagem real
 - [ ] Validação de UI pelo PO
 - [x] Produção: `APP_ENV=production` + `AUTH_SEED_ENABLED=false` (+ overlay versionado em `2a4fc03`)
 - [ ] Avaliar `LOG_LEVEL=info` em produção (hoje `debug`, herdado do overlay dev)
@@ -206,6 +207,35 @@ Recriados apenas app/worker/scheduler (postgres e front com o mesmo ID/`StartedA
 mudança: `/up` 200, login 200, `/rh/niveis` 200 com `membros`, `PUT /permissoes/rh/ADMIN=Ver` 422,
 `GET :3000/` 200, rota inexistente 404 sem stack trace.
 
+## Hotfix 2026-11-16 — `DELETE /rh/pessoas/{id}` com vínculo: 422 → 409
+
+**Sintoma (PO, produção):** `DELETE http://100.91.193.84:8080/api/rh/pessoas/8` → **422**, e a UI
+mostrava "Ocorreu um erro inesperado."
+
+**Causa raiz (duas):**
+1. **Contrato:** o Java (`03c3bb1`, `ConflitoException` + `GlobalExceptionHandler`) responde **409**
+   para exclusão com vínculo/processo seletivo; o porte Laravel lançava `InvalidArgumentException`,
+   mapeado globalmente para **422**.
+2. **UX:** `confirmarExcluir` usava `toUserMessage(err).message`, que só trata 401/423/5xx — qualquer
+   4xx virava "Ocorreu um erro inesperado.", escondendo a mensagem real da API.
+
+**Correção:**
+- `b88f00a` (backend): `PessoaService::excluir` lança `ConflitoException` (409) nos dois casos, com os
+  mesmos textos do Java; testes cobrem vínculo e processo seletivo (445 passed + 4 skipped, 2540
+  assertions; Pint OK; 223 rotas). O mapeamento global de `InvalidArgumentException` → 422 foi
+  **mantido** (mudá-lo afetaria validações de todos os módulos).
+- `293d531` (front): `confirmarExcluir` usa `apiErrorMessage` (mensagem real do 409) e o modal ganhou
+  a orientação "Pessoas com vínculo de funcionário ou processo seletivo não podem ser excluídas —
+  nesse caso, desative o cadastro (`status = Inativo`)". 570 testes; check 0 erros.
+
+**Deploy `2026.11.16-2`** (imagem `ea84de021b3f`): app/worker/scheduler recriados; postgres e front
+preservados no passo do backend; front com swap atômico (`build.prev-20261116`) e restart; `Nothing
+to migrate`; `AuthSeeder` bail. Smoke: `DELETE /api/rh/pessoas/8` → **409**
+`Pessoa possui vínculo de funcionário e não pode ser excluída: 8` (SQL confirma pessoa intacta);
+inexistente → 404; `/rh/niveis` 200 com `membros`; `PUT /permissoes/rh/ADMIN=Ver` 422; bolsista
+`nivelAcesso=0` 403; `/up` e front 200; CORS 204. Backup `fablab_pre_2026-11-16-2.dump` (224K);
+rollback: `2026.11.16-1` + `.bak-20261116-2` + `build.prev-20261116` + dump.
+
 ## Evidências finais (HEAD `a8da62e`)
 
 ```sh
@@ -233,5 +263,5 @@ npm run build  # adapter-node OK (builder)
 ## Resumo cache
 
 ```
-WIP_RH_RBAC_2026-11-16: reaplicado parcialmente em 80dc8bb, integrado e enviado @a8da62e. Aceitos: invariante Admin total (RBAC 422/leitura), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, vincular espelha role e protege ADMIN, /rh/niveis com membros (front mapeia), 403 explícito p/ Admin sem vínculo ao validar horas. Rejeitado: permitir admin sem vínculo decidir/validar com aprovador/validador nulo (mantém paridade Java/403 e vínculo do seed). Corrigido extra: escalonamento de privilégio em POST /rh/pessoas (nível/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444+4 (2537), front check 0/17, 569 testes, Pint OK, 223 rotas idênticas, build adapter-node OK. Push OK @a8da62e (5 branches); higiene OK (APP_DEBUG=false, 5432 fechado, disco 87%); config prod OK (APP_ENV=production, seed off); deploy OK 2026-11-16 tag 2026.11.16-1 (imagem 5db66a9f5b4a) em fablabserver: app healthy :8080, worker/scheduler Up, front :3000, Nothing to migrate, smokes 200/422/403/204. Pendências: UI da linha Admin em /configuracoes/permissoes (422), paginação de membros, a11y Chip, backlog de contrato.
+WIP_RH_RBAC_2026-11-16: reaplicado parcialmente em 80dc8bb, integrado e enviado @a8da62e. Aceitos: invariante Admin total (RBAC 422/leitura), PessoaResource com idFuncionario/nivelAcesso/departamento + eager load, vincular espelha role e protege ADMIN, /rh/niveis com membros (front mapeia), 403 explícito p/ Admin sem vínculo ao validar horas. Rejeitado: permitir admin sem vínculo decidir/validar com aprovador/validador nulo (mantém paridade Java/403 e vínculo do seed). Corrigido extra: escalonamento de privilégio em POST /rh/pessoas (nível/provisionamento agora Admin-only) e front /pessoas/novo Admin-only. Back 444+4 (2537), front check 0/17, 569 testes, Pint OK, 223 rotas idênticas, build adapter-node OK. Push OK @a8da62e (5 branches); higiene OK (APP_DEBUG=false, 5432 fechado, disco 87%); config prod OK (APP_ENV=production, seed off); hotfix 409 deployado (2026.11.16-2); deploy OK 2026-11-16 tag 2026.11.16-1 (imagem 5db66a9f5b4a) em fablabserver: app healthy :8080, worker/scheduler Up, front :3000, Nothing to migrate, smokes 200/422/403/204. Pendências: UI da linha Admin em /configuracoes/permissoes (422), paginação de membros, a11y Chip, backlog de contrato.
 ```
