@@ -236,6 +236,16 @@ inexistente → 404; `/rh/niveis` 200 com `membros`; `PUT /permissoes/rh/ADMIN=V
 `nivelAcesso=0` 403; `/up` e front 200; CORS 204. Backup `fablab_pre_2026-11-16-2.dump` (224K);
 rollback: `2026.11.16-1` + `.bak-20261116-2` + `build.prev-20261116` + dump.
 
+**Verificação pós-deploy (a pedido do PO): NO_AR — nenhuma ação necessária.** Os 3 serviços backend
+rodam `2026.11.16-2` (`ea84de021b3f`), `server.yml` com 3/3 linhas, `/up` e front 200,
+`version.json` servido = build atual, node do hotfix presente, `DELETE pessoas/8` → 409 com a
+mensagem exata e registro intacto.
+
+**Achado (causa provável de "vejo a versão antiga"):** o HTML do SPA é servido **sem
+`Cache-Control`/`Last-Modified`** (só `etag`), enquanto os assets têm `immutable`. O browser pode
+aplicar cache heurístico no shell e exibir a versão anterior até um hard refresh. Correção
+recomendada (task separada): `Cache-Control: no-cache` no HTML no adapter-node/`hooks.server.ts`.
+
 ## Evidências finais (HEAD `a8da62e`)
 
 ```sh

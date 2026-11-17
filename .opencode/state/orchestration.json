@@ -327,7 +327,16 @@
         "tag": "2026.11.16-2 (ea84de021b3f) em producao; server.yml retagueado (bak); postgres/front nao recriados no backend step",
         "front_deploy": "swap atomico, build.prev-20261116 preservado; texto novo confirmado no node 48.BK-xQx1m.js servido",
         "smoke": "DELETE pessoa 8 com vinculo -> 409 'Pessoa possui vinculo de funcionario e nao pode ser excluida: 8' (SQL: preservada); DELETE inexistente 404; /rh/niveis 200 com membros; permissoes ADMIN Ver 422; bolsista nivel0 403; /up e front 200; CORS 204",
-        "rollback": "imagem 2026.11.16-1 + server.yml.bak-20261116-2 + build.prev-20261116 + dump fablab_pre_2026-11-16-2.dump"
+        "rollback": "imagem 2026.11.16-1 + server.yml.bak-20261116-2 + build.prev-20261116 + dump fablab_pre_2026-11-16-2.dump",
+        "verificacao_pos_deploy": {
+          "resultado": "NO_AR (sem drift)",
+          "versoes": "app/worker/scheduler em 2026.11.16-2 (ea84de021b3f); server.yml 3/3 linhas",
+          "health": "/up 200 e front 200; Nothing to migrate; 0 stack traces",
+          "front": "version.json 1794871725361 = build atual; node 48.BK-xQx1m.js servido com a mensagem do hotfix; build.prev-20261116 = build antigo",
+          "smoke": "DELETE pessoas/8 -> 409 mensagem exata (registro intacto); DELETE inexistente -> 404; login admin 200",
+          "achado_cache": "HTML do SPA sem Cache-Control/Last-Modified (apenas etag); assets com immutable -> browser pode cachear heuristicamente o shell e exibir versao antiga ate hard refresh",
+          "acao_recomendada": "avaliar Cache-Control: no-cache no HTML (adapter-node/hooks) em task separada"
+        }
       }
     }
   },
