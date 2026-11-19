@@ -155,6 +155,7 @@ Integrado, enviado ao `origin` em `a8da62e` e **deployado em produção** (tag `
 - [x] Higiene de produção: `APP_DEBUG=false`, `5432` fechado, prune de imagens, `build.prev` compactado
 - [x] Usuário de homologação desativado (pessoa INATIVO + login DESATIVADO)
 - [x] Hotfix `DELETE` pessoa com vínculo → 409 (paridade Java) + UX com mensagem real
+- [x] HTML do SPA com `cache-control: no-cache` (front `2026.11.18-1`)
 - [ ] Validação de UI pelo PO
 - [x] Produção: `APP_ENV=production` + `AUTH_SEED_ENABLED=false` (+ overlay versionado em `2a4fc03`)
 - [ ] Avaliar `LOG_LEVEL=info` em produção (hoje `debug`, herdado do overlay dev)
@@ -245,6 +246,25 @@ mensagem exata e registro intacto.
 `Cache-Control`/`Last-Modified`** (só `etag`), enquanto os assets têm `immutable`. O browser pode
 aplicar cache heurístico no shell e exibir a versão anterior até um hard refresh. Correção
 recomendada (task separada): `Cache-Control: no-cache` no HTML no adapter-node/`hooks.server.ts`.
+
+## Cache do HTML — SPA sem cache heurístico (2026-11-18)
+
+**Motivo:** o HTML do SPA era servido sem `Cache-Control`/`Last-Modified` (só `etag`), enquanto os
+assets eram `immutable`. O browser podia cachear heuristicamente o shell e continuar exibindo a
+versão antiga após deploy — exatamente o que aconteceu depois do hotfix 409.
+
+**Correção (`20d468d`):** novo `frontend/src/hooks.server.ts` com `handle` que aplica
+`cache-control: no-cache` apenas em `text/html` (revalidação pelo `etag`, 304 quando nada muda);
+assets intactos. 3 testes novos → **573 passed** (40 arquivos); check 0 erros / 17 warnings.
+
+**Build `2026.11.18-1`** (adapter-node): 5,9M / 778 arquivos, sha256 `81f43e9a…dfc59`,
+`version.json` `1795057026756`. Staging local provou: HTML `no-cache` + `etag`, `If-None-Match` →
+304 e asset `immutable`.
+
+**Deploy front-only** (backend `2026.11.16-2` intocado, mesmos IDs de container): `build.prev-20261116-2`
+preservado, swap atômico + `docker restart fablab-front`. Produção: HTML `no-cache` (`etag
+"1r0xjih"`), 304 em `127.0.0.1` e `100.91.193.84`, `version.json` novo, hotfix 409 presente;
+`/up`, front e login 200; `DELETE /rh/pessoas/8` → 409.
 
 ## Evidências finais (HEAD `a8da62e`)
 

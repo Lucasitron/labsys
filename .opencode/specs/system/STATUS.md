@@ -151,6 +151,35 @@
 
 ---
 
+## Ponto 4 — 2026-11-18 · HTML do SPA sem cache heurístico
+
+### Entregue
+- `frontend/src/hooks.server.ts` (novo): `handle` aplica **`cache-control: no-cache`** em respostas
+  `text/html` (força revalidação pelo `etag`; 304 quando nada mudou). Assets `/_app/immutable/*`
+  continuam `public,max-age=31536000,immutable`.
+- Motivo: após deploy, o browser podia cachear heuristicamente o shell HTML e exibir a versão antiga
+  do SPA até hard refresh (era o efeito colateral observado depois do hotfix 409).
+
+### Evidências
+- `20d468d`: 3 testes novos (573 passed, 40 arquivos); `npm run check` 0 erros / 17 warnings.
+- Build `2026.11.18-1`: 5,9M / 778 arquivos; sha256 `81f43e9a…dfc59`; `version.json` `1795057026756`.
+- Staging local: `GET /` → `cache-control: no-cache` + `etag`; `If-None-Match` → **304**; asset JS/CSS
+  → `immutable`.
+- Deploy front-only: `build.prev-20261116-2` preservado, swap atômico + `docker restart fablab-front`;
+  **backend intocado** (`2026.11.16-2`, mesmos IDs de container).
+- Produção: HTML antes sem `cache-control` (`etag "1c8hgy0"`) → depois `no-cache` (`etag "1r0xjih"`);
+  304 em `127.0.0.1` e `100.91.193.84`; `/up`, front e login 200; `DELETE /rh/pessoas/8` **409**.
+
+### Pendências
+- Validação de UI pelo PO (agora sem armadilha de cache).
+- `LOG_LEVEL=info`; avaliar rotação de `APP_KEY`/`JWT_SECRET`; prune de imagens (disco 87%).
+- Remover `build.prev-20261116` / `build.prev-20261116-2` após janela de observação.
+
+### Relatório
+`.opencode/reports/0007-wip-rh-rbac.md`
+
+---
+
 ## Próximos Pontos (modelo)
 
 ```

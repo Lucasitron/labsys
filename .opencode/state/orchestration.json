@@ -230,7 +230,7 @@
       "status": "PLANEJADA (nao implementar agora)"
     }
   },
-  "status_global": "MONOLITO_LARAVEL_LAYER_FIRST | WIP_RH_RBAC_REAPLICADO | BACK_445+4 | FRONT_570 | FRONT_CHECK_0_ERR | BUILD_ADAPTER_NODE_OK | ROTAS_223_INALTERADAS | DEVELOPMENT_a8da62e | DEV_BACKEND_FRONTEND_a8da62e | PUSH_OK_a8da62e | DEPLOY_OK_2026.11.16-1 | CLEANUP_OK | PROD_CONFIG_OK | HOTFIX_409_DEPLOY_2026.11.16-2",
+  "status_global": "MONOLITO_LARAVEL_LAYER_FIRST | WIP_RH_RBAC_REAPLICADO | BACK_445+4 | FRONT_573 | FRONT_CHECK_0_ERR | BUILD_ADAPTER_NODE_OK | ROTAS_223_INALTERADAS | DEVELOPMENT_a8da62e | DEV_BACKEND_FRONTEND_a8da62e | PUSH_OK_a8da62e | DEPLOY_OK_2026.11.16-1 | CLEANUP_OK | PROD_CONFIG_OK | HOTFIX_409_DEPLOY_2026.11.16-2 | FRONT_2026.11.18-1_NO_CACHE",
   "migracao_monolito": {
     "checklist": ".opencode/state/monolito-checklist.md",
     "plan": ".opencode/specs/features/_migracao-monolito/plan.md",
@@ -337,6 +337,14 @@
           "achado_cache": "HTML do SPA sem Cache-Control/Last-Modified (apenas etag); assets com immutable -> browser pode cachear heuristicamente o shell e exibir versao antiga ate hard refresh",
           "acao_recomendada": "avaliar Cache-Control: no-cache no HTML (adapter-node/hooks) em task separada"
         }
+      },
+      "fix_cache_html_2026_11_18": {
+        "status": "CONCLUIDO",
+        "codigo": "frontend/src/hooks.server.ts (handle: cache-control no-cache para text/html; assets immutable intactos) - commit 20d468d; 3 testes novos (573 total)",
+        "build": "front 2026.11.18-1: 5,9M/778 arquivos, sha256 81f43e9ac250ed2a08a8304f524a1b4f51385f74e557f3b6e2b8ac341f0dfc59; prova local curl: HTML no-cache + etag, 304, asset immutable",
+        "deploy": "front-only: build.prev-20261116-2 preservado, swap atomico + docker restart fablab-front; backend 2026.11.16-2 com IDs inalterados",
+        "verificacao": "HTML antes sem cache-control (etag 1c8hgy0) -> depois no-cache (etag 1r0xjih); 304 em 127.0.0.1 e 100.91.193.84; version.json 1795057026756; hotfix 409 presente; /up, front, login 200; DELETE pessoas/8 409",
+        "rollback": "build.prev-20261116-2 (1794871725361) e build.prev-20261116 (1794851324300); imagem backend 2026.11.16-1 preservada"
       }
     }
   },
@@ -668,7 +676,7 @@
     "Contratos: divergencias preexistentes front<->back (/stock vs /estoque, kanban PATCH vs PUT, /producao/mesas vs /projetos-mesa, /producao/5s/setores vs /producao/setores, /rh/people vs /rh/pessoas, endpoints 5S/resumo, unread/count) — backlog de contrato.",
     "Front: migrar 14 blocos manuais de URLSearchParams para buildQuery; avaliar knip/ts-prune.",
     "Back: avaliar PHPStan/Larastan nivel 5 (tooling da Fase 8).",
-    "PUSH/DEPLOY/HIGIENE/CONFIG OK. Hotfix 409 deployado 2026-11-16 tag 2026.11.16-2 (DELETE pessoa com vinculo 409 + UX). Pendente: validar UI; LOG_LEVEL=info; rotacao de APP_KEY/JWT_SECRET.",
+    "Tudo entregue e em producao: back 2026.11.16-2 + front 2026.11.18-1 (HTML no-cache). Pendente: validar UI; LOG_LEVEL=info; rotacao de APP_KEY/JWT_SECRET; prune de imagens (disco 87%).",
     "DEPLOY FRESH OK em fablabserver (2026-10-17): back :8080 + front :3000, imagem 2026.10.14-1, banco do zero (83 migrations, seed admin). Acesso: http://100.91.193.84:3000 (front) / :8080 (API)",
     "Frontend: DEPLOYADO (fablab-front :3000, API :8080). No ar: 403 'sem vinculo' neutro (2dff39e); pessoas editavel Admin/Bolsista/Voluntario (af93f65); PUT /pessoas persiste vinculo/departamento/acesso, nivel Admin-only, limpar departamento com '' e provisionar acesso na edicao (back 16ccba8+f2fbe84 / front 12d8f77+1e16bfc). Backend imagem 2026.10.17-3. Admin semeado com vinculo (id=3). Pendente: desabilitar systemd fablab-front.service antigo (4173, requer sudo) e homologar checklist do front-handoff-2026-10-12.md",
     "Investigar instabilidade Tailscale (relay sao) com fablabserver durante o deploy",
